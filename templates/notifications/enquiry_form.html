@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}New Enquiry{% endblock %}
+{% block title_label %}New Enquiry{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-outline card-primary">
+            <div class="card-header"><h3 class="card-title mb-0">Create an Enquiry</h3></div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label for="office">Send To</label>
+                        <select name="office" id="office" class="form-control">
+                            <option value="general" {% if default_office == 'general' %}selected{% endif %}>General Registry</option>
+                            <option value="nursing" {% if default_office == 'nursing' %}selected{% endif %}>Nursing Council</option>
+                            <option value="medical" {% if default_office == 'medical' %}selected{% endif %}>Medical Board</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="subject">Subject</label>
+                        <input type="text" name="subject" id="subject" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="body">Message</label>
+                        <textarea name="body" id="body" rows="7" class="form-control" required></textarea>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <a href="{% url 'enquiry_inbox' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Send Enquiry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

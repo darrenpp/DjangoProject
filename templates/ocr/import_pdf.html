@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}OCR Import - NDOH Registry{% endblock %}
+{% block title_label %}OCR PDF Import{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Upload PDF for OCR</h3>
+            </div>
+            <div class="card-body">
+                {% if forbidden %}
+                <div class="alert alert-danger mb-0">You do not have permission to process repository OCR documents.</div>
+                {% else %}
+                <p class="text-muted">You can process a standalone scan or link OCR output directly to a repository document version so the extracted text becomes searchable.</p>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.pdf_file.id_for_label }}">PDF File</label>
+                        {{ form.pdf_file }}
+                        {% if form.pdf_file.errors %}<small class="text-danger d-block">{{ form.pdf_file.errors|join:", " }}</small>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.document_version.id_for_label }}">Link to Repository Version</label>
+                        {{ form.document_version }}
+                        <small class="form-text text-muted">Optional. If selected, the extracted OCR text and reference values will be written back to that repository version.</small>
+                        {% if form.document_version.errors %}<small class="text-danger d-block">{{ form.document_version.errors|join:", " }}</small>{% endif %}
+                    </div>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-file-upload mr-1"></i> Process OCR
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

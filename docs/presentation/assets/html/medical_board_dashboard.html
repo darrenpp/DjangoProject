@@ -1,0 +1,3934 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head><base href="http://127.0.0.1:8765/"><style>html,body{background:#f8fafc!important;color:#0f172a!important;}*{text-shadow:none!important;}.content-wrapper,.card,.card-body,.table td,.table th{color:#0f172a!important;}.bg-primary *,.bg-success *,.bg-info *,.bg-danger *,.bg-dark *,.bg-secondary *{color:#fff!important;}.bg-warning *,.bg-light *,.bg-white *{color:#111827!important;}.main-sidebar,.main-header,.main-footer{display:none!important;}.app-wrapper,.wrapper{display:block!important;width:100%!important;min-height:auto!important;}.content-wrapper{margin:0!important;width:100%!important;min-height:1100px!important;position:static!important;transform:none!important;}.content-wrapper>.content,.content,.content>.container-fluid,.container-fluid{max-width:none!important;width:100%!important;margin:0!important;padding:18px!important;}.content-header{padding:18px 18px 0!important;}.row{max-width:100%!important;}.helpdesk-launcher,.helpdesk-widget{display:none!important;}</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Medical Board Dashboard</title>
+    <script>
+        window.ndohAssets = {
+            bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
+            bootstrapJs: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
+            fontawesomeCss: "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css",
+            adminlteCss: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/css/adminlte.min.css",
+            adminlteJs: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/js/adminlte.min.js",
+            datatablesCss: "https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css",
+            datatablesJs: "https://cdn.datatables.net/2.0.8/js/dataTables.min.js",
+            datatablesBootstrapJs: "https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js",
+            jqueryJs: "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js",
+            axiosJs: "https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js",
+            chartJs: "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
+        };
+        window.ndohLoadCss = function (href, id) {
+            if (id && document.getElementById(id)) return;
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = href;
+            if (id) link.id = id;
+            document.head.appendChild(link);
+        };
+        window.ndohLoadScript = function (src, test, id) {
+            if (test && test()) return;
+            if (id && document.getElementById(id)) return;
+            const script = document.createElement('script');
+            script.src = src;
+            if (id) script.id = id;
+            document.body.appendChild(script);
+        };
+    </script>
+
+    <link rel="stylesheet" href="/static/vendor/bootstrap/css/bootstrap.min.css" onerror="window.ndohLoadCss(window.ndohAssets.bootstrapCss, 'ndoh-bootstrap-cdn')">
+    <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css" onerror="window.ndohLoadCss(window.ndohAssets.fontawesomeCss, 'ndoh-fontawesome-cdn')">
+    <link rel="stylesheet" href="/static/vendor/adminlte/css/adminlte.min.css" onerror="window.ndohLoadCss(window.ndohAssets.adminlteCss, 'ndoh-adminlte-cdn')">
+    <link rel="stylesheet" href="/static/vendor/datatables/css/dataTables.bootstrap5.min.css" onerror="window.ndohLoadCss(window.ndohAssets.datatablesCss, 'ndoh-datatables-cdn')">
+    <style>
+        :root {
+            --ndoh-navy: #18324a;
+            --ndoh-navy-deep: #0e2031;
+            --ndoh-green: #2f5f53;
+            --ndoh-green-soft: #dbe9e3;
+            --ndoh-gold: #ab7b2d;
+            --ndoh-surface: #f3f5f4;
+            --ndoh-surface-deep: #e7ecea;
+            --ndoh-card: rgba(255, 255, 255, 0.92);
+            --ndoh-border: #d2dcd8;
+            --ndoh-text: #20303c;
+            --ndoh-muted: #637381;
+        }
+
+        body {
+            background: var(--ndoh-surface);
+            color: var(--ndoh-text);
+            font-family: "Segoe UI", "Source Sans 3", system-ui, sans-serif;
+        }
+
+        body.app-shell {
+            overflow-x: hidden;
+        }
+
+        body.app-shell .app-wrapper {
+            min-height: 100vh;
+        }
+
+        h1, h2, h3,
+        .h1, .h2, .h3,
+        .content-header h1,
+        .card-title {
+            color: var(--ndoh-navy-deep);
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .bg-primary h1,
+        .bg-primary h2,
+        .bg-primary h3,
+        .bg-success h1,
+        .bg-success h2,
+        .bg-success h3,
+        .bg-info h1,
+        .bg-info h2,
+        .bg-info h3,
+        .bg-warning h1,
+        .bg-warning h2,
+        .bg-warning h3,
+        .bg-danger h1,
+        .bg-danger h2,
+        .bg-danger h3,
+        .text-white h1,
+        .text-white h2,
+        .text-white h3 {
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+        }
+
+        .content-header h1 {
+            font-size: clamp(1.2rem, 2vw, 1.75rem);
+            line-height: 1.2;
+        }
+
+        .content-wrapper {
+            min-height: calc(100vh - 57px);
+            background:
+                radial-gradient(circle at top right, rgba(171, 123, 45, 0.08), transparent 26%),
+                linear-gradient(180deg, #f6f7f5 0%, #edf1ee 100%);
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 66px;
+        }
+
+        .brand-link .brand-image {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.96);
+            padding: 5px;
+            box-shadow: 0 10px 18px rgba(0,0,0,0.14);
+        }
+
+        .brand-link .brand-text {
+            font-weight: 800;
+            letter-spacing: 0;
+            line-height: 1.15;
+        }
+
+        body.app-shell .main-sidebar {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body.app-shell .main-sidebar .sidebar {
+            height: calc(100vh - 66px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.24) transparent;
+        }
+
+        body.app-shell .main-sidebar .sidebar::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        body.app-shell .main-sidebar .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.24);
+            border-radius: 999px;
+        }
+
+        body.app-shell .main-sidebar .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .small-box {
+            border-radius: 18px;
+            overflow: hidden;
+            color: #fff !important;
+            box-shadow: 0 18px 38px rgba(14, 32, 49, 0.12);
+        }
+
+        .small-box .inner,
+        .small-box .inner h3,
+        .small-box .inner p {
+            color: #fff !important;
+            opacity: 1 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.26);
+        }
+
+        .small-box .inner h3 {
+            font-size: clamp(1.65rem, 2vw, 2.35rem);
+            font-weight: 900;
+            line-height: 1.05;
+            word-break: break-word;
+        }
+
+        .small-box .inner p {
+            font-weight: 800;
+            letter-spacing: 0.01em;
+        }
+
+        .small-box .icon,
+        .small-box .icon i {
+            color: rgba(255, 255, 255, 0.44) !important;
+            font-size: 2.2rem;
+            opacity: 1;
+        }
+
+        .small-box .small-box-footer {
+            background: rgba(0, 0, 0, 0.16) !important;
+            color: #fff !important;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .small-box.bg-warning,
+        .small-box.bg-light,
+        .small-box.bg-white {
+            color: #111827 !important;
+        }
+
+        .small-box.bg-warning .inner,
+        .small-box.bg-warning .inner h3,
+        .small-box.bg-warning .inner p,
+        .small-box.bg-light .inner,
+        .small-box.bg-light .inner h3,
+        .small-box.bg-light .inner p,
+        .small-box.bg-white .inner,
+        .small-box.bg-white .inner h3,
+        .small-box.bg-white .inner p {
+            color: #111827 !important;
+            text-shadow: none;
+        }
+
+        .small-box.bg-warning .icon,
+        .small-box.bg-warning .icon i,
+        .small-box.bg-light .icon,
+        .small-box.bg-light .icon i,
+        .small-box.bg-white .icon,
+        .small-box.bg-white .icon i {
+            color: rgba(17, 24, 39, 0.30) !important;
+        }
+
+        .small-box.bg-warning .small-box-footer,
+        .small-box.bg-light .small-box-footer,
+        .small-box.bg-white .small-box-footer {
+            background: rgba(255, 255, 255, 0.45) !important;
+            color: #111827 !important;
+        }
+
+        .card {
+            border-radius: 18px;
+            box-shadow: 0 18px 42px rgba(14, 32, 49, 0.08);
+            border: 1px solid rgba(210, 220, 216, 0.92);
+            background: var(--ndoh-card);
+        }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 700;
+            box-shadow: none !important;
+        }
+
+        .btn-primary {
+            background: #1e4f7a !important;
+            border-color: #1e4f7a !important;
+        }
+
+        .btn-success {
+            background: #166534 !important;
+            border-color: #166534 !important;
+        }
+
+        .btn-info {
+            background: #0369a1 !important;
+            border-color: #0369a1 !important;
+        }
+
+        .btn-danger {
+            background: #b91c1c !important;
+            border-color: #b91c1c !important;
+        }
+
+        .btn-secondary {
+            background: #475569 !important;
+            border-color: #475569 !important;
+        }
+
+        .btn-dark {
+            background: #111827 !important;
+            border-color: #111827 !important;
+        }
+
+        .btn-primary,
+        .btn-success,
+        .btn-info,
+        .btn-danger,
+        .btn-secondary,
+        .btn-dark {
+            color: #fff !important;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.18);
+        }
+
+        .btn-warning {
+            background: #f59e0b !important;
+            border-color: #f59e0b !important;
+            color: #1f2937 !important;
+            text-shadow: none;
+        }
+
+        .btn-outline-primary,
+        .btn-outline-success,
+        .btn-outline-secondary,
+        .btn-outline-dark {
+            background: rgba(255,255,255,0.78);
+        }
+
+        .table {
+            color: var(--ndoh-text);
+        }
+
+        .table th {
+            background-color: #eef3f1;
+            border-top: none;
+            color: #102a43 !important;
+            font-weight: 800;
+        }
+
+        .table td {
+            color: var(--ndoh-text);
+        }
+
+        .badge,
+        .status-label {
+            border-radius: 999px;
+            display: inline-block;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            padding: 0.38em 0.68em;
+            text-shadow: none;
+            vertical-align: baseline;
+        }
+
+        .badge-success,
+        .badge-approved,
+        .badge-active,
+        .badge-complete,
+        .badge-completed,
+        .bg-success.badge {
+            background: #166534 !important;
+            color: #fff !important;
+        }
+
+        .badge-warning,
+        .badge-pending,
+        .badge-submitted,
+        .badge-review,
+        .badge-under_review,
+        .bg-warning.badge {
+            background: #f59e0b !important;
+            color: #111827 !important;
+        }
+
+        .badge-info,
+        .badge-processing,
+        .badge-in_progress,
+        .bg-info.badge {
+            background: #0369a1 !important;
+            color: #fff !important;
+        }
+
+        .badge-danger,
+        .badge-rejected,
+        .badge-expired,
+        .badge-cancelled,
+        .bg-danger.badge {
+            background: #b91c1c !important;
+            color: #fff !important;
+        }
+
+        .badge-secondary,
+        .badge-draft,
+        .badge-inactive,
+        .bg-secondary.badge {
+            background: #475569 !important;
+            color: #fff !important;
+        }
+
+        .badge-light,
+        .bg-light.badge {
+            background: #f8fafc !important;
+            border: 1px solid var(--ndoh-border);
+            color: #0f172a !important;
+        }
+
+        .badge-dark,
+        .bg-dark.badge {
+            background: #111827 !important;
+            color: #fff !important;
+        }
+
+        .card-header.bg-primary,
+        .card-header.bg-success,
+        .card-header.bg-info,
+        .card-header.bg-danger,
+        .card-header.bg-secondary,
+        .card-header.bg-dark {
+            color: #fff !important;
+        }
+
+        .card-header.bg-primary h1,
+        .card-header.bg-primary h2,
+        .card-header.bg-primary h3,
+        .card-header.bg-primary .card-title,
+        .card-header.bg-success h1,
+        .card-header.bg-success h2,
+        .card-header.bg-success h3,
+        .card-header.bg-success .card-title,
+        .card-header.bg-info h1,
+        .card-header.bg-info h2,
+        .card-header.bg-info h3,
+        .card-header.bg-info .card-title,
+        .card-header.bg-danger h1,
+        .card-header.bg-danger h2,
+        .card-header.bg-danger h3,
+        .card-header.bg-danger .card-title,
+        .card-header.bg-secondary h1,
+        .card-header.bg-secondary h2,
+        .card-header.bg-secondary h3,
+        .card-header.bg-secondary .card-title,
+        .card-header.bg-dark h1,
+        .card-header.bg-dark h2,
+        .card-header.bg-dark h3,
+        .card-header.bg-dark .card-title {
+            color: #fff !important;
+        }
+
+        .card-header.bg-warning,
+        .card-header.bg-light {
+            color: #111827 !important;
+        }
+
+        .card-header.bg-warning h1,
+        .card-header.bg-warning h2,
+        .card-header.bg-warning h3,
+        .card-header.bg-warning .card-title,
+        .card-header.bg-light h1,
+        .card-header.bg-light h2,
+        .card-header.bg-light h3,
+        .card-header.bg-light .card-title {
+            color: #111827 !important;
+        }
+
+        .table-card .card-header {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        .table-card .card-header .btn {
+            color: #fff;
+            border-color: rgba(255,255,255,.3);
+        }
+
+        .table-card .card-header .btn-light,
+        .table-card .card-header .btn-warning {
+            color: #111827 !important;
+            text-shadow: none;
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+            background-color: var(--ndoh-green);
+            border-radius: 8px;
+        }
+
+        .main-header.navbar {
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 28px rgba(14, 32, 49, 0.06);
+            border-bottom: 1px solid var(--ndoh-border);
+        }
+
+        .navbar-user-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #f6f9fb;
+            border: 1px solid var(--ndoh-border);
+            color: var(--ndoh-text);
+            box-shadow: 0 8px 18px rgba(14, 32, 49, 0.05);
+        }
+
+        .navbar-user-chip img {
+            width: 34px;
+            height: 34px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid rgba(22, 50, 79, 0.12);
+        }
+
+        .navbar-user-chip .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #64748b;
+            display: block;
+            line-height: 1.1;
+        }
+
+        .navbar-user-chip .value {
+            font-weight: 700;
+            color: var(--ndoh-navy);
+            display: block;
+            line-height: 1.1;
+        }
+
+        .page-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .page-toolbar .page-toolbar-spacer {
+            flex: 1 1 auto;
+        }
+
+        .page-back-button {
+            border-radius: 999px;
+            padding-inline: 14px;
+        }
+
+        .app-loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(12, 34, 56, 0.42);
+            backdrop-filter: blur(2px);
+        }
+
+        .app-loading-overlay.is-visible {
+            display: flex;
+        }
+
+        .app-loading-overlay.is-success {
+            background: rgba(18, 82, 62, 0.42);
+        }
+
+        .app-loading-card {
+            width: min(460px, calc(100vw - 28px));
+            padding: 24px;
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 24px 60px rgba(12, 34, 56, 0.22);
+        }
+
+        .app-loading-overlay.is-success .app-loading-card {
+            border: 1px solid rgba(22, 101, 52, 0.22);
+        }
+
+        .app-loading-card h4 {
+            margin-bottom: 8px;
+            color: var(--ndoh-navy);
+            font-weight: 700;
+        }
+
+        .app-loading-overlay.is-success .app-loading-card h4 {
+            color: #166534;
+        }
+
+        .app-loading-card p {
+            margin-bottom: 16px;
+            color: #64748b;
+        }
+
+        .app-loading-progress {
+            height: 10px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #e2e8f0;
+        }
+
+        .app-loading-progress-bar {
+            width: 35%;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--ndoh-green) 0%, var(--ndoh-gold) 100%);
+            animation: ndoh-progress 1.25s ease-in-out infinite;
+        }
+
+        .app-loading-overlay.is-success .app-loading-progress-bar {
+            width: 100%;
+            background: linear-gradient(90deg, #166534 0%, #22c55e 100%);
+            animation: none;
+        }
+
+        .app-loading-meta {
+            margin-top: 12px;
+            font-size: 0.88rem;
+            color: #64748b;
+        }
+
+        .app-loading-actions {
+            display: none;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .app-loading-overlay.is-success .app-loading-actions {
+            display: flex;
+        }
+
+        .app-loading-actions .btn {
+            border-radius: 999px;
+            font-weight: 800;
+            min-width: 104px;
+        }
+
+        @keyframes ndoh-progress {
+            0% { transform: translateX(-110%); }
+            100% { transform: translateX(320%); }
+        }
+
+        body.public-body .content-wrapper {
+            margin-left: 0 !important;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(47, 95, 83, 0.08), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.08), transparent 24%),
+                linear-gradient(180deg, #f8f9f7 0%, #eef2ef 100%);
+        }
+
+        body.public-body .main-header,
+        body.public-body .main-sidebar,
+        body.public-body .main-footer,
+        body.public-body .content-header {
+            display: none !important;
+        }
+
+        body.public-body .content > .container-fluid {
+            padding: 40px 18px 56px;
+        }
+
+        .brand-link,
+        .sidebar-dark-primary {
+            background: linear-gradient(180deg, var(--ndoh-navy) 0%, var(--ndoh-navy-deep) 100%) !important;
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link {
+            border-radius: 10px;
+            margin: 4px 10px;
+            color: rgba(255,255,255,0.86);
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .card-primary.card-outline {
+            border-top: 4px solid var(--ndoh-green);
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--ndoh-border);
+        }
+
+        .form-control,
+        .form-control-file {
+            border-radius: 12px;
+            border-color: var(--ndoh-border);
+            min-height: 44px;
+        }
+
+        .form-select,
+        .custom-select {
+            border-radius: 12px;
+            border-color: var(--ndoh-border);
+            min-height: 44px;
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        .custom-select:focus {
+            border-color: var(--ndoh-green);
+            box-shadow: 0 0 0 0.2rem rgba(43, 107, 74, 0.12);
+        }
+
+        .ndoh-form-section {
+            background: #fbfcfd;
+            border-color: var(--ndoh-border) !important;
+        }
+
+        .ndoh-form-section h5 {
+            color: var(--ndoh-navy);
+            font-weight: 700;
+        }
+
+        .ndoh-checkboxes ul,
+        .ndoh-radios ul,
+        ul.ndoh-checkbox-group,
+        ul.ndoh-radio-group {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px 14px;
+        }
+
+        .ndoh-checkboxes li,
+        .ndoh-radios li,
+        ul.ndoh-checkbox-group li,
+        ul.ndoh-radio-group li {
+            margin: 0;
+        }
+
+        .ndoh-checkboxes label,
+        .ndoh-radios label,
+        ul.ndoh-checkbox-group label,
+        ul.ndoh-radio-group label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 0;
+            padding: 12px 14px;
+            border: 1px solid var(--ndoh-border);
+            border-radius: 10px;
+            background: #fff;
+            font-weight: 600;
+            line-height: 1.35;
+        }
+
+        .ndoh-checkboxes input[type="checkbox"],
+        .ndoh-radios input[type="radio"],
+        ul.ndoh-checkbox-group input[type="checkbox"],
+        ul.ndoh-radio-group input[type="radio"] {
+            margin-top: 3px;
+            position: static;
+            flex: 0 0 auto;
+        }
+
+        .mr-1 { margin-right: .25rem !important; }
+        .mr-2 { margin-right: .5rem !important; }
+        .mr-3 { margin-right: 1rem !important; }
+        .ml-2 { margin-left: .5rem !important; }
+        .ml-auto { margin-left: auto !important; }
+        .pr-3 { padding-right: 1rem !important; }
+        .pl-3 { padding-left: 1rem !important; }
+        .text-right { text-align: right !important; }
+        .float-right { float: right !important; }
+        .float-left { float: left !important; }
+        .form-row { display: flex; flex-wrap: wrap; margin-right: -.75rem; margin-left: -.75rem; }
+        .form-row > .col,
+        .form-row > [class*="col-"] { padding-right: .75rem; padding-left: .75rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-control-file { display: block; width: 100%; padding: .6rem .9rem; background: #fff; }
+        .input-group-append,
+        .input-group-prepend { display: flex; }
+
+        .helpdesk-launcher {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 4200;
+            border: 0;
+            border-radius: 999px;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, var(--ndoh-navy) 0%, var(--ndoh-green) 72%, var(--ndoh-gold) 100%);
+            color: #fff;
+            font-weight: 900;
+            box-shadow: 0 18px 38px rgba(14, 32, 49, 0.24);
+        }
+
+        .helpdesk-launcher:hover,
+        .helpdesk-launcher:focus {
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .helpdesk-widget {
+            position: fixed;
+            right: 22px;
+            bottom: 88px;
+            z-index: 4201;
+            width: min(390px, calc(100vw - 28px));
+            display: none;
+            overflow: hidden;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 22px;
+            background: #fff;
+            box-shadow: 0 28px 70px rgba(14, 32, 49, 0.26);
+        }
+
+        .helpdesk-widget.is-open {
+            display: block;
+        }
+
+        .staff-alert-toast {
+            min-width: 340px;
+            border-radius: 14px;
+            border: 1px solid #dbe4ee;
+            box-shadow: 0 18px 32px rgba(15, 23, 42, 0.16);
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .staff-alert-toast .toast-header {
+            background: linear-gradient(135deg, var(--ndoh-navy) 0%, var(--ndoh-green) 100%);
+            color: #fff;
+            border-bottom: none;
+        }
+
+        .staff-alert-toast .toast-body {
+            background: #fff;
+            color: #20303c;
+        }
+
+        .helpdesk-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, var(--ndoh-navy) 0%, var(--ndoh-green) 100%);
+            color: #fff;
+        }
+
+        .helpdesk-header h5 {
+            margin: 0;
+            color: #fff;
+            font-weight: 900;
+        }
+
+        .helpdesk-close {
+            border: 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            width: 32px;
+            height: 32px;
+        }
+
+        .helpdesk-chat-panel {
+            max-height: 340px;
+            overflow-y: auto;
+            padding: 14px;
+            background: #f8fafc;
+        }
+
+        .helpdesk-message {
+            margin-bottom: 10px;
+            padding: 11px 13px;
+            border-radius: 14px;
+            line-height: 1.42;
+        }
+
+        .helpdesk-message p {
+            margin: 5px 0 0;
+        }
+
+        .helpdesk-message.assistant {
+            background: #fff;
+            border: 1px solid #dbe4ee;
+            color: #1f2937;
+        }
+
+        .helpdesk-message.user {
+            margin-left: 42px;
+            background: #1e4f7a;
+            color: #fff;
+        }
+
+        .helpdesk-message.user strong,
+        .helpdesk-message.user p {
+            color: #fff;
+        }
+
+        .helpdesk-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 9px;
+        }
+
+        .helpdesk-links a,
+        .helpdesk-suggestion {
+            border: 1px solid #d4af37;
+            border-radius: 999px;
+            background: #fffbeb;
+            color: #111827;
+            font-size: 0.82rem;
+            font-weight: 800;
+            padding: 5px 9px;
+            text-decoration: none;
+        }
+
+        .helpdesk-form {
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+        }
+
+        .helpdesk-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 12px 12px;
+            background: #fff;
+        }
+
+        .navbar-search {
+            width: min(480px, 44vw);
+            margin-left: 14px;
+        }
+
+        .navbar-search .form-control {
+            min-height: 38px;
+            border-radius: 999px 0 0 999px;
+            background: #f8fafc;
+        }
+
+        .navbar-search .btn {
+            border-radius: 0 999px 999px 0;
+        }
+
+        @media (max-width: 576px) {
+            .helpdesk-launcher {
+                right: 14px;
+                bottom: 14px;
+            }
+
+            .helpdesk-widget {
+                right: 14px;
+                bottom: 76px;
+            }
+        }
+    </style>
+    
+<style>
+    .mb-dashboard {
+        --mb-ink: #1f332d;
+        --mb-green: #176b52;
+        --mb-mint: #dff3e9;
+        --mb-amber: #c56b1d;
+        --mb-rust: #9a4f21;
+        --mb-paper: #fffaf0;
+        color: var(--mb-ink);
+    }
+    .mb-hero {
+        border-radius: 28px;
+        padding: 28px;
+        background:
+            radial-gradient(circle at 80% 20%, rgba(255, 244, 214, .28), transparent 30%),
+            linear-gradient(135deg, #174b3d 0%, #176b52 56%, #9a4f21 100%);
+        color: #fff;
+        box-shadow: 0 26px 70px rgba(31, 51, 45, .2);
+    }
+    .mb-hero .eyebrow {
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        opacity: .78;
+        font-weight: 800;
+        font-size: .75rem;
+    }
+    .mb-metric {
+        border: 0;
+        border-radius: 22px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #fffdf8 0%, #f8f1e5 100%);
+        box-shadow: 0 18px 42px rgba(31, 51, 45, .12);
+    }
+    .mb-metric .card-body {
+        min-height: 130px;
+    }
+    .mb-metric span {
+        color: #6b756f;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-size: .72rem;
+    }
+    .mb-metric h3 {
+        font-size: 2.3rem;
+        font-weight: 900;
+        margin: 8px 0 0;
+    }
+    .mb-metric i {
+        color: rgba(23, 107, 82, .22);
+        font-size: 2.5rem;
+    }
+    .mb-panel {
+        border: 0;
+        border-radius: 22px;
+        background: rgba(255, 253, 248, .96);
+        box-shadow: 0 18px 42px rgba(31, 51, 45, .11);
+    }
+    .mb-panel .card-header {
+        border-bottom: 1px solid rgba(31, 51, 45, .12);
+    }
+    .mb-panel .card-title {
+        font-weight: 850;
+        color: var(--mb-ink);
+    }
+    .mb-action {
+        display: block;
+        height: 100%;
+        border: 1px solid rgba(23, 107, 82, .18);
+        border-radius: 18px;
+        padding: 16px;
+        color: var(--mb-ink);
+        background: #fffdf8;
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .mb-action:hover {
+        color: var(--mb-ink);
+        text-decoration: none;
+        transform: translateY(-3px);
+        border-color: rgba(197, 107, 29, .42);
+        box-shadow: 0 16px 34px rgba(31, 51, 45, .13);
+    }
+    .mb-action strong {
+        color: var(--mb-amber);
+        display: block;
+    }
+    .mb-import-bar {
+        height: 9px;
+        border-radius: 999px;
+        background: #e6ddd0;
+        overflow: hidden;
+    }
+    .mb-import-bar span {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, var(--mb-green), var(--mb-amber));
+    }
+    .mb-table th {
+        background: #f7efe2;
+        color: var(--mb-ink);
+        border-top: 0;
+    }
+    .mb-flow-card {
+        border: 1px solid rgba(23, 107, 82, .16);
+        background: #fffdf8;
+    }
+    .mb-flow-label {
+        color: #6b756f;
+        font-size: .76rem;
+        font-weight: 800;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+    .mb-flow-value {
+        color: var(--mb-ink);
+        font-size: 1.9rem;
+        font-weight: 900;
+    }
+    .mb-chart-tall {
+        min-height: 320px;
+    }
+    .mb-chart-tall canvas {
+        min-height: 265px;
+    }
+</style>
+
+    <style id="ndoh-government-contrast-guardrails">
+        /*
+         * Final government-theme guardrails.
+         * This layer intentionally loads after page-specific CSS so custom dashboards
+         * can keep their layouts while still meeting readable contrast.
+         */
+        :root {
+            --ndoh-gov-ink: #0f1f2f;
+            --ndoh-gov-ink-soft: #24384a;
+            --ndoh-gov-muted: #4f6273;
+            --ndoh-gov-navy: #12304a;
+            --ndoh-gov-navy-2: #1e4f7a;
+            --ndoh-gov-green: #1f6b4d;
+            --ndoh-gov-teal: #0f766e;
+            --ndoh-gov-blue: #075985;
+            --ndoh-gov-gold: #d99a16;
+            --ndoh-gov-red: #b91c1c;
+            --ndoh-gov-slate: #475569;
+            --ndoh-gov-paper: #ffffff;
+            --ndoh-gov-panel: #f8fafc;
+            --ndoh-gov-border: #cbd5e1;
+        }
+
+        body,
+        .content-wrapper,
+        .card,
+        .card-body,
+        .modal-content,
+        .dropdown-menu,
+        .list-group-item,
+        .table,
+        .table td,
+        .form-control,
+        .form-select,
+        .custom-select,
+        .select2-container,
+        .dataTables_wrapper {
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        p,
+        li,
+        dd,
+        dt,
+        label,
+        output,
+        .card-text,
+        .form-text,
+        .helptext,
+        .small,
+        small {
+            color: inherit;
+        }
+
+        .text-muted,
+        .text-black-50,
+        .text-white-50,
+        .form-text,
+        .helptext,
+        small.text-muted,
+        .small.text-muted {
+            color: var(--ndoh-gov-muted) !important;
+            opacity: 1 !important;
+        }
+
+        .content-wrapper a:not(.btn):not(.nav-link):not(.dropdown-item):not(.brand-link),
+        body.public-body a:not(.btn):not(.nav-link):not(.dropdown-item):not(.brand-link) {
+            color: #075985 !important;
+            font-weight: 700;
+        }
+
+        .content-wrapper a:not(.btn):hover,
+        body.public-body a:not(.btn):hover {
+            color: var(--ndoh-gov-green) !important;
+        }
+
+        h1, h2, h3, h4, h5, h6,
+        .h1, .h2, .h3, .h4, .h5, .h6,
+        .content-header h1,
+        .card-title,
+        .modal-title {
+            color: var(--ndoh-gov-ink) !important;
+            font-weight: 850;
+        }
+
+        .card {
+            background: var(--ndoh-gov-paper) !important;
+            border: 1px solid var(--ndoh-gov-border) !important;
+        }
+
+        .card-header {
+            background: #f1f5f9 !important;
+            border-bottom: 1px solid var(--ndoh-gov-border) !important;
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        .card-header .card-title,
+        .card-header h1,
+        .card-header h2,
+        .card-header h3,
+        .card-header h4,
+        .card-header h5,
+        .card-header h6,
+        .card-header p,
+        .card-header span:not(.badge) {
+            color: inherit !important;
+        }
+
+        .bg-primary,
+        .card-header.bg-primary,
+        .small-box.bg-primary {
+            background: linear-gradient(135deg, var(--ndoh-gov-navy) 0%, var(--ndoh-gov-navy-2) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-success,
+        .card-header.bg-success,
+        .small-box.bg-success {
+            background: linear-gradient(135deg, #14532d 0%, var(--ndoh-gov-green) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-info,
+        .card-header.bg-info,
+        .small-box.bg-info {
+            background: linear-gradient(135deg, var(--ndoh-gov-blue) 0%, var(--ndoh-gov-teal) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-danger,
+        .card-header.bg-danger,
+        .small-box.bg-danger {
+            background: linear-gradient(135deg, #7f1d1d 0%, var(--ndoh-gov-red) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-secondary,
+        .card-header.bg-secondary,
+        .small-box.bg-secondary,
+        .bg-dark,
+        .card-header.bg-dark,
+        .small-box.bg-dark {
+            background: linear-gradient(135deg, #1f2937 0%, var(--ndoh-gov-slate) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-warning,
+        .card-header.bg-warning,
+        .small-box.bg-warning {
+            background: linear-gradient(135deg, #fbbf24 0%, var(--ndoh-gov-gold) 100%) !important;
+            color: #111827 !important;
+            text-shadow: none !important;
+        }
+
+        .bg-light,
+        .bg-white,
+        .card-header.bg-light,
+        .card-header.bg-white,
+        .small-box.bg-light,
+        .small-box.bg-white {
+            background: #f8fafc !important;
+            color: #111827 !important;
+            text-shadow: none !important;
+        }
+
+        .bg-primary *,
+        .bg-success *,
+        .bg-info *,
+        .bg-danger *,
+        .bg-secondary *,
+        .bg-dark *,
+        .card-header.bg-primary *,
+        .card-header.bg-success *,
+        .card-header.bg-info *,
+        .card-header.bg-danger *,
+        .card-header.bg-secondary *,
+        .card-header.bg-dark *,
+        .small-box.bg-primary *,
+        .small-box.bg-success *,
+        .small-box.bg-info *,
+        .small-box.bg-danger *,
+        .small-box.bg-secondary *,
+        .small-box.bg-dark * {
+            color: #ffffff !important;
+        }
+
+        .bg-warning *,
+        .bg-light *,
+        .bg-white *,
+        .card-header.bg-warning *,
+        .card-header.bg-light *,
+        .card-header.bg-white *,
+        .small-box.bg-warning *,
+        .small-box.bg-light *,
+        .small-box.bg-white * {
+            color: #111827 !important;
+            text-shadow: none !important;
+        }
+
+        .small-box {
+            border: 1px solid rgba(15, 23, 42, 0.12);
+        }
+
+        .small-box .small-box-footer {
+            background: rgba(15, 23, 42, 0.22) !important;
+            color: #ffffff !important;
+        }
+
+        .small-box.bg-warning .small-box-footer,
+        .small-box.bg-light .small-box-footer,
+        .small-box.bg-white .small-box-footer {
+            background: rgba(255, 255, 255, 0.55) !important;
+            color: #111827 !important;
+        }
+
+        .btn {
+            border-width: 1px !important;
+            font-weight: 800 !important;
+        }
+
+        .btn-primary {
+            background: var(--ndoh-gov-navy-2) !important;
+            border-color: var(--ndoh-gov-navy-2) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-success {
+            background: var(--ndoh-gov-green) !important;
+            border-color: var(--ndoh-gov-green) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-info {
+            background: var(--ndoh-gov-blue) !important;
+            border-color: var(--ndoh-gov-blue) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-danger {
+            background: var(--ndoh-gov-red) !important;
+            border-color: var(--ndoh-gov-red) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-secondary,
+        .btn-dark {
+            background: var(--ndoh-gov-slate) !important;
+            border-color: var(--ndoh-gov-slate) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-warning {
+            background: var(--ndoh-gov-gold) !important;
+            border-color: var(--ndoh-gov-gold) !important;
+            color: #111827 !important;
+        }
+
+        .btn-light,
+        .btn-white {
+            background: #ffffff !important;
+            border-color: var(--ndoh-gov-border) !important;
+            color: #111827 !important;
+        }
+
+        .btn-outline-primary,
+        .btn-outline-info,
+        .btn-outline-success,
+        .btn-outline-secondary,
+        .btn-outline-dark,
+        .btn-outline-danger {
+            background: #ffffff !important;
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        .btn-outline-primary { border-color: var(--ndoh-gov-navy-2) !important; }
+        .btn-outline-success { border-color: var(--ndoh-gov-green) !important; }
+        .btn-outline-info { border-color: var(--ndoh-gov-blue) !important; }
+        .btn-outline-secondary,
+        .btn-outline-dark { border-color: var(--ndoh-gov-slate) !important; }
+        .btn-outline-danger { border-color: var(--ndoh-gov-red) !important; }
+
+        .btn-outline-primary:hover,
+        .btn-outline-info:hover,
+        .btn-outline-success:hover,
+        .btn-outline-secondary:hover,
+        .btn-outline-dark:hover,
+        .btn-outline-danger:hover {
+            color: #ffffff !important;
+        }
+
+        .btn-outline-primary:hover { background: var(--ndoh-gov-navy-2) !important; }
+        .btn-outline-success:hover { background: var(--ndoh-gov-green) !important; }
+        .btn-outline-info:hover { background: var(--ndoh-gov-blue) !important; }
+        .btn-outline-secondary:hover,
+        .btn-outline-dark:hover { background: var(--ndoh-gov-slate) !important; }
+        .btn-outline-danger:hover { background: var(--ndoh-gov-red) !important; }
+
+        .badge,
+        .status-label,
+        [class*="badge-"] {
+            border: 1px solid transparent;
+            color: #ffffff !important;
+            opacity: 1 !important;
+            text-shadow: none !important;
+        }
+
+        .badge-success,
+        .badge-approved,
+        .badge-active,
+        .badge-complete,
+        .badge-completed,
+        .bg-success.badge,
+        .badge.bg-success {
+            background: #166534 !important;
+            color: #ffffff !important;
+        }
+
+        .badge-warning,
+        .badge-pending,
+        .badge-submitted,
+        .badge-review,
+        .badge-under_review,
+        .bg-warning.badge,
+        .badge.bg-warning {
+            background: #f59e0b !important;
+            color: #111827 !important;
+        }
+
+        .badge-info,
+        .badge-processing,
+        .badge-in_progress,
+        .bg-info.badge,
+        .badge.bg-info {
+            background: #075985 !important;
+            color: #ffffff !important;
+        }
+
+        .badge-danger,
+        .badge-rejected,
+        .badge-expired,
+        .badge-cancelled,
+        .bg-danger.badge,
+        .badge.bg-danger {
+            background: #b91c1c !important;
+            color: #ffffff !important;
+        }
+
+        .badge-secondary,
+        .badge-draft,
+        .badge-inactive,
+        .bg-secondary.badge,
+        .badge.bg-secondary {
+            background: #475569 !important;
+            color: #ffffff !important;
+        }
+
+        .badge-light,
+        .badge.bg-light {
+            background: #f8fafc !important;
+            border-color: #94a3b8 !important;
+            color: #111827 !important;
+        }
+
+        .alert {
+            border-width: 1px !important;
+            color: #111827 !important;
+        }
+
+        .alert-success {
+            background: #dcfce7 !important;
+            border-color: #86efac !important;
+            color: #14532d !important;
+        }
+
+        .alert-info {
+            background: #e0f2fe !important;
+            border-color: #7dd3fc !important;
+            color: #0c4a6e !important;
+        }
+
+        .alert-warning {
+            background: #fef3c7 !important;
+            border-color: #fbbf24 !important;
+            color: #78350f !important;
+        }
+
+        .alert-danger {
+            background: #fee2e2 !important;
+            border-color: #fca5a5 !important;
+            color: #7f1d1d !important;
+        }
+
+        .table {
+            background: #ffffff !important;
+            border-color: var(--ndoh-gov-border) !important;
+        }
+
+        .table thead th,
+        .table th {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+            border-color: var(--ndoh-gov-border) !important;
+            font-weight: 850 !important;
+        }
+
+        .table td {
+            background: #ffffff;
+            border-color: #e2e8f0 !important;
+            color: #1f2937 !important;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) td,
+        .table-hover tbody tr:hover td {
+            background: #f8fafc !important;
+            color: #111827 !important;
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate,
+        .dataTables_wrapper label {
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        .form-control,
+        .form-select,
+        .custom-select,
+        input,
+        select,
+        textarea {
+            background: #ffffff !important;
+            border-color: #94a3b8 !important;
+            color: #111827 !important;
+        }
+
+        .form-control::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #64748b !important;
+            opacity: 1 !important;
+        }
+
+        .main-header.navbar,
+        .navbar-white,
+        .navbar-light {
+            background: rgba(255, 255, 255, 0.96) !important;
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        .main-header .nav-link,
+        .main-header .navbar-nav .nav-link {
+            color: var(--ndoh-gov-ink) !important;
+            font-weight: 800;
+        }
+
+        .main-header .nav-link:hover,
+        .main-header .navbar-nav .nav-link:hover {
+            color: var(--ndoh-gov-green) !important;
+        }
+
+        .sidebar-dark-primary .brand-link,
+        .sidebar-dark-primary,
+        .app-sidebar {
+            background: linear-gradient(180deg, #0f2a43 0%, #071827 100%) !important;
+        }
+
+        .brand-link .brand-text,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link p,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link i {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+            background: #245f4b !important;
+            color: #ffffff !important;
+        }
+
+        .main-footer {
+            background: #ffffff !important;
+            color: var(--ndoh-gov-ink) !important;
+            border-top: 1px solid var(--ndoh-gov-border) !important;
+        }
+
+        .ndoh-official-footer {
+            line-height: 1.55;
+        }
+
+        .ndoh-official-footer a {
+            color: #075985 !important;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .ndoh-official-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .progress {
+            background: #e2e8f0 !important;
+        }
+
+        .progress-bar {
+            color: #ffffff !important;
+            font-weight: 800;
+        }
+
+        canvas {
+            color: var(--ndoh-gov-ink);
+        }
+
+        @media print {
+            body,
+            .content-wrapper,
+            .card,
+            .table,
+            .table td,
+            .table th {
+                color: #000000 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/static/css/government-enterprise.css">
+</head>
+<body class="hold-transition layout-fixed sidebar-expand-lg app-shell">
+<div class="app-wrapper">
+    
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light border-bottom">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+        
+        <form class="navbar-search d-none d-md-flex" method="get" action="/dashboard/search/">
+            <div class="input-group input-group-sm">
+                <input type="search" name="q" class="form-control" placeholder="Search records, staff, facilities..." value="">
+                <button class="btn btn-primary" type="submit" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+        
+        <ul class="navbar-nav ml-auto">
+            
+                
+                <li class="nav-item d-flex align-items-center pr-2">
+                    <a href="/notifications/communications/" class="nav-link position-relative" title="Inbox, chat, and review notifications">
+                        <i class="fas fa-bell"></i>
+                        
+                    </a>
+                </li>
+                
+                <li class="nav-item d-flex align-items-center pr-3">
+                    <a href="/accounts/profile/" class="navbar-user-chip text-decoration-none">
+                        
+                            <img src="/static/img/avatar.png" alt="Profile picture">
+                        
+                        <span>
+                            <span class="label">Signed in as</span>
+                            <span class="value">medical_registrar</span>
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/accounts/profile/?settings=1" title="Open profile settings">
+                        <i class="fas fa-cog"></i> Profile Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/accounts/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            
+            
+        </ul>
+    </nav>
+
+    <aside class="app-sidebar main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/dashboard/main/" class="brand-link">
+            <img src="/static/img/NDOH_LOGO.png" alt="NDOH Crest" class="brand-image">
+            <span class="brand-text">NDOH Regulatory Bodies System</span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a href="/dashboard/main/" class="nav-link">
+                            <i class="nav-icon fas fa-house"></i>
+                            <p>Home</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-gauge-high"></i>
+                            <p>Overall Dashboard</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/search/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-search"></i>
+                            <p>Registry Search</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/medical-board/"
+                           class="nav-link active">
+                            <i class="nav-icon fas fa-clinic-medical"></i>
+                            <p>Medical Board Portal</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/fee-structure/" class="nav-link">
+                        <i class="nav-icon fas fa-money-bill"></i>
+                        <p>Fee Structure & Guidelines</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/flow/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>Workforce Flow</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/workforce/register/medical-board/" class="nav-link">
+                            <i class="nav-icon fas fa-notes-medical"></i>
+                            <p>Medical Board Forms</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/notifications/communications/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-envelope-open-text"></i>
+                            <p>Staff Inbox & Chat</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/staff-ai/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-brain"></i>
+                            <p>AI Staff Assistant</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/duplicate-reviews/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-clone"></i>
+                            <p>Duplicate Reviews</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/production-readiness/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-shield-halved"></i>
+                            <p>Production Readiness</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/reports/financial/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-coins"></i>
+                            <p>Financial Forecast</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/notifications/enquiries/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-comments"></i>
+                            <p>Messages & Enquiries</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/workforce/import/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-file-import"></i>
+                            <p>Bulk Import</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/records/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-table-list"></i>
+                            <p>Workforce Records</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/documents/search/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-folder-open"></i>
+                            <p>Document Repository</p>
+                        </a>
+                    </li>
+                    
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/ocr/import/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-file-pdf"></i>
+                            <p>PDF Document Import</p>
+                        </a>
+                    </li>
+                    
+                    
+                    
+                </ul>
+            </nav>
+        </div>
+    </aside>
+    
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Medical Board Dashboard</h1>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+                
+                <div class="page-toolbar">
+                    <button type="button" class="btn btn-outline-secondary page-back-button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/dashboard/main/'">
+                        <i class="fas fa-arrow-left mr-1"></i> Back
+                    </button>
+                    <div class="page-toolbar-spacer"></div>
+                    
+                    <a href="/accounts/profile/" class="btn btn-outline-primary">
+                        <i class="fas fa-user-circle mr-1"></i> My Profile
+                    </a>
+                    
+                </div>
+                
+                
+                
+<div class="mb-dashboard">
+    <div class="mb-hero mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="eyebrow mb-2">Medical Board Operations</div>
+                <h2 class="mb-2">Doctors, specialists, CHWs, facilities, and training institutions</h2>
+                <p class="mb-0">This dashboard is separate from the Nursing Council interface, while still feeding the same centralized NDOH registry and secure administration console.</p>
+            </div>
+            <div class="col-lg-4 text-lg-right mt-3 mt-lg-0">
+                <a href="/workforce/register/medical-board/" class="btn btn-light mr-2">
+                    <i class="fas fa-file-medical mr-1"></i> Forms
+                </a>
+                <button class="btn btn-warning" onclick="executeCommand('import_medical_board_workbook')">
+                    <i class="fas fa-file-import mr-1"></i> Import CHW Workbook
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div><span>Doctors</span><h3>0</h3></div>
+                    <i class="fas fa-user-md"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div><span>Specialists</span><h3>0</h3></div>
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div><span>CHWs</span><h3>11562</h3></div>
+                    <i class="fas fa-people-carry-box"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div><span>Pending Reviews</span><h3>0</h3></div>
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric mb-flow-card">
+                <div class="card-body">
+                    <div class="mb-flow-label">CHW Register</div>
+                    <div class="mb-flow-value">11409</div>
+                    <div class="text-muted small">Medical Board CHW records by year</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric mb-flow-card">
+                <div class="card-body">
+                    <div class="mb-flow-label">CHW Licences</div>
+                    <div class="mb-flow-value">0</div>
+                    <div class="text-muted small">Practising licence records</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric mb-flow-card">
+                <div class="card-body">
+                    <div class="mb-flow-label">Doctor Register</div>
+                    <div class="mb-flow-value">0</div>
+                    <div class="text-muted small">Ready for doctor/specialist imports</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric mb-flow-card">
+                <div class="card-body">
+                    <div class="mb-flow-label">Missing Data</div>
+                    <div class="mb-flow-value">15455</div>
+                    <div class="text-muted small">7070 high priority reviews</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-outline card-warning">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Records Missing Important Information</h3>
+                <span class="badge badge-warning">15455 under review</span>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-striped table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Registration No</th>
+                            <th>Missing Fields</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>Ally Mark</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-13567</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Angu Moses</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-13591</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Bando Miriam</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-13668</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Benson Kelesin</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-14520</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Beoun Handele</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-13391</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Book 11</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-8833</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Brigita Daka</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-8668</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Catherine Elizah</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-10505</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Cinderella Gaso</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-8741</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Daison Fabian</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-10382</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Dominic Wehimbei</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-14560</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Geraldine Marekasi</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-13831</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Guan Ronice</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-13153</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Gwen Girisian</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-10506</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Hekanane Epirina</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-13606</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Jackson Slaney</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-13612</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Javoambu Elijah</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-10469</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Jennifer Jerome</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-9437</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Jepeth Koiye</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-14538</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Joe Kora</td>
+                            <td>Community Health Worker</td>
+                            <td>CHW-9318</td>
+                            <td>Email address, Phone number, Gender, Date of birth, Province, Community ID, Training level</td>
+                            <td>High</td>
+                            <td>Under Review</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Medical Board Electronic Forms</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        
+                            <div class="col-md-4 mb-3">
+                                <a class="mb-action" href="/workforce/register/medical-board/CHW1/">
+                                    <strong>CHW1</strong>
+                                    <span>CHW Registration</span>
+                                </a>
+                            </div>
+                        
+                            <div class="col-md-4 mb-3">
+                                <a class="mb-action" href="/workforce/register/medical-board/MBRN/">
+                                    <strong>MBRN</strong>
+                                    <span>Renewal Registration</span>
+                                </a>
+                            </div>
+                        
+                            <div class="col-md-4 mb-3">
+                                <a class="mb-action" href="/workforce/register/medical-board/MBSP/">
+                                    <strong>MBSP</strong>
+                                    <span>Specialist Application</span>
+                                </a>
+                            </div>
+                        
+                            <div class="col-md-4 mb-3">
+                                <a class="mb-action" href="/workforce/register/medical-board/MBAC/">
+                                    <strong>MBAC</strong>
+                                    <span>Facility Accreditation</span>
+                                </a>
+                            </div>
+                        
+                            <div class="col-md-4 mb-3">
+                                <a class="mb-action" href="/workforce/register/medical-board/MBPF/">
+                                    <strong>MBPF</strong>
+                                    <span>Private Facility Checklist</span>
+                                </a>
+                            </div>
+                        
+                            <div class="col-md-4 mb-3">
+                                <a class="mb-action" href="/workforce/register/medical-board/MBTC/">
+                                    <strong>MBTC</strong>
+                                    <span>Training College Facility</span>
+                                </a>
+                            </div>
+                        
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-4 mb-2">
+                            <button class="btn btn-outline-success btn-block" onclick="executeCommand('generate_snapshot')">
+                                <i class="fas fa-camera mr-1"></i> Generate Snapshot
+                            </button>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="/dashboard/search/" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-search mr-1"></i> Registry Search
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="/dashboard/reports/monthly/excel/" class="btn btn-outline-success btn-block" data-progress-link data-download-link data-success-redirect="/dashboard/main/" data-progress-text="Preparing the Excel analytics workbook with monthly tables and charts.">
+                                <i class="fas fa-chart-column mr-1"></i> Monthly Excel
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="/dashboard/reports/monthly/pdf/" class="btn btn-outline-danger btn-block" data-progress-link data-download-link data-success-redirect="/dashboard/main/" data-progress-text="Preparing the professional monthly analytics PDF report.">
+                                <i class="fas fa-file-pdf mr-1"></i> Monthly PDF
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="/admin/workforce/" target="_blank" class="btn btn-outline-dark btn-block">
+                                <i class="fas fa-user-shield mr-1"></i> Secure Registry Data
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <button class="btn btn-outline-warning btn-block" onclick="executeCommand('audit_missing_data')">
+                                <i class="fas fa-triangle-exclamation mr-1"></i> Audit Missing Data
+                            </button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Latest CHW Workbook Import</h3>
+                </div>
+                <div class="card-body">
+                    
+                        <p class="mb-1"><strong>CHW 1985-2026 DATABASE CURRENTLY UPDATING.xlsx</strong></p>
+                        <p class="text-muted mb-2">Batch #7 · 29 Apr 2026 19:41</p>
+                        <div class="mb-import-bar mb-3"><span></span></div>
+                        <p class="mb-1">Rows processed: 11606</p>
+                        <p class="mb-0">Status: <span class="badge badge-success">Completed</span></p>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">CHW Registrations by Year</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="chwYearChart" height="170"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">CHW Province Distribution</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="chwProvinceChart" height="170"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card mb-panel mb-chart-tall">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Medical Board Registration and Licence Flow</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="medicalFlowChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Yearly Medical Board Summary</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table datatable">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Doctors</th>
+                                <th>CHWs</th>
+                                <th>Licences</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>0</td>
+                                <td>65</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2024</td>
+                                <td>0</td>
+                                <td>68</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2023</td>
+                                <td>0</td>
+                                <td>719</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2022</td>
+                                <td>0</td>
+                                <td>710</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2021</td>
+                                <td>0</td>
+                                <td>93</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2020</td>
+                                <td>0</td>
+                                <td>317</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2019</td>
+                                <td>0</td>
+                                <td>469</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2018</td>
+                                <td>0</td>
+                                <td>420</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2017</td>
+                                <td>0</td>
+                                <td>358</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2016</td>
+                                <td>0</td>
+                                <td>615</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2015</td>
+                                <td>0</td>
+                                <td>284</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2014</td>
+                                <td>0</td>
+                                <td>128</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2013</td>
+                                <td>0</td>
+                                <td>258</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2012</td>
+                                <td>0</td>
+                                <td>279</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2011</td>
+                                <td>0</td>
+                                <td>260</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2010</td>
+                                <td>0</td>
+                                <td>119</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2009</td>
+                                <td>0</td>
+                                <td>175</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2008</td>
+                                <td>0</td>
+                                <td>258</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2007</td>
+                                <td>0</td>
+                                <td>218</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2006</td>
+                                <td>0</td>
+                                <td>235</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2005</td>
+                                <td>0</td>
+                                <td>217</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2004</td>
+                                <td>0</td>
+                                <td>248</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2003</td>
+                                <td>0</td>
+                                <td>286</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2002</td>
+                                <td>0</td>
+                                <td>241</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2001</td>
+                                <td>0</td>
+                                <td>265</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2000</td>
+                                <td>0</td>
+                                <td>242</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1999</td>
+                                <td>0</td>
+                                <td>211</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1998</td>
+                                <td>0</td>
+                                <td>284</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1997</td>
+                                <td>0</td>
+                                <td>221</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1996</td>
+                                <td>0</td>
+                                <td>314</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1995</td>
+                                <td>0</td>
+                                <td>298</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1994</td>
+                                <td>0</td>
+                                <td>349</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1993</td>
+                                <td>0</td>
+                                <td>481</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1992</td>
+                                <td>0</td>
+                                <td>345</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1991</td>
+                                <td>0</td>
+                                <td>253</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1990</td>
+                                <td>0</td>
+                                <td>285</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1989</td>
+                                <td>0</td>
+                                <td>264</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1988</td>
+                                <td>0</td>
+                                <td>134</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1987</td>
+                                <td>0</td>
+                                <td>253</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1986</td>
+                                <td>0</td>
+                                <td>164</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1985</td>
+                                <td>0</td>
+                                <td>28</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1984</td>
+                                <td>0</td>
+                                <td>1</td>
+                                <td>0</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>1980</td>
+                                <td>0</td>
+                                <td>1</td>
+                                <td>0</td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Recent Medical Board Applications</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table ">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Applicant / Facility</th>
+                                <th>Licence No</th>
+                                <th>Year</th>
+                                <th>Form</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                                <tr><td colspan="8" class="text-center text-muted">No Medical Board applications yet.</td></tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Specialty Mix</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="specialtyChart" height="215"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Recent Medical Board Registration and Licence Records</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table datatable">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Name</th>
+                                <th>Professional Type</th>
+                                <th>Licence / Reg No</th>
+                                <th>Practitioner No</th>
+                                <th>Record Type</th>
+                                <th>Province</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Adesa Jeffery</td>
+                                <td>CHW</td>
+                                <td>CHW-14603</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Aileen Hora</td>
+                                <td>CHW</td>
+                                <td>CHW-14601</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Allan Rex</td>
+                                <td>CHW</td>
+                                <td>CHW-14636</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Amos So-On</td>
+                                <td>CHW</td>
+                                <td>CHW-14641</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Anne Isoaimo</td>
+                                <td>CHW</td>
+                                <td>CHW-14602</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Benjamin Gerega</td>
+                                <td>CHW</td>
+                                <td>CHW-14600</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Betty Kumaira</td>
+                                <td>CHW</td>
+                                <td>CHW-14616</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Bonny Boyope</td>
+                                <td>CHW</td>
+                                <td>CHW-14596</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Bonny Doyope</td>
+                                <td>CHW</td>
+                                <td>CHW-14596</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Cassandra Kisau</td>
+                                <td>CHW</td>
+                                <td>CHW-14612</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Clare Ketave</td>
+                                <td>CHW</td>
+                                <td>CHW-14609</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Clothilda Sapui</td>
+                                <td>CHW</td>
+                                <td>CHW-14640</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Cosma Adama</td>
+                                <td>CHW</td>
+                                <td>CHW-14589</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Cosma Adama</td>
+                                <td>CHW</td>
+                                <td>CHW-14589</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Delyn Apeng</td>
+                                <td>CHW</td>
+                                <td>CHW-14593</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Doris Malt</td>
+                                <td>CHW</td>
+                                <td>CHW-14622</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Enslem Naria</td>
+                                <td>CHW</td>
+                                <td>CHW-14626</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Essy Kuriya</td>
+                                <td>CHW</td>
+                                <td>CHW-14617</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Felix Kasemsem</td>
+                                <td>CHW</td>
+                                <td>CHW-14607</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Fiona Badei</td>
+                                <td>CHW</td>
+                                <td>CHW-14595</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Francis Lako</td>
+                                <td>CHW</td>
+                                <td>CHW-14618</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Harry Kimin</td>
+                                <td>CHW</td>
+                                <td>CHW-14610</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Henrietta Oza</td>
+                                <td>CHW</td>
+                                <td>CHW-14631</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Jamilah Omie</td>
+                                <td>CHW</td>
+                                <td>CHW-14630</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Jaylyn Jikihori</td>
+                                <td>CHW</td>
+                                <td>CHW-14604</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Jeffery Ae</td>
+                                <td>CHW</td>
+                                <td>CHW-14590</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Jenny Pipon</td>
+                                <td>CHW</td>
+                                <td>CHW-14633</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Joancherry Revui Gou</td>
+                                <td>CHW</td>
+                                <td>CHW-14635</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Joe Jnr Aku</td>
+                                <td>CHW</td>
+                                <td>CHW-14594</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Joe Malu</td>
+                                <td>CHW</td>
+                                <td>CHW-14621</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Joe Njr Aku</td>
+                                <td>CHW</td>
+                                <td>CHW-14594</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Joseph Kuaru</td>
+                                <td>CHW</td>
+                                <td>CHW-14615</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Joseph W. Dama</td>
+                                <td>CHW</td>
+                                <td>CHW-14598</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Joyce Raymond</td>
+                                <td>CHW</td>
+                                <td>CHW-14634</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Leo Ofoi</td>
+                                <td>CHW</td>
+                                <td>CHW-14628</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Lita Koi</td>
+                                <td>CHW</td>
+                                <td>CHW-14613</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Lorry Munewari</td>
+                                <td>CHW</td>
+                                <td>CHW-14625</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Maggie Kinde</td>
+                                <td>CHW</td>
+                                <td>CHW-14611</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Mariestella Niangu</td>
+                                <td>CHW</td>
+                                <td>CHW-14627</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Mary Kola</td>
+                                <td>CHW</td>
+                                <td>CHW-14614</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Mary Ofoi</td>
+                                <td>CHW</td>
+                                <td>CHW-14629</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Matilda Aiso</td>
+                                <td>CHW</td>
+                                <td>CHW-14591</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Matilda Tuta</td>
+                                <td>CHW</td>
+                                <td>CHW-14642</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Nelly Kenewa</td>
+                                <td>CHW</td>
+                                <td>CHW-14608</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Norma Ropa</td>
+                                <td>CHW</td>
+                                <td>CHW-14638</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Patrick Fagau</td>
+                                <td>CHW</td>
+                                <td>CHW-14599</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Peter Yakam</td>
+                                <td>CHW</td>
+                                <td>CHW-14643</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Roger Amaia</td>
+                                <td>CHW</td>
+                                <td>CHW-14592</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Ronlice Makuk</td>
+                                <td>CHW</td>
+                                <td>CHW-14620</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Rose Mark</td>
+                                <td>CHW</td>
+                                <td>CHW-14623</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Ruth John</td>
+                                <td>CHW</td>
+                                <td>CHW-14605</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Shyrutz Rex</td>
+                                <td>CHW</td>
+                                <td>CHW-14637</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Sivia Siam</td>
+                                <td>CHW</td>
+                                <td>CHW-14639</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Theresa Kairuku</td>
+                                <td>CHW</td>
+                                <td>CHW-14606</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Timothy Edward</td>
+                                <td>CHW</td>
+                                <td>CHW-14597</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Trevor Pepe</td>
+                                <td>CHW</td>
+                                <td>CHW-14632</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Veline Kakaula</td>
+                                <td>CHW</td>
+                                <td>CHW-14619</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Willie Mokai</td>
+                                <td>CHW</td>
+                                <td>CHW-14624</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>National Capital District</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Amenda Mange</td>
+                                <td>CHW</td>
+                                <td>CHW-14268</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>Sandaun Province</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>2025</td>
+                                <td>Delma Asik</td>
+                                <td>CHW</td>
+                                <td>CHW-14256</td>
+                                <td>-</td>
+                                <td>Workforce Listing</td>
+                                <td>Sandaun Province</td>
+                                <td>CHW</td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+            </div>
+        </section>
+    </div>
+
+<footer class="main-footer text-sm ndoh-official-footer">
+        <strong>National Department of Health</strong> Regulatory Bodies Online Workforce System
+        <span class="mx-2 text-muted">|</span>
+        <span>AOPI Building Centre, Waigani Drive, Tower One</span>
+        <span class="mx-2 text-muted">|</span>
+        <a href="tel:+6753013634">(+675) 301 3634</a>
+        <span class="mx-2 text-muted">|</span>
+        <a href="mailto:health_ministry@health.gov.pg">health_ministry@health.gov.pg</a>
+        <div class="float-right d-none d-lg-inline">
+            <a href="https://www.health.gov.pg/index.html" target="_blank" rel="noopener">Official NDOH website</a>
+        </div>
+    </footer>
+</div>
+
+<div class="helpdesk-widget staff-ai-widget" id="helpdesk-widget" aria-hidden="true" data-assistant-mode="staff" data-assistant-endpoint="/dashboard/staff-ai/chat/">
+    <div class="helpdesk-header">
+        <div>
+            <h5><i class="fas fa-brain mr-1"></i> AI Staff Assistant</h5>
+            <small>Role-aware operational support</small>
+        </div>
+        <button type="button" class="helpdesk-close" id="helpdesk-close" aria-label="Close staff assistant">&times;</button>
+    </div>
+    <div class="helpdesk-chat-panel" id="helpdesk-widget-messages">
+        <div class="helpdesk-message assistant">
+            <strong>How can I help?</strong>
+            <p>Ask about applications, pending reviews, missing data, imports, duplicate records, reports, financial scope, or what action to take next.</p>
+        </div>
+    </div>
+    <form class="helpdesk-form" id="helpdesk-widget-form">
+        <div class="input-group">
+            <input type="text" class="form-control" id="helpdesk-widget-question" placeholder="Ask a staff operations question..." autocomplete="off">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </form>
+    <div class="helpdesk-suggestions">
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="What should I review first today?">Review priorities</button>
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="Do we have missing data to clear?">Missing data</button>
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="Which report should I generate for management?">Reports</button>
+        <a href="/dashboard/staff-ai/" class="helpdesk-suggestion">Open full assistant page</a>
+    </div>
+</div>
+<button type="button" class="helpdesk-launcher" id="helpdesk-launcher" data-draggable-assistant="1">
+    <i class="fas fa-brain mr-1"></i> AI Staff Assistant
+</button>
+
+<div class="app-loading-overlay" id="app-loading-overlay" aria-hidden="true">
+    <div class="app-loading-card">
+        <h4 id="app-loading-title">Processing request</h4>
+        <p id="app-loading-text">Please wait while the platform prepares your import or export.</p>
+        <div class="app-loading-progress">
+            <div class="app-loading-progress-bar"></div>
+        </div>
+        <div class="app-loading-meta" id="app-loading-meta">The progress bar shows active processing while files are being copied, aligned, or generated.</div>
+        <div class="app-loading-actions" id="app-loading-actions">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="app-loading-back">
+                <i class="fas fa-arrow-left mr-1"></i> Back
+            </button>
+            <button type="button" class="btn btn-success btn-sm" id="app-loading-close">
+                <i class="fas fa-check mr-1"></i> Continue
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="/static/vendor/jquery/jquery.min.js"></script>
+<script>window.jQuery || window.ndohLoadScript(window.ndohAssets.jqueryJs, function(){ return !!window.jQuery; }, 'ndoh-jquery-cdn');</script>
+<script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
+<script src="/static/vendor/adminlte/js/adminlte.min.js"></script>
+<script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
+<script src="/static/vendor/datatables/js/dataTables.min.js"></script>
+<script>if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) { window.ndohLoadScript(window.ndohAssets.datatablesJs, function(){ return !!(window.jQuery && jQuery.fn && jQuery.fn.DataTable); }, 'ndoh-datatables-cdn-js'); }</script>
+<script src="/static/vendor/datatables/js/dataTables.bootstrap5.min.js"></script>
+<script src="/static/vendor/axios/axios.min.js"></script>
+<script>window.axios || window.ndohLoadScript(window.ndohAssets.axiosJs, function(){ return !!window.axios; }, 'ndoh-axios-cdn-js');</script>
+<script src="/static/vendor/chartjs/chart.umd.min.js"></script>
+<script>window.Chart || window.ndohLoadScript(window.ndohAssets.chartJs, function(){ return !!window.Chart; }, 'ndoh-chart-cdn-js');</script>
+<script>
+window.showAppLoading = function (title, text, meta) {
+    const overlay = document.getElementById('app-loading-overlay');
+    if (!overlay) {
+        return;
+    }
+    if (window.ndohSuccessTimer) {
+        window.clearTimeout(window.ndohSuccessTimer);
+        window.ndohSuccessTimer = null;
+    }
+    const titleNode = document.getElementById('app-loading-title');
+    const textNode = document.getElementById('app-loading-text');
+    const metaNode = document.getElementById('app-loading-meta');
+    if (titleNode && title) {
+        titleNode.textContent = title;
+    }
+    if (textNode && text) {
+        textNode.textContent = text;
+    }
+    if (metaNode && meta) {
+        metaNode.textContent = meta;
+    }
+    overlay.classList.remove('is-success');
+    overlay.classList.add('is-visible');
+    overlay.setAttribute('aria-hidden', 'false');
+};
+
+window.showAppSuccess = function (title, text, meta, redirectUrl, delay) {
+    const overlay = document.getElementById('app-loading-overlay');
+    if (!overlay) {
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+        }
+        return;
+    }
+    const titleNode = document.getElementById('app-loading-title');
+    const textNode = document.getElementById('app-loading-text');
+    const metaNode = document.getElementById('app-loading-meta');
+    if (titleNode) {
+        titleNode.textContent = title || 'Successful';
+    }
+    if (textNode) {
+        textNode.textContent = text || 'The request completed successfully.';
+    }
+    if (metaNode) {
+        metaNode.textContent = meta || 'Redirecting you back to the dashboard.';
+    }
+    overlay.classList.add('is-visible', 'is-success');
+    overlay.setAttribute('aria-hidden', 'false');
+    if (redirectUrl) {
+        window.ndohSuccessTimer = window.setTimeout(function () {
+            window.location.href = redirectUrl;
+        }, delay || 1400);
+    } else {
+        window.ndohSuccessTimer = window.setTimeout(function () {
+            window.hideAppLoading();
+        }, delay || 5000);
+    }
+};
+
+window.hideAppLoading = function () {
+    const overlay = document.getElementById('app-loading-overlay');
+    if (!overlay) {
+        return;
+    }
+    if (window.ndohSuccessTimer) {
+        window.clearTimeout(window.ndohSuccessTimer);
+        window.ndohSuccessTimer = null;
+    }
+    overlay.classList.remove('is-visible', 'is-success');
+    overlay.setAttribute('aria-hidden', 'true');
+};
+
+window.ndohEscapeHtml = function (value) {
+    return String(value || '').replace(/[&<>"']/g, function (character) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[character];
+    });
+};
+
+window.ndohGetCsrfToken = function () {
+    const cookieMatch = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    if (cookieMatch && cookieMatch[1]) {
+        return decodeURIComponent(cookieMatch[1]);
+    }
+    const templateToken = 'Q4tYVjmmpN9kCtMK35VBOdWRuto8rBNZHuo0i0a43FAzlQxsEGNB8uXynnaathrl';
+    return templateToken && templateToken !== 'NOTPROVIDED' ? templateToken : '';
+};
+
+window.ndohAskHelpdesk = function (question, endpoint) {
+    return fetch(endpoint || "/notifications/helpdesk/api/", {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.ndohGetCsrfToken()
+        },
+        body: JSON.stringify({ question: question })
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error('Helpdesk request failed.');
+        }
+        return response.json();
+    });
+};
+
+window.ndohAppendHelpdeskMessage = function (container, message, type) {
+    const node = document.createElement('div');
+    node.className = 'helpdesk-message ' + (type || 'assistant');
+    node.innerHTML = '<p>' + window.ndohEscapeHtml(message) + '</p>';
+    container.appendChild(node);
+    container.scrollTop = container.scrollHeight;
+};
+
+window.ndohAppendHelpdeskAnswer = function (container, data) {
+    const bullets = (data.bullets || []).map(function (item) {
+        return '<li>' + window.ndohEscapeHtml(item) + '</li>';
+    }).join('');
+    const links = (data.links || []).map(function (link) {
+        return '<a href="' + window.ndohEscapeHtml(link.url) + '">' + window.ndohEscapeHtml(link.label) + '</a>';
+    }).join('');
+    const suggestions = (data.suggestions || []).length
+        ? '<div class="small text-muted mt-2">Related: ' + data.suggestions.map(window.ndohEscapeHtml).join(', ') + '</div>'
+        : '';
+    const node = document.createElement('div');
+    node.className = 'helpdesk-message assistant';
+    node.innerHTML = '<strong>' + window.ndohEscapeHtml(data.title || 'Helpdesk') + '</strong>'
+        + '<p>' + window.ndohEscapeHtml(data.answer || 'Please create an enquiry for more help.') + '</p>'
+        + (bullets ? '<ul class="mb-2">' + bullets + '</ul>' : '')
+        + (links ? '<div class="helpdesk-links">' + links + '</div>' : '')
+        + suggestions;
+    container.appendChild(node);
+    container.scrollTop = container.scrollHeight;
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    const helpdeskWidget = document.getElementById('helpdesk-widget');
+    const helpdeskLauncher = document.getElementById('helpdesk-launcher');
+    const helpdeskClose = document.getElementById('helpdesk-close');
+    const helpdeskForm = document.getElementById('helpdesk-widget-form');
+    const helpdeskInput = document.getElementById('helpdesk-widget-question');
+    const helpdeskMessages = document.getElementById('helpdesk-widget-messages');
+    const loadingClose = document.getElementById('app-loading-close');
+    const loadingBack = document.getElementById('app-loading-back');
+
+    if (loadingClose) {
+        loadingClose.addEventListener('click', function () {
+            window.hideAppLoading();
+        });
+    }
+
+    if (loadingBack) {
+        loadingBack.addEventListener('click', function () {
+            window.hideAppLoading();
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+            window.location.href = "/dashboard/main/";
+        });
+    }
+
+    function submitHelpdeskQuestion(question) {
+        if (!question || !helpdeskMessages) {
+            return;
+        }
+        window.ndohAppendHelpdeskMessage(helpdeskMessages, question, 'user');
+        const waitingNode = document.createElement('div');
+        waitingNode.className = 'helpdesk-message assistant';
+        waitingNode.innerHTML = '<p>Preparing an answer...</p>';
+        helpdeskMessages.appendChild(waitingNode);
+        helpdeskMessages.scrollTop = helpdeskMessages.scrollHeight;
+        const assistantEndpoint = helpdeskWidget ? helpdeskWidget.getAttribute('data-assistant-endpoint') : '';
+        window.ndohAskHelpdesk(question, assistantEndpoint).then(function (data) {
+            waitingNode.remove();
+            window.ndohAppendHelpdeskAnswer(helpdeskMessages, data);
+        }).catch(function () {
+            waitingNode.remove();
+            window.ndohAppendHelpdeskMessage(helpdeskMessages, 'Sorry, I could not answer that right now. Please create an enquiry for the registrar.', 'assistant');
+        });
+    }
+
+    if (helpdeskWidget && helpdeskLauncher) {
+        helpdeskLauncher.addEventListener('click', function (event) {
+            event.preventDefault();
+            helpdeskWidget.classList.toggle('is-open');
+            helpdeskWidget.setAttribute('aria-hidden', helpdeskWidget.classList.contains('is-open') ? 'false' : 'true');
+            if (helpdeskWidget.classList.contains('is-open') && helpdeskInput) {
+                helpdeskInput.focus();
+            }
+        });
+    }
+
+    if (helpdeskClose && helpdeskWidget) {
+        helpdeskClose.addEventListener('click', function () {
+            helpdeskWidget.classList.remove('is-open');
+            helpdeskWidget.setAttribute('aria-hidden', 'true');
+        });
+    }
+
+    if (helpdeskForm && helpdeskInput) {
+        helpdeskForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const question = helpdeskInput.value.trim();
+            if (!question) return;
+            helpdeskInput.value = '';
+            submitHelpdeskQuestion(question);
+        });
+    }
+
+    document.querySelectorAll('[data-helpdesk-question]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const question = button.getAttribute('data-helpdesk-question');
+            if (helpdeskWidget) {
+                helpdeskWidget.classList.add('is-open');
+                helpdeskWidget.setAttribute('aria-hidden', 'false');
+            }
+            submitHelpdeskQuestion(question);
+        });
+    });
+
+    if (helpdeskLauncher && helpdeskLauncher.getAttribute('data-draggable-assistant') === '1') {
+        const savedPosition = localStorage.getItem('ndohAssistantPosition');
+        let dragged = false;
+        let pointerActive = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function applyAssistantPosition(left, top) {
+            const rect = helpdeskLauncher.getBoundingClientRect();
+            const maxLeft = window.innerWidth - rect.width - 8;
+            const maxTop = window.innerHeight - rect.height - 8;
+            const nextLeft = clamp(left, 8, Math.max(8, maxLeft));
+            const nextTop = clamp(top, 8, Math.max(8, maxTop));
+            helpdeskLauncher.style.left = nextLeft + 'px';
+            helpdeskLauncher.style.top = nextTop + 'px';
+            helpdeskLauncher.style.right = 'auto';
+            helpdeskLauncher.style.bottom = 'auto';
+            if (helpdeskWidget) {
+                helpdeskWidget.style.right = 'auto';
+                helpdeskWidget.style.left = clamp(nextLeft, 8, Math.max(8, window.innerWidth - helpdeskWidget.offsetWidth - 8)) + 'px';
+                helpdeskWidget.style.bottom = 'auto';
+                helpdeskWidget.style.top = clamp(nextTop - helpdeskWidget.offsetHeight - 12, 8, Math.max(8, window.innerHeight - helpdeskWidget.offsetHeight - 8)) + 'px';
+            }
+        }
+
+        if (savedPosition) {
+            try {
+                const position = JSON.parse(savedPosition);
+                if (Number.isFinite(position.left) && Number.isFinite(position.top)) {
+                    applyAssistantPosition(position.left, position.top);
+                }
+            } catch (error) {
+                localStorage.removeItem('ndohAssistantPosition');
+            }
+        }
+
+        helpdeskLauncher.addEventListener('pointerdown', function (event) {
+            pointerActive = true;
+            dragged = false;
+            const rect = helpdeskLauncher.getBoundingClientRect();
+            offsetX = event.clientX - rect.left;
+            offsetY = event.clientY - rect.top;
+            helpdeskLauncher.setPointerCapture(event.pointerId);
+        });
+
+        helpdeskLauncher.addEventListener('pointermove', function (event) {
+            if (!pointerActive) {
+                return;
+            }
+            dragged = true;
+            applyAssistantPosition(event.clientX - offsetX, event.clientY - offsetY);
+        });
+
+        helpdeskLauncher.addEventListener('pointerup', function (event) {
+            if (!pointerActive) {
+                return;
+            }
+            pointerActive = false;
+            const rect = helpdeskLauncher.getBoundingClientRect();
+            localStorage.setItem('ndohAssistantPosition', JSON.stringify({ left: rect.left, top: rect.top }));
+            window.setTimeout(function () {
+                dragged = false;
+            }, 0);
+        });
+
+        helpdeskLauncher.addEventListener('click', function (event) {
+            if (dragged) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+
+        window.addEventListener('resize', function () {
+            const rect = helpdeskLauncher.getBoundingClientRect();
+            applyAssistantPosition(rect.left, rect.top);
+        });
+    }
+
+    document.querySelectorAll('[data-toggle]').forEach(function (element) {
+        if (!element.hasAttribute('data-bs-toggle')) {
+            element.setAttribute('data-bs-toggle', element.getAttribute('data-toggle'));
+        }
+        if (element.hasAttribute('data-target') && !element.hasAttribute('data-bs-target')) {
+            element.setAttribute('data-bs-target', element.getAttribute('data-target'));
+        }
+    });
+
+    document.querySelectorAll('[data-dismiss]').forEach(function (element) {
+        if (!element.hasAttribute('data-bs-dismiss')) {
+            element.setAttribute('data-bs-dismiss', element.getAttribute('data-dismiss'));
+        }
+    });
+
+    function initializeDataTables(attempt) {
+        attempt = attempt || 1;
+        if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) {
+            if (attempt < 12) {
+                window.setTimeout(function () {
+                    initializeDataTables(attempt + 1);
+                }, 250);
+            }
+            return;
+        }
+
+        jQuery('.datatable').each(function () {
+            const $table = jQuery(this);
+            if ($table.attr('data-ndoh-datatables-ready') === '1') {
+                return;
+            }
+            const headerCount = $table.find('thead th').length;
+            const hasInvalidBodyRow = $table.find('tbody tr').toArray().some(function (row) {
+                const $row = jQuery(row);
+                const bodyCellCount = $row.children('th, td').length;
+                const hasColspan = $row.children('[colspan]').length > 0;
+                return hasColspan || (bodyCellCount > 0 && bodyCellCount !== headerCount);
+            });
+
+            if (headerCount === 0 || hasInvalidBodyRow) {
+                return;
+            }
+
+            $table.DataTable({
+                pageLength: 25,
+                order: [],
+                responsive: true,
+                autoWidth: false
+            });
+            $table.attr('data-ndoh-datatables-ready', '1');
+        });
+    }
+
+    initializeDataTables();
+
+    document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            const label = form.getAttribute('data-loading-text') || 'Submitting data to the registry.';
+            const meta = form.getAttribute('data-loading-meta') || 'The status bar will remain active while files or records are being processed.';
+            window.showAppLoading('Working on your request', label, meta);
+        });
+    });
+
+    document.querySelectorAll('[data-progress-link]').forEach(function (element) {
+        element.addEventListener('click', function (event) {
+            const label = element.getAttribute('data-progress-text') || 'Preparing your file export.';
+            const redirectUrl = element.getAttribute('data-success-redirect') || (window.location.pathname + window.location.search);
+
+            if (element.hasAttribute('data-download-link')) {
+                event.preventDefault();
+                const href = element.getAttribute('href');
+                if (!href) {
+                    return;
+                }
+                window.showAppLoading('Preparing file', label, 'Please wait while the report is generated.');
+                fetch(href, { credentials: 'same-origin' })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('The export could not be prepared.');
+                        }
+                        const disposition = response.headers.get('Content-Disposition') || '';
+                        let filename = element.getAttribute('download') || 'ndoh-export';
+                        const filenameMatch = disposition.match(/filename="?([^"]+)"?/i);
+                        if (filenameMatch && filenameMatch[1]) {
+                            filename = filenameMatch[1];
+                        }
+                        return response.blob().then(function (blob) {
+                            return { blob: blob, filename: filename };
+                        });
+                    })
+                    .then(function (file) {
+                        const objectUrl = URL.createObjectURL(file.blob);
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = objectUrl;
+                        downloadLink.download = file.filename;
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        downloadLink.remove();
+                        window.setTimeout(function () {
+                            URL.revokeObjectURL(objectUrl);
+                        }, 1500);
+                        window.showAppSuccess('Export successful', 'Your report file has been generated and downloaded.', 'Redirecting you back to your dashboard.', redirectUrl, 1600);
+                    })
+                    .catch(function (error) {
+                        window.hideAppLoading();
+                        alert('Export failed: ' + error.message);
+                    });
+                return;
+            }
+
+            window.showAppLoading('Preparing file', label, 'The export window will open once the file is ready.');
+            if (element.target === '_blank') {
+                window.setTimeout(function () {
+                    window.showAppSuccess('Opened successfully', 'The file or guide was opened in a new window.', 'You can continue working on this page.', null, 0);
+                }, 900);
+            }
+        });
+    });
+
+    const logoutUrl = "/accounts/logout/";
+    const sessionTimeoutMs = 15 * 60 * 1000;
+    let timer;
+
+    function resetTimer() {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            window.location.href = logoutUrl;
+        }, sessionTimeoutMs);
+    }
+
+    if (document.body && !document.body.classList.contains('login-page')) {
+        ['click', 'keydown', 'mousemove', 'scroll', 'touchstart'].forEach(function (eventName) {
+            document.addEventListener(eventName, resetTimer, { passive: true });
+        });
+        resetTimer();
+    }
+
+    document.querySelectorAll('[data-staff-toast]').forEach(function (element) {
+        if (window.bootstrap && window.bootstrap.Toast) {
+            const toast = new window.bootstrap.Toast(element, { delay: 8000 });
+            toast.show();
+        }
+    });
+});
+</script>
+
+<script>
+function executeCommand(command) {
+    if (!confirm('Run this Medical Board operation now?')) {
+        return;
+    }
+    if (window.showAppLoading) {
+        window.showAppLoading('Running Medical Board task', 'Running Medical Board import/export task. This may take a little while for large workbooks.', 'The status bar remains active while records and statistics are updated.');
+    }
+    axios.post('/dashboard/execute-command/', {command: command}, {
+        headers: {'X-CSRFToken': 'Q4tYVjmmpN9kCtMK35VBOdWRuto8rBNZHuo0i0a43FAzlQxsEGNB8uXynnaathrl'}
+    }).then((response) => {
+        const message = response.data && response.data.message ? response.data.message : 'The Medical Board task completed successfully.';
+        if (window.showAppSuccess) {
+            window.showAppSuccess('Successful', message, 'Redirecting you back to your dashboard.', '/dashboard/main/', 1600);
+        } else {
+            location.href = '/dashboard/main/';
+        }
+    }).catch(error => {
+        if (window.hideAppLoading) window.hideAppLoading();
+        alert('Error: ' + (error.response?.data?.error || error.message));
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const palette = ['#176b52', '#c56b1d', '#6f8f72', '#9a4f21', '#2f7f74', '#e0a246', '#5e6f64', '#b45f34', '#93b88d', '#d7b16d'];
+    const medicalFlowChart = document.getElementById('medicalFlowChart');
+    if (medicalFlowChart && window.Chart) {
+        new Chart(medicalFlowChart, {
+            type: 'line',
+            data: {
+                labels: [2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+                datasets: [
+                    {label: 'Doctors / Specialists', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], borderColor: '#9a4f21', backgroundColor: 'rgba(154, 79, 33, .12)', tension: .28, fill: true},
+                    {label: 'CHW Register', data: [258, 175, 119, 260, 279, 258, 128, 284, 615, 358, 420, 469, 317, 93, 710, 719, 68, 65], borderColor: '#176b52', backgroundColor: 'rgba(23, 107, 82, .12)', tension: .28, fill: true},
+                    {label: 'Practising Licences', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], borderColor: '#c56b1d', backgroundColor: 'rgba(197, 107, 29, .12)', tension: .28, fill: true}
+                ]
+            },
+            options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {position: 'bottom'}}, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}}
+        });
+    }
+    new Chart(document.getElementById('chwYearChart'), {
+        type: 'bar',
+        data: {
+            labels: [1994, 1993, 1992, 1991, 1990, 1989, 1988, 1987, 1986, 1985, 1984, 1980],
+            datasets: [{label: 'CHW records', data: [349, 481, 345, 253, 285, 264, 134, 253, 164, 28, 1, 1], backgroundColor: '#176b52'}]
+        },
+        options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true}}}
+    });
+    new Chart(document.getElementById('chwProvinceChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Northern (Oro) Province', 'Milne Bay Province', 'Province not captured', 'Madang Province', 'National Capital District', 'Western Province', 'Enga Province', 'Simbu Province', 'Sandaun Province', 'Southern Highlands Province'],
+            datasets: [{data: [2475, 420, 2655, 693, 505, 1195, 359, 264, 545, 342], backgroundColor: palette}]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+    });
+    new Chart(document.getElementById('specialtyChart'), {
+        type: 'polarArea',
+        data: {
+            labels: ['No specialty data loaded'],
+            datasets: [{data: [0], backgroundColor: palette}]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+    });
+});
+</script>
+
+</body>
+</html>

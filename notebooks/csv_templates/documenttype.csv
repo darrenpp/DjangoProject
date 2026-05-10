@@ -1,0 +1,10 @@
+name,description,is_required
+Passport Photo,Recent passport size photo,True
+Academic Transcript / Certificate,Official academic transcript or certificate,True
+Birth Certificate / National ID,Proof of identity,True
+Competency Statement (G4/G5/G6),Supervisor competency endorsement,False
+CV / Resume,Current curriculum vitae,False
+Police Clearance,Police record clearance,False
+Medical Fitness Certificate,Fitness certification from approved provider,False
+Receipt of Payment,Payment receipt for application,True
+Logbook / Practical Record,Clinical or practical logbook,False

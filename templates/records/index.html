@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load record_tags %}   <!-- ← Corrected here -->
+
+{% block title %}Records Hub{% endblock %}
+{% block title_label %}All Records Hub{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0">All Models</h3>
+        {% if request.user.role == 'admin' and request.user.is_superuser %}
+        <a href="{% url 'population_guide' %}" class="btn btn-sm btn-light">Population Guide</a>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover datatable mb-0">
+            <thead>
+            <tr>
+                <th>Model</th>
+                <th>Records</th>
+                <th class="text-right">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in models %}
+                <tr>
+                    <td>{{ item.label }}</td>
+                    <td>{{ item.count }}</td>
+                    <td class="text-right">
+                        <a href="{% url 'record_list' item.slug %}" class="btn btn-sm btn-primary">Open</a>
+                        <a href="{% url 'record_create' item.slug %}" class="btn btn-sm btn-success">Add</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

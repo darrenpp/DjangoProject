@@ -1,0 +1,446 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}System Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-dark">
+            <div class="inner"><h3>{{ import_record_count|default:0 }}</h3><p>N-DATA Imported Rows</p></div>
+            <div class="icon"><i class="fas fa-database"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner"><h3>{{ nursing_count|default:0 }}</h3><p>Nursing Professionals</p></div>
+            <div class="icon"><i class="fas fa-user-nurse"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>{{ midwife_count|default:0 }}</h3><p>Midwives</p></div>
+            <div class="icon"><i class="fas fa-baby"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>{{ import_latest_year|default:"-" }}</h3><p>Latest Data Year</p></div>
+            <div class="icon"><i class="fas fa-calendar-check"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner"><h3>{{ total_users|default:0 }}</h3><p>Total Users</p></div>
+            <div class="icon"><i class="fas fa-users"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>{{ pending_applications|default:0 }}</h3><p>Pending Applications</p></div>
+            <div class="icon"><i class="fas fa-hourglass-half"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner"><h3>{{ receipt_completed_count|default:0 }}</h3><p>Completed Receipts</p></div>
+            <div class="icon"><i class="fas fa-receipt"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>{{ institution_count|default:0 }}</h3><p>PNG Nursing Schools</p></div>
+            <div class="icon"><i class="fas fa-school"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner"><h3>{{ missing_data_review_count|default:0 }}</h3><p>Missing Data Reviews</p></div>
+            <div class="icon"><i class="fas fa-triangle-exclamation"></i></div>
+        </div>
+    </div>
+</div>
+
+{% include "dashboard/_dashboard_search_panel.html" with search_placeholder="Search all staff, applications, licence numbers, facilities, provinces, and imported records..." %}
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-outline card-primary table-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">System Controls</h3>
+                <div>
+                    <a href="{% url 'records_home' %}" class="btn btn-sm btn-light">Records Hub</a>
+                    <a href="{% url 'workforce_flow' %}" class="btn btn-sm btn-light">Workforce Flow</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <button class="btn btn-dark btn-block" onclick="executeCommand('import_ndata_workbook', 'Importing the N-DATA workbook and updating all statistics tables.')">Import N-DATA Workbook</button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary btn-block" onclick="executeCommand('bootstrap_reference_data')">Bootstrap Reference Data</button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-info btn-block" onclick="executeCommand('import_workforce_files')">Import Workforce Files</button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success btn-block" onclick="executeCommand('generate_snapshot')">Generate Snapshot</button>
+                    </div>
+                    <div class="col-md-3 mt-2">
+                        <a href="{% url 'export_monthly_analytics_excel' %}" class="btn btn-success btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the Excel analytics workbook with monthly tables and charts.">Monthly Excel Report</a>
+                    </div>
+                    <div class="col-md-3 mt-2">
+                        <a href="{% url 'export_monthly_analytics_pdf' %}" class="btn btn-danger btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the professional monthly analytics PDF report.">Monthly PDF Report</a>
+                    </div>
+                    <div class="col-md-3 mt-2">
+                        <button class="btn btn-warning btn-block" onclick="executeCommand('audit_missing_data', 'Auditing incomplete records and sending profile/email alerts.')">Audit Missing Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "dashboard/_missing_data_reviews_table.html" %}
+
+<div class="row mt-4">
+    <div class="col-lg-4">
+        <div class="card card-outline card-dark">
+            <div class="card-header"><h3 class="card-title mb-0">Latest Workbook Import</h3></div>
+            <div class="card-body">
+                {% if latest_import_batch %}
+                <div class="mb-3">
+                    <div class="small text-muted">Source</div>
+                    <div class="font-weight-bold">{{ latest_import_batch.source_file_name }}</div>
+                    <div class="small text-muted">Completed {{ latest_import_batch.completed_at|date:"d M Y H:i" }}</div>
+                </div>
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ latest_import_progress }}%">{{ latest_import_progress }}%</div>
+                </div>
+                <div class="row text-sm">
+                    <div class="col-6 mb-2"><strong>Records:</strong> {{ import_record_count|default:0 }}</div>
+                    <div class="col-6 mb-2"><strong>Latest Year:</strong> {{ import_latest_year|default:"-" }}</div>
+                    <div class="col-6 mb-2"><strong>Sheets:</strong> {{ latest_import_batch.processed_sheets }}/{{ latest_import_batch.total_sheets }}</div>
+                    <div class="col-6 mb-2"><strong>Status:</strong> {{ latest_import_batch.status|title }}</div>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No N-DATA workbook batch has been imported yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-outline card-success">
+            <div class="card-header"><h3 class="card-title mb-0">Latest Snapshot</h3></div>
+            <div class="card-body">
+                {% if latest_snapshot %}
+                <div class="row text-sm">
+                    <div class="col-6 mb-2"><strong>Year:</strong> {{ latest_snapshot.year }}</div>
+                    <div class="col-6 mb-2"><strong>Total:</strong> {{ latest_snapshot.total_active_workers }}</div>
+                    <div class="col-6 mb-2"><strong>Nurses:</strong> {{ latest_snapshot.total_nurses }}</div>
+                    <div class="col-6 mb-2"><strong>Midwives:</strong> {{ latest_snapshot.total_midwives }}</div>
+                    <div class="col-6 mb-2"><strong>CHW:</strong> {{ latest_snapshot.total_chw }}</div>
+                    <div class="col-6 mb-2"><strong>Near Retirement:</strong> {{ latest_snapshot.nearing_retirement }}</div>
+                </div>
+                <a href="/admin/workforce/workforcesnapshot/" class="btn btn-sm btn-outline-success mt-2">
+                    <i class="fas fa-table mr-1"></i> Open Snapshots
+                </a>
+                {% else %}
+                <p class="text-muted mb-0">No workforce snapshot has been generated yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-outline card-secondary">
+            <div class="card-header"><h3 class="card-title mb-0">Recent Import Runs</h3></div>
+            <div class="card-body p-0">
+                {% if recent_import_batches_info %}
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr><th>Workbook</th><th>Status</th><th>Progress</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_import_batches_info %}
+                        <tr>
+                            <td>
+                                <div class="font-weight-bold">{{ item.batch.source_file_name }}</div>
+                                <div class="small text-muted">{{ item.batch.started_at|date:"d M Y H:i" }}</div>
+                            </td>
+                            <td>{{ item.batch.status|title }}</td>
+                            <td style="min-width:160px;">
+                                <div class="progress progress-xs mb-1">
+                                    <div class="progress-bar {% if item.batch.status == 'completed' %}bg-success{% elif item.batch.status == 'failed' %}bg-danger{% else %}bg-info{% endif %}" style="width: {{ item.progress }}%"></div>
+                                </div>
+                                <div class="small text-muted">{{ item.batch.processed_rows }}/{{ item.batch.total_rows|default:item.batch.total_sheets }}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-muted">No import activity recorded yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-4">
+        <div class="card card-outline card-success">
+            <div class="card-header"><h3 class="card-title mb-0">Workforce Trend</h3></div>
+            <div class="card-body"><canvas id="workforceTrendChart" height="220"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-outline card-warning">
+            <div class="card-header"><h3 class="card-title mb-0">Application Status</h3></div>
+            <div class="card-body"><canvas id="applicationStatusChart" height="220"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-outline card-info">
+            <div class="card-header"><h3 class="card-title mb-0">Receipt Tracking</h3></div>
+            <div class="card-body"><canvas id="receiptChart" height="220"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-outline card-primary table-card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Institutions and Graduands</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>Institution</th>
+                            <th>Type</th>
+                            <th>Graduands</th>
+                            <th>Records</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in graduand_by_institution %}
+                        <tr>
+                            <td>{{ item.institution.name }}</td>
+                            <td>{{ item.institution.type|default:"-" }}</td>
+                            <td>
+                                <div class="font-weight-bold mb-2">{{ item.count }}</div>
+                                <ul class="mb-0 pl-3">
+                                    {% for graduand in item.graduands|slice:":5" %}
+                                        <li>{{ graduand.first_name }} {{ graduand.last_name }} ({{ graduand.registration_no }})</li>
+                                    {% empty %}
+                                        <li class="text-muted">No graduands</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>
+                                <a href="{% url 'record_list' 'graduand' %}" class="btn btn-sm btn-outline-primary">Open List</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'record_create' 'graduand' %}" class="btn btn-sm btn-success">Add Graduand</a>
+                                <a href="{% url 'record_list' 'graduand' %}" class="btn btn-sm btn-info">CRUD</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">No institutions found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-outline card-secondary table-card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Facilities and Workers</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>Facility</th>
+                            <th>Location</th>
+                            <th>Current Workers</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in workers_by_facility %}
+                        <tr>
+                            <td>{{ item.facility.name }}</td>
+                            <td>{{ item.facility.location|default:"-" }}</td>
+                            <td>
+                                <div class="font-weight-bold mb-2">{{ item.count }}</div>
+                                <ul class="mb-0 pl-3">
+                                    {% for posting in item.postings|slice:":5" %}
+                                        <li>{{ posting.professional }} - {{ posting.position_title }}</li>
+                                    {% empty %}
+                                        <li class="text-muted">No current postings</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'records_home' %}" class="btn btn-outline-primary">Hub</a>
+                                    <a href="{% url 'record_list' 'nursingprofessional' %}" class="btn btn-outline-success">Nurses</a>
+                                    <a href="{% url 'record_list' 'medicaldoctor' %}" class="btn btn-outline-info">Doctors</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted">No facilities found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card card-outline card-success table-card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">National Workers</h3>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr><th>Name</th><th>Type</th><th>Reg No</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for worker in national_workers_table|slice:":10" %}
+                            <tr>
+                                <td>{{ worker.name }}</td>
+                                <td>{{ worker.type }}</td>
+                                <td>{{ worker.registration_no|default:"-" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted">No national workers.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-outline card-warning table-card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Overseas Workers</h3>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr><th>Name</th><th>Type</th><th>Reg No</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for worker in overseas_workers_table|slice:":10" %}
+                            <tr>
+                                <td>{{ worker.name }}</td>
+                                <td>{{ worker.type }}</td>
+                                <td>{{ worker.registration_no|default:"-" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted">No overseas workers.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/axios/axios.min.js' %}"></script>
+<script>
+function executeCommand(command, message) {
+    if (window.showAppLoading) {
+        window.showAppLoading('Running staff command', message || 'Please wait while the system processes the requested command.', 'The status bar remains active during imports, exports, and statistics refreshes.');
+    }
+    axios.post('{% url "execute_management_command" %}', {
+        command: command,
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+    }, {
+        headers: {'X-CSRFToken': '{{ csrf_token }}'}
+    }).then(function (response) {
+        const message = response.data && response.data.message ? response.data.message : 'The staff command completed successfully.';
+        if (window.showAppSuccess) {
+            window.showAppSuccess('Successful', message, 'Redirecting you back to your dashboard.', '{% url "main_dashboard" %}', 1600);
+        } else {
+            window.location.href = '{% url "main_dashboard" %}';
+        }
+    }).catch(function (error) {
+        if (window.hideAppLoading) {
+            window.hideAppLoading();
+        }
+        alert('Error: ' + (error.response?.data?.error || error.message));
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof Chart === 'undefined') return;
+
+    new Chart(document.getElementById('workforceTrendChart'), {
+        type: 'line',
+        data: {
+            labels: {{ years|default:"[]"|safe }},
+            datasets: [{
+                label: 'Active Workers',
+                data: {{ total_workers_by_year|default:"[]"|safe }},
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25,135,84,.15)',
+                fill: true,
+                tension: 0.35
+            }]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+    });
+
+    new Chart(document.getElementById('applicationStatusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Approved', 'Rejected'],
+            datasets: [{
+                data: [
+                    {{ application_count|default:0 }},
+                    {{ approved_applications|default:0 }},
+                    {{ rejected_applications|default:0 }}
+                ],
+                backgroundColor: ['#ffc107', '#198754', '#dc3545']
+            }]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+    });
+
+    new Chart(document.getElementById('receiptChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Pending', 'Completed', 'Failed'],
+            datasets: [{
+                label: 'Receipts',
+                data: [
+                    {{ receipt_pending_count|default:0 }},
+                    {{ receipt_completed_count|default:0 }},
+                    {{ receipt_failed_count|default:0 }}
+                ],
+                backgroundColor: ['#0dcaf0', '#198754', '#dc3545']
+            }]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+    });
+});
+</script>
+{% endblock %}

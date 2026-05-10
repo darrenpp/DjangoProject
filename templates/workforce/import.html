@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulk Import - NDOH Registry{% endblock %}
+{% block title_label %}Bulk Workforce Import{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title mb-0">N-DATA Workbook Import</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Import the full N-DATA workbook so every sheet is aligned, compared by year/date, and loaded into the normalized registry tables.</p>
+                <div class="alert {% if default_workbook_exists %}alert-info{% else %}alert-warning{% endif %}">
+                    <div><strong>Default workbook:</strong> {{ default_workbook }}</div>
+                    <div class="small mt-1">
+                        {% if default_workbook_exists %}
+                            The workbook is available on disk and can be imported directly.
+                        {% else %}
+                            The default workbook path is not currently available. Upload the workbook below instead.
+                        {% endif %}
+                    </div>
+                </div>
+                <form method="post" data-loading-text="Starting the N-DATA workbook import and aligning all workbook sheets." data-loading-meta="The status bar stays active while records, snapshots, and statistics tables are created.">
+                    {% csrf_token %}
+                    <input type="hidden" name="import_mode" value="ndata_default">
+                    <button type="submit" class="btn btn-primary" {% if not default_workbook_exists %}disabled{% endif %}>
+                        <i class="fas fa-database mr-1"></i> Import Default Workbook
+                    </button>
+                </form>
+                <hr>
+                <h5 class="mb-3">Upload Workbook or CSV</h5>
+                <form method="post" enctype="multipart/form-data" data-loading-text="Uploading and processing the selected file." data-loading-meta="This indicator remains active while the file is copied, read, and matched against the database.">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.file.id_for_label }}">{{ form.file.label }}</label>
+                        {{ form.file }}
+                        {% if form.file.errors %}
+                            <div class="invalid-feedback d-block">{{ form.file.errors|join:", " }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Excel workbooks run through the multi-sheet importer. CSV files still use the quick nursing import.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-file-import mr-1"></i> Start Import
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Recent Import Batches</h3>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_batches %}
+                <table class="table table-sm table-striped table-hover mb-0">
+                    <thead>
+                    <tr><th>Batch</th><th>Status</th><th>Progress</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in recent_batches %}
+                    <tr>
+                        <td>
+                            <div class="font-weight-bold">{{ item.batch.source_file_name }}</div>
+                            <div class="small text-muted">{{ item.batch.started_at|date:"d M Y H:i" }}</div>
+                        </td>
+                        <td><span class="badge badge-{% if item.batch.status == 'completed' %}success{% elif item.batch.status == 'failed' %}danger{% elif item.batch.status == 'running' %}info{% else %}secondary{% endif %}">{{ item.batch.status|title }}</span></td>
+                        <td style="min-width: 170px;">
+                            <div class="progress progress-xs mb-1">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ item.progress }}%" aria-valuenow="{{ item.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="small text-muted">{{ item.batch.processed_rows }}/{{ item.batch.total_rows|default:item.batch.total_sheets }} processed</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-muted">No workbook import batches have been recorded yet.</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Quick CSV Template</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped table-hover mb-0">
+                    <thead>
+                    <tr><th>Column</th><th>Required</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr><td>registration_no</td><td>Yes</td></tr>
+                    <tr><td>first_name</td><td>No</td></tr>
+                    <tr><td>last_name</td><td>No</td></tr>
+                    <tr><td>national_id</td><td>No, legacy alias</td></tr>
+                    <tr><td>registration_number</td><td>No</td></tr>
+                    <tr><td>email</td><td>No</td></tr>
+                    <tr><td>primary_phone</td><td>No</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

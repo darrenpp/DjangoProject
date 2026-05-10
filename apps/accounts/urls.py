@@ -1,0 +1,46 @@
+from django.urls import path
+from .views import (
+    RegisterView,
+    UserProfileView,
+    public_register,
+    staff_register,
+    login_view,
+    logout_view,
+    nursing_regulatory_alignment_view,
+    request_full_access,
+    user_profile,
+    staff_login_view,
+    applicant_login_view,
+    UserPasswordResetCompleteView,
+    UserPasswordResetConfirmView,
+    UserPasswordResetDoneView,
+    UserPasswordResetView,
+    decide_operational_access_request,
+    staff_mfa_resend,
+    staff_mfa_verify,
+)
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+urlpatterns = [
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('', public_register, name='public_register'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('profile/api/', UserProfileView.as_view(), name='profile'),
+
+    path('login/', applicant_login_view, name='login'),
+    path('applicant/login/', applicant_login_view, name='applicant_login'),
+    path('staff/login/', staff_login_view, name='staff_login'),
+    path('mfa/verify/', staff_mfa_verify, name='staff_mfa_verify'),
+    path('mfa/resend/', staff_mfa_resend, name='staff_mfa_resend'),
+    path('password-reset/', UserPasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', UserPasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', UserPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('staff/register/', staff_register, name='staff_register'),
+    path('logout/', logout_view, name='logout'),
+    path('profile/', user_profile, name='user_profile'),
+    path('profile/request-full-access/', request_full_access, name='request_full_access'),
+    path('profile/access-requests/<int:pk>/<str:decision>/', decide_operational_access_request, name='decide_operational_access_request'),
+    path('profile/nursing-alignment/', nursing_regulatory_alignment_view, name='nursing_regulatory_alignment'),
+]

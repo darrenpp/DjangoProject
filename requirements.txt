@@ -1,0 +1,22 @@
+Django==5.1
+psycopg2-binary==2.9.12
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+django-import-export==4.4.1
+pandas==3.0.2
+Pillow==12.2.0
+cryptography==48.0.0
+reportlab==4.5.0
+python-dotenv==1.2.2
+opencv-python-headless==4.13.0.92
+celery==5.6.3
+redis==7.4.0
+sympy==1.14.0
+openpyxl==3.1.5
+python-docx==1.2.0
+gunicorn==23.0.0
+
+# Optional OCR runtime. Install this only on a Python version supported by
+# EasyOCR/PyTorch, then OCRDocument.process_ocr() will use it automatically.
+easyocr==1.7.1; python_version < "3.13"

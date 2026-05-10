@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Population Guide{% endblock %}
+{% block title_label %}Data Extraction & Population Guide{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title mb-0">PNG Nursing Council Data Population Plan</h3>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">Aligned to NC1, NC2, NC3, NC5, NC8, G1, G4, G5, G6 workflows.</p>
+        <h5>Lookup Data First</h5>
+        <ol>
+            <li>Cadre</li>
+            <li>Location (22 provinces + districts)</li>
+            <li>Training Institution</li>
+            <li>Document Type</li>
+        </ol>
+        <h5>Commands</h5>
+        <pre class="bg-light p-2">python manage.py bootstrap_reference_data
+python manage.py import_workforce_files --path notebooks/csv_templates
+python manage.py generate_snapshot</pre>
+        <h5>Templates</h5>
+        <p>Use files in <code>notebooks/csv_templates/</code> for model-aligned import schemas.</p>
+        <a class="btn btn-primary" href="{% url 'records_home' %}">Open CRUD Hub</a>
+    </div>
+</div>
+{% endblock %}

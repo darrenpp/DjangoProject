@@ -1,0 +1,2 @@
+content_type_id,object_id,suspected_duplicate,similarity_score,status
+1,1,"{\"candidate\":\"John Mary\"}",0.88,pending

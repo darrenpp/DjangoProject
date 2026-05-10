@@ -1,0 +1,540 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Medical Board Dashboard{% endblock %}
+{% block title_label %}Medical Board Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mb-dashboard {
+        --mb-ink: #1f332d;
+        --mb-green: #176b52;
+        --mb-mint: #dff3e9;
+        --mb-amber: #c56b1d;
+        --mb-rust: #9a4f21;
+        --mb-paper: #fffaf0;
+        color: var(--mb-ink);
+    }
+    .mb-hero {
+        border-radius: 28px;
+        padding: 28px;
+        background:
+            radial-gradient(circle at 80% 20%, rgba(255, 244, 214, .28), transparent 30%),
+            linear-gradient(135deg, #174b3d 0%, #176b52 56%, #9a4f21 100%);
+        color: #fff;
+        box-shadow: 0 26px 70px rgba(31, 51, 45, .2);
+    }
+    .mb-hero .eyebrow {
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        opacity: .78;
+        font-weight: 800;
+        font-size: .75rem;
+    }
+    .mb-metric {
+        border: 0;
+        border-radius: 22px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #fffdf8 0%, #f8f1e5 100%);
+        box-shadow: 0 18px 42px rgba(31, 51, 45, .12);
+    }
+    .mb-metric .card-body {
+        min-height: 130px;
+    }
+    .mb-metric span {
+        color: #6b756f;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-size: .72rem;
+    }
+    .mb-metric h3 {
+        font-size: 2.3rem;
+        font-weight: 900;
+        margin: 8px 0 0;
+    }
+    .mb-metric i {
+        color: rgba(23, 107, 82, .22);
+        font-size: 2.5rem;
+    }
+    .mb-panel {
+        border: 0;
+        border-radius: 22px;
+        background: rgba(255, 253, 248, .96);
+        box-shadow: 0 18px 42px rgba(31, 51, 45, .11);
+    }
+    .mb-panel .card-header {
+        border-bottom: 1px solid rgba(31, 51, 45, .12);
+    }
+    .mb-panel .card-title {
+        font-weight: 850;
+        color: var(--mb-ink);
+    }
+    .mb-action {
+        display: block;
+        height: 100%;
+        border: 1px solid rgba(23, 107, 82, .18);
+        border-radius: 18px;
+        padding: 16px;
+        color: var(--mb-ink);
+        background: #fffdf8;
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .mb-action:hover {
+        color: var(--mb-ink);
+        text-decoration: none;
+        transform: translateY(-3px);
+        border-color: rgba(197, 107, 29, .42);
+        box-shadow: 0 16px 34px rgba(31, 51, 45, .13);
+    }
+    .mb-action strong {
+        color: var(--mb-amber);
+        display: block;
+    }
+    .mb-import-bar {
+        height: 9px;
+        border-radius: 999px;
+        background: #e6ddd0;
+        overflow: hidden;
+    }
+    .mb-import-bar span {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, var(--mb-green), var(--mb-amber));
+    }
+    .mb-table th {
+        background: #f7efe2;
+        color: var(--mb-ink);
+        border-top: 0;
+    }
+    .mb-flow-card {
+        border: 1px solid rgba(23, 107, 82, .16);
+        background: #fffdf8;
+    }
+    .mb-flow-label {
+        color: #6b756f;
+        font-size: .76rem;
+        font-weight: 800;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+    .mb-flow-value {
+        color: var(--mb-ink);
+        font-size: 1.9rem;
+        font-weight: 900;
+    }
+    .mb-chart-tall {
+        min-height: 320px;
+    }
+    .mb-chart-tall canvas {
+        min-height: 265px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-dashboard">
+    <div class="mb-hero mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="eyebrow mb-2">Medical Board Operations</div>
+                <h2 class="mb-2">Doctors, specialists, CHWs, facilities, and training institutions</h2>
+                <p class="mb-0">This dashboard is separate from the Nursing Council interface, while still feeding the same centralized NDOH registry and secure administration console.</p>
+            </div>
+            <div class="col-lg-4 text-lg-right mt-3 mt-lg-0">
+                <a href="{% url 'medical_board_register' %}" class="btn btn-light mr-2">
+                    <i class="fas fa-file-medical mr-1"></i> Forms
+                </a>
+                <button class="btn btn-warning" onclick="executeCommand('import_medical_board_workbook')">
+                    <i class="fas fa-file-import mr-1"></i> Import CHW Workbook
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div><span>Doctors</span><h3>{{ medical_doctor_count|default:0 }}</h3></div>
+                    <i class="fas fa-user-md"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div><span>Specialists</span><h3>{{ medical_specialist_count|default:0 }}</h3></div>
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div><span>CHWs</span><h3>{{ medical_chw_count|default:0 }}</h3></div>
+                    <i class="fas fa-people-carry-box"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div><span>Pending Reviews</span><h3>{{ pending_applications|default:0 }}</h3></div>
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric mb-flow-card">
+                <div class="card-body">
+                    <div class="mb-flow-label">CHW Register</div>
+                    <div class="mb-flow-value">{{ medical_chw_registration_total|default:0 }}</div>
+                    <div class="text-muted small">Medical Board CHW records by year</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric mb-flow-card">
+                <div class="card-body">
+                    <div class="mb-flow-label">CHW Licences</div>
+                    <div class="mb-flow-value">{{ medical_chw_practicing_total|default:0 }}</div>
+                    <div class="text-muted small">Practising licence records</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric mb-flow-card">
+                <div class="card-body">
+                    <div class="mb-flow-label">Doctor Register</div>
+                    <div class="mb-flow-value">{{ medical_doctor_registration_total|default:0 }}</div>
+                    <div class="text-muted small">Ready for doctor/specialist imports</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card mb-metric mb-flow-card">
+                <div class="card-body">
+                    <div class="mb-flow-label">Missing Data</div>
+                    <div class="mb-flow-value">{{ missing_data_review_count|default:0 }}</div>
+                    <div class="text-muted small">{{ high_priority_missing_data_count|default:0 }} high priority reviews</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "dashboard/_missing_data_reviews_table.html" %}
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Medical Board Electronic Forms</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for form_item in medical_board_forms %}
+                            <div class="col-md-4 mb-3">
+                                <a class="mb-action" href="{% url form_item.url form_item.code %}">
+                                    <strong>{{ form_item.code }}</strong>
+                                    <span>{{ form_item.title }}</span>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if can_manage_medical_operations %}
+                    <div class="row mt-2">
+                        <div class="col-md-4 mb-2">
+                            <button class="btn btn-outline-success btn-block" onclick="executeCommand('generate_snapshot')">
+                                <i class="fas fa-camera mr-1"></i> Generate Snapshot
+                            </button>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{% url 'dashboard_search' %}" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-search mr-1"></i> Registry Search
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{% url 'export_monthly_analytics_excel' %}" class="btn btn-outline-success btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the Excel analytics workbook with monthly tables and charts.">
+                                <i class="fas fa-chart-column mr-1"></i> Monthly Excel
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{% url 'export_monthly_analytics_pdf' %}" class="btn btn-outline-danger btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the professional monthly analytics PDF report.">
+                                <i class="fas fa-file-pdf mr-1"></i> Monthly PDF
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="/admin/workforce/" target="_blank" class="btn btn-outline-dark btn-block">
+                                <i class="fas fa-user-shield mr-1"></i> Secure Registry Data
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <button class="btn btn-outline-warning btn-block" onclick="executeCommand('audit_missing_data')">
+                                <i class="fas fa-triangle-exclamation mr-1"></i> Audit Missing Data
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning mb-0">
+                        <strong>Operations locked for reviewer accounts.</strong>
+                        Your account can view Medical Board dashboard information within your assigned scope, but snapshot generation, management exports, secure registry data access, audit commands, and operational changes are restricted to approved Registrar or System Admin users. To request full operational access, open My Profile and use the approval request button.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Latest CHW Workbook Import</h3>
+                </div>
+                <div class="card-body">
+                    {% if latest_medical_import %}
+                        <p class="mb-1"><strong>{{ latest_medical_import.source_file_name }}</strong></p>
+                        <p class="text-muted mb-2">Batch #{{ latest_medical_import.id }} · {{ latest_medical_import.completed_at|date:'d M Y H:i' }}</p>
+                        <div class="mb-import-bar mb-3"><span></span></div>
+                        <p class="mb-1">Rows processed: {{ latest_medical_import.processed_rows }}</p>
+                        <p class="mb-0">Status: <span class="badge badge-success">{{ latest_medical_import.status|title }}</span></p>
+                    {% else %}
+                        <p class="text-muted mb-0">No Medical Board workbook import has been run yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">CHW Registrations by Year</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="chwYearChart" height="170"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">CHW Province Distribution</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="chwProvinceChart" height="170"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card mb-panel mb-chart-tall">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Medical Board Registration and Licence Flow</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="medicalFlowChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Yearly Medical Board Summary</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table {% if medical_yearly_rows %}datatable{% endif %}">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Doctors</th>
+                                <th>CHWs</th>
+                                <th>Licences</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in medical_yearly_rows %}
+                            <tr>
+                                <td>{{ row.year }}</td>
+                                <td>{{ row.doctor_registration_count }}</td>
+                                <td>{{ row.chw_registration_count }}</td>
+                                <td>{{ row.doctor_practicing_count|add:row.chw_practicing_count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted">No Medical Board yearly records loaded.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Recent Medical Board Applications</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table {% if recent_applications %}datatable{% endif %}">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Applicant / Facility</th>
+                                <th>Licence No</th>
+                                <th>Year</th>
+                                <th>Form</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in recent_applications %}
+                                <tr>
+                                    <td>{{ app.id }}</td>
+                                    <td>{{ app.professional|default:"Medical Board Application" }}</td>
+                                    <td>{{ app.payload.licence_number|default:app.payload.registration_no|default:app.professional.registration_no|default:"-" }}</td>
+                                    <td>{% if app.approved_date %}{{ app.approved_date|date:'Y' }}{% else %}{{ app.submitted_date|date:'Y' }}{% endif %}</td>
+                                    <td>{{ app.form_code }}</td>
+                                    <td><span class="badge badge-{% if app.status == 'approved' %}success{% elif app.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ app.status|title }}</span></td>
+                                    <td>{{ app.submitted_date|date:'d M Y' }}</td>
+                                    <td><a href="{% url 'application_detail' app.pk %}" class="btn btn-sm btn-outline-success">Review</a></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="8" class="text-center text-muted">No Medical Board applications yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Specialty Mix</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="specialtyChart" height="215"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Recent Medical Board Registration and Licence Records</h3>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table {% if medical_registration_records %}datatable{% endif %}">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Name</th>
+                                <th>Professional Type</th>
+                                <th>Licence / Reg No</th>
+                                <th>Practitioner No</th>
+                                <th>Record Type</th>
+                                <th>Province</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in medical_registration_records %}
+                            <tr>
+                                <td>{{ record.record_year|default:"-" }}</td>
+                                <td>{{ record.full_name }}</td>
+                                <td>{% if record.target_model == 'communityhealthworker' %}CHW{% elif record.target_model == 'medicaldoctor' %}Doctor{% else %}{{ record.target_model }}{% endif %}</td>
+                                <td>{{ record.registration_no|default:"-" }}</td>
+                                <td>{{ record.practitioner_number|default:"-" }}</td>
+                                <td>{{ record.get_record_type_display }}</td>
+                                <td>{{ record.province|default:"-" }}</td>
+                                <td>{{ record.source_sheet_name }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="text-center text-muted">No Medical Board registration/licence records found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function executeCommand(command) {
+    if (!confirm('Run this Medical Board operation now?')) {
+        return;
+    }
+    if (window.showAppLoading) {
+        window.showAppLoading('Running Medical Board task', 'Running Medical Board import/export task. This may take a little while for large workbooks.', 'The status bar remains active while records and statistics are updated.');
+    }
+    axios.post('{% url "execute_management_command" %}', {command: command}, {
+        headers: {'X-CSRFToken': '{{ csrf_token }}'}
+    }).then((response) => {
+        const message = response.data && response.data.message ? response.data.message : 'The Medical Board task completed successfully.';
+        if (window.showAppSuccess) {
+            window.showAppSuccess('Successful', message, 'Redirecting you back to your dashboard.', '{% url "main_dashboard" %}', 1600);
+        } else {
+            location.href = '{% url "main_dashboard" %}';
+        }
+    }).catch(error => {
+        if (window.hideAppLoading) window.hideAppLoading();
+        alert('Error: ' + (error.response?.data?.error || error.message));
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const palette = ['#176b52', '#c56b1d', '#6f8f72', '#9a4f21', '#2f7f74', '#e0a246', '#5e6f64', '#b45f34', '#93b88d', '#d7b16d'];
+    const medicalFlowChart = document.getElementById('medicalFlowChart');
+    if (medicalFlowChart && window.Chart) {
+        new Chart(medicalFlowChart, {
+            type: 'line',
+            data: {
+                labels: {{ medical_flow_year_labels|safe }},
+                datasets: [
+                    {label: 'Doctors / Specialists', data: {{ medical_flow_doctor_values|safe }}, borderColor: '#9a4f21', backgroundColor: 'rgba(154, 79, 33, .12)', tension: .28, fill: true},
+                    {label: 'CHW Register', data: {{ medical_flow_chw_values|safe }}, borderColor: '#176b52', backgroundColor: 'rgba(23, 107, 82, .12)', tension: .28, fill: true},
+                    {label: 'Practising Licences', data: {{ medical_flow_practicing_values|safe }}, borderColor: '#c56b1d', backgroundColor: 'rgba(197, 107, 29, .12)', tension: .28, fill: true}
+                ]
+            },
+            options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {position: 'bottom'}}, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}}
+        });
+    }
+    new Chart(document.getElementById('chwYearChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ chw_year_labels|default:"[]"|safe }},
+            datasets: [{label: 'CHW records', data: {{ chw_year_values|default:"[]"|safe }}, backgroundColor: '#176b52'}]
+        },
+        options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true}}}
+    });
+    new Chart(document.getElementById('chwProvinceChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ chw_province_labels|default:"[]"|safe }},
+            datasets: [{data: {{ chw_province_values|default:"[]"|safe }}, backgroundColor: palette}]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+    });
+    new Chart(document.getElementById('specialtyChart'), {
+        type: 'polarArea',
+        data: {
+            labels: {{ medical_specialty_labels|default:"[]"|safe }},
+            datasets: [{data: {{ medical_specialty_values|default:"[]"|safe }}, backgroundColor: palette}]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+    });
+});
+</script>
+{% endblock %}

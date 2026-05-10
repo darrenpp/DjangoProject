@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Medical Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-danger card-outline">
+            <div class="card-header">
+                <h3 class="card-title">Welcome, {{ request.user.username|upper }}</h3>
+            </div>
+            <div class="card-body">
+                {% if doctor %}
+                {% include "dashboard/_profile_notifications.html" %}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><strong>Professional Information</strong></h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Name:</strong></td>
+                                <td>{{ doctor.first_name }} {{ doctor.last_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Registration No:</strong></td>
+                                <td>{{ doctor.registration_no }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ doctor.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Phone:</strong></td>
+                                <td>{{ doctor.primary_phone }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Specialty:</strong></td>
+                                <td>{{ doctor.specialty|default:"General Practice" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><strong>Medical License Status</strong></h5>
+                        {% if license_expiry %}
+                            <div class="alert {% if license_expiry >= today %}alert-success{% else %}alert-danger{% endif %}">
+                                <strong>License Status:</strong>
+                                {% if license_expiry >= today %}
+                                    <span class="badge badge-success">ACTIVE</span>
+                                    <p>Expires: {{ license_expiry|date:'d M Y' }}</p>
+                                {% else %}
+                                    <span class="badge badge-danger">EXPIRED</span>
+                                    <p>Expired: {{ license_expiry|date:'d M Y' }}</p>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <p>No license information on file. Submit an application to obtain or renew your license.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <h5><strong>Applications & Renewals</strong></h5>
+                {% if applications %}
+                <table class="table table-striped table-hover datatable">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Form Code</th>
+                            <th>Form Type</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td><strong>{{ app.form_code }}</strong></td>
+                            <td>
+                                {% if app.form_code == 'MD1' %}
+                                    Medical License Application
+                                {% elif app.form_code == 'MD2' %}
+                                    Medical License Renewal
+                                {% else %}
+                                    {{ app.form_code }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.status == 'pending' %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% elif app.status == 'approved' %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif app.status == 'rejected' %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ app.submitted_date|date:'d M Y' }}</td>
+                            <td>
+                                <a href="{% url 'application_detail' app.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="alert alert-info">
+                    <p>No applications on file. <a href="{% url 'public_doctor_register' %}">Submit an application</a> to get started.</p>
+                </div>
+                {% endif %}
+
+                <div class="mt-4">
+                    <a href="{% url 'public_doctor_register' %}" class="btn btn-danger">
+                        <i class="fas fa-plus"></i> Submit New Application
+                    </a>
+                </div>
+
+                <hr>
+
+                <div class="row mt-4">
+                    <div class="col-lg-5">
+                        <div class="card card-outline card-danger">
+                            <div class="card-header">
+                                <h3 class="card-title mb-0">Capture Payment Details</h3>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" action="{% url 'submit_receipt' %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label>Application</label>
+                                        {{ receipt_form.application }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Official Receipt No</label>
+                                        {{ receipt_form.official_receipt_no }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Amount (PGK)</label>
+                                        {{ receipt_form.amount }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Payment Method</label>
+                                        {{ receipt_form.payment_method }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Receipt Date</label>
+                                        {{ receipt_form.receipt_date }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Receipt Image</label>
+                                        {{ receipt_form.receipt_image }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Notes</label>
+                                        {{ receipt_form.description }}
+                                    </div>
+                                    <button type="submit" class="btn btn-danger btn-block">Save Payment Record</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="card card-outline card-info">
+                            <div class="card-header">
+                                <h3 class="card-title mb-0">My Payment Records</h3>
+                            </div>
+                            <div class="card-body table-responsive p-0">
+                                <table class="table table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Receipt No</th>
+                                            <th>Official No</th>
+                                            <th>Amount</th>
+                                            <th>Application</th>
+                                            <th>Image</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for receipt in receipts %}
+                                        <tr>
+                                            <td>{{ receipt.receipt_number }}</td>
+                                            <td>{{ receipt.official_receipt_no|default:"-" }}</td>
+                                            <td>PGK {{ receipt.amount }}</td>
+                                            <td>{{ receipt.application.form_code|default:"-" }}</td>
+                                            <td>
+                                                {% if receipt.receipt_image %}
+                                                <a href="{{ receipt.receipt_image.url }}" target="_blank" class="btn btn-sm btn-outline-info">View</a>
+                                                {% else %}
+                                                <span class="text-muted">No image</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="5" class="text-center text-muted">No receipt records submitted yet.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <p>No professional record found. Please contact support to register as a Medical Doctor.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'dashboard/_registration_guidelines.html' %}
+{% endblock %}

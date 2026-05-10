@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Helpdesk Assistant{% endblock %}
+{% block title_label %}AI Helpdesk Assistant{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Registration Helpdesk Assistant</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Ask about registration, Nursing Council forms, Medical Board forms, payment receipts,
+                    missing information, renewals, and application status.
+                </p>
+                <div class="helpdesk-chat-panel mb-3" id="helpdesk-page-messages">
+                    <div class="helpdesk-message assistant">
+                        <strong>{{ initial_answer.title }}</strong>
+                        <p>{{ initial_answer.answer }}</p>
+                    </div>
+                </div>
+                <form id="helpdesk-page-form" class="helpdesk-form">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="helpdesk-page-question" placeholder="Example: Which form do I use for full licence?" autocomplete="off">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane mr-1"></i> Ask
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-3">
+                    <a href="{% url 'enquiry_create' %}" class="btn btn-outline-success">
+                        <i class="fas fa-comments mr-1"></i> Create Enquiry for Registrar
+                    </a>
+                    <a href="{% url 'fee_structure' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-book mr-1"></i> Guidelines
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('helpdesk-page-form');
+    const input = document.getElementById('helpdesk-page-question');
+    const messages = document.getElementById('helpdesk-page-messages');
+    if (!form || !input || !messages || !window.ndohAskHelpdesk) return;
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const question = input.value.trim();
+        if (!question) return;
+        window.ndohAppendHelpdeskMessage(messages, question, 'user');
+        input.value = '';
+        window.ndohAskHelpdesk(question).then(function (data) {
+            window.ndohAppendHelpdeskAnswer(messages, data);
+        }).catch(function () {
+            window.ndohAppendHelpdeskMessage(messages, 'Sorry, I could not answer that right now. Please create an enquiry for the registrar.', 'assistant');
+        });
+    });
+});
+</script>
+{% endblock %}

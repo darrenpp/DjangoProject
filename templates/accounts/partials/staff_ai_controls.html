@@ -1,0 +1,67 @@
+<div class="card card-outline card-primary mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0">AI Registrar Assistant</h3>
+        <a href="{% url 'staff_ai_assistant' %}" class="btn btn-outline-primary btn-sm">Open Full Assistant</a>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">
+            This assistant is only for admin and registrar accounts. It helps staff review imports, applicant screening, missing data, duplicate risks,
+            answer staff questions, and run reporting actions. This is different from the public applicant assistant. Applicants, nurses, doctors, CHWs, and graduands do not have access to this section.
+        </p>
+
+        <div class="row mb-3">
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="text-muted small text-uppercase">Screening Queue</div>
+                    <div class="h3 mb-0">{{ ai.screening_total }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="text-muted small text-uppercase">Missing Data Reviews</div>
+                    <div class="h3 mb-0">{{ ai.missing_review_count }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="text-muted small text-uppercase">Duplicate Reviews</div>
+                    <div class="h3 mb-0">{{ ai.duplicate_review_count }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="text-muted small text-uppercase">Open Enquiries</div>
+                    <div class="h3 mb-0">{{ ai.open_enquiry_count }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-light border">
+            <strong>How to use these tools:</strong>
+            Start with the screening queue, then check missing data and duplicate issues, then ask the assistant any staff question you have, and finally run imports or generate reports after the data has been refreshed.
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <h5 class="mb-3">Quick Actions</h5>
+                {% for action in ai.action_rows %}
+                    <div class="border rounded p-3 mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ action.label }}</strong>
+                                <div class="small text-muted">{{ action.description }}</div>
+                            </div>
+                            <a href="{% url action.url_name %}" class="btn btn-sm btn-primary ml-2">Open</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+                <h5 class="mb-3">Assistant Guidance</h5>
+                {% for item in ai.guide_rows %}
+                    <div class="border rounded p-3 mb-2 small">{{ item }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

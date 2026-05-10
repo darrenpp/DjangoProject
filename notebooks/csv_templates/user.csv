@@ -1,0 +1,2 @@
+username,email,first_name,last_name,role,phone,department,is_active,is_staff
+ndoh_admin,admin@example.com,NDOH,Admin,admin,67570000099,ICT,True,True

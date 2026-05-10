@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Nursing Council Live Regulatory Statistics{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'user_profile' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left mr-1"></i> Back To Profile
+    </a>
+</div>
+
+{% include 'accounts/partials/nursing_regulatory_alignment_full.html' with alignment=alignment %}
+{% endblock %}

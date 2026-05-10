@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+ndoh/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+.runtime_secret_key
+*.pem
+*.key
+
+# Local databases and generated runtime files
+db.sqlite3
+*.sqlite3
+*.sqlite3-journal
+media/
+staticfiles/
+logs/
+*.log
+
+# IDE and OS metadata
+.idea/
+.vscode/
+.compass/
+Thumbs.db
+.DS_Store
+
+# Generated reports, command output, and local data extracts
+docs/command_logs/
+docs/reports/
+notebooks/*.xlsx
+notebooks/*.xls
+notebooks/*.csv
+notebooks/*_cleaned.csv
+notebooks/*_quality_issues.csv
+notebooks/*_summary.txt
+notebooks/DUPLICATES_*.csv
+notebooks/MISSING_*.csv
+notebooks/cleaned_combined_*.csv
+
+# Accidental shell artifacts
+-p/

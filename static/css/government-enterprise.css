@@ -1,0 +1,1483 @@
+/*
+ * Government enterprise design layer.
+ * Loads after existing page styles so screens keep their functions while adopting
+ * a calmer production-ready visual system.
+ */
+
+:root {
+    --gov-ink: #0f2336;
+    --gov-ink-soft: #334155;
+    --gov-navy: #12304a;
+    --gov-navy-strong: #0a1e31;
+    --gov-teal: #0f766e;
+    --gov-green: #17634f;
+    --gov-gold: #b7791f;
+    --gov-red: #991b1b;
+    --gov-amber: #b45309;
+    --gov-blue: #1d4f7a;
+    --gov-muted: #64748b;
+    --gov-line: #d8e1e8;
+    --gov-line-strong: #b9c6d1;
+    --gov-surface: #f5f7f8;
+    --gov-surface-2: #edf2f4;
+    --gov-card: #ffffff;
+    --gov-shadow: 0 14px 34px rgba(15, 35, 54, 0.08);
+    --gov-shadow-soft: 0 8px 22px rgba(15, 35, 54, 0.06);
+}
+
+html {
+    background: var(--gov-surface);
+}
+
+body,
+input,
+select,
+textarea,
+button {
+    font-family: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif !important;
+}
+
+body {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.82), rgba(245,247,248,0.95)),
+        radial-gradient(circle at top left, rgba(15,118,110,0.08), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(183,121,31,0.08), transparent 28%) !important;
+    color: var(--gov-ink) !important;
+}
+
+.content-wrapper {
+    background:
+        linear-gradient(180deg, #f8fafb 0%, #eef3f5 100%) !important;
+}
+
+.main-header {
+    background: rgba(255,255,255,0.96) !important;
+    border-bottom: 1px solid var(--gov-line) !important;
+    box-shadow: 0 6px 20px rgba(15, 35, 54, 0.06) !important;
+    backdrop-filter: blur(10px);
+}
+
+.main-header .nav-link,
+.navbar-nav .nav-link {
+    color: var(--gov-ink) !important;
+    font-weight: 800;
+}
+
+.main-sidebar {
+    background: linear-gradient(180deg, var(--gov-navy-strong) 0%, var(--gov-navy) 68%, #173d37 100%) !important;
+    box-shadow: 10px 0 28px rgba(15, 35, 54, 0.16);
+}
+
+.brand-link {
+    background: rgba(255,255,255,0.04) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.09) !important;
+}
+
+.brand-link .brand-text {
+    color: #ffffff !important;
+    font-size: 0.96rem;
+    font-weight: 900 !important;
+}
+
+.nav-sidebar .nav-link {
+    border-radius: 14px !important;
+    color: rgba(255,255,255,0.88) !important;
+    margin: 4px 8px !important;
+    padding: 12px 14px !important;
+}
+
+.nav-sidebar .nav-link p,
+.nav-sidebar .nav-link i {
+    color: inherit !important;
+}
+
+.nav-sidebar .nav-link.active,
+.nav-sidebar .nav-link:hover {
+    background: rgba(255,255,255,0.13) !important;
+    color: #ffffff !important;
+}
+
+.nav-sidebar .nav-link.active {
+    box-shadow: inset 4px 0 0 var(--gov-gold);
+}
+
+.content-header {
+    padding: 22px 24px 6px !important;
+}
+
+.content-header h1,
+.content h1,
+.card-title,
+h1, h2, h3 {
+    color: var(--gov-ink) !important;
+    letter-spacing: -0.015em;
+}
+
+.content > .container-fluid {
+    padding: 18px 24px 34px !important;
+}
+
+.card,
+.table-card,
+.official-info-card,
+.portal-card,
+.auth-card,
+.verify-card {
+    background: var(--gov-card) !important;
+    border: 1px solid var(--gov-line) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--gov-shadow-soft) !important;
+}
+
+.card-header {
+    background: linear-gradient(180deg, #ffffff 0%, #f5f8fa 100%) !important;
+    border-bottom: 1px solid var(--gov-line) !important;
+    color: var(--gov-ink) !important;
+    padding: 16px 18px !important;
+}
+
+.card-header.bg-primary,
+.card-header.bg-success,
+.card-header.bg-info,
+.card-header.bg-dark,
+.card-header.bg-secondary,
+.card-header.bg-danger,
+.card-header.bg-warning,
+.card-outline .card-header:first-child {
+    background: linear-gradient(90deg, var(--gov-navy) 0%, var(--gov-teal) 100%) !important;
+    color: #ffffff !important;
+}
+
+.card-header.bg-warning {
+    background: linear-gradient(90deg, #8a5a10 0%, var(--gov-gold) 100%) !important;
+}
+
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header .card-title {
+    color: inherit !important;
+    font-weight: 900 !important;
+}
+
+.small-box {
+    border: 1px solid rgba(255,255,255,0.24) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--gov-shadow) !important;
+    min-height: 142px;
+}
+
+.small-box.bg-primary,
+.small-box.bg-info {
+    background: linear-gradient(135deg, var(--gov-blue), #0e7490) !important;
+}
+
+.small-box.bg-success {
+    background: linear-gradient(135deg, var(--gov-green), var(--gov-teal)) !important;
+}
+
+.small-box.bg-danger {
+    background: linear-gradient(135deg, var(--gov-red), #b91c1c) !important;
+}
+
+.small-box.bg-warning {
+    background: linear-gradient(135deg, #d99a21, var(--gov-gold)) !important;
+}
+
+.small-box.bg-dark,
+.small-box.bg-secondary {
+    background: linear-gradient(135deg, var(--gov-navy-strong), var(--gov-navy)) !important;
+}
+
+.small-box .inner h3 {
+    font-size: clamp(1.75rem, 2.2vw, 2.5rem) !important;
+    font-weight: 950 !important;
+}
+
+.small-box .inner p {
+    font-size: 0.95rem !important;
+    letter-spacing: 0.015em;
+}
+
+.card.bg-primary,
+.card.bg-info,
+.card.bg-success,
+.card.bg-danger,
+.card.bg-dark,
+.card.bg-secondary {
+    color: #ffffff !important;
+}
+
+.card.bg-primary,
+.bg-primary:not(.badge):not(.btn) {
+    background: linear-gradient(135deg, var(--gov-blue), #0e7490) !important;
+}
+
+.card.bg-info,
+.bg-info:not(.badge):not(.btn) {
+    background: linear-gradient(135deg, #0e7490, var(--gov-teal)) !important;
+}
+
+.card.bg-success,
+.bg-success:not(.badge):not(.btn) {
+    background: linear-gradient(135deg, var(--gov-green), var(--gov-teal)) !important;
+}
+
+.card.bg-danger,
+.bg-danger:not(.badge):not(.btn) {
+    background: linear-gradient(135deg, var(--gov-red), #b91c1c) !important;
+}
+
+.card.bg-dark,
+.card.bg-secondary,
+.bg-dark:not(.badge):not(.btn),
+.bg-secondary:not(.badge):not(.btn) {
+    background: linear-gradient(135deg, var(--gov-navy-strong), var(--gov-navy)) !important;
+}
+
+.card.bg-warning,
+.bg-warning:not(.badge):not(.btn) {
+    background: linear-gradient(135deg, #facc15, #d99a21) !important;
+    color: #111827 !important;
+}
+
+.card.bg-light,
+.bg-light:not(.badge):not(.btn) {
+    background: #ffffff !important;
+    color: var(--gov-ink) !important;
+}
+
+.card.bg-primary .card-title,
+.card.bg-primary .card-text,
+.card.bg-primary h1,
+.card.bg-primary h2,
+.card.bg-primary h3,
+.card.bg-primary h4,
+.card.bg-primary h5,
+.card.bg-primary p,
+.card.bg-info .card-title,
+.card.bg-info .card-text,
+.card.bg-info h1,
+.card.bg-info h2,
+.card.bg-info h3,
+.card.bg-info h4,
+.card.bg-info h5,
+.card.bg-info p,
+.card.bg-success .card-title,
+.card.bg-success .card-text,
+.card.bg-success h1,
+.card.bg-success h2,
+.card.bg-success h3,
+.card.bg-success h4,
+.card.bg-success h5,
+.card.bg-success p,
+.card.bg-danger .card-title,
+.card.bg-danger .card-text,
+.card.bg-danger h1,
+.card.bg-danger h2,
+.card.bg-danger h3,
+.card.bg-danger h4,
+.card.bg-danger h5,
+.card.bg-danger p,
+.card.bg-dark .card-title,
+.card.bg-dark .card-text,
+.card.bg-dark h1,
+.card.bg-dark h2,
+.card.bg-dark h3,
+.card.bg-dark h4,
+.card.bg-dark h5,
+.card.bg-dark p,
+.card.bg-secondary .card-title,
+.card.bg-secondary .card-text,
+.card.bg-secondary h1,
+.card.bg-secondary h2,
+.card.bg-secondary h3,
+.card.bg-secondary h4,
+.card.bg-secondary h5,
+.card.bg-secondary p {
+    color: #ffffff !important;
+    text-shadow: none !important;
+}
+
+.card.bg-warning .card-title,
+.card.bg-warning .card-text,
+.card.bg-warning h1,
+.card.bg-warning h2,
+.card.bg-warning h3,
+.card.bg-warning h4,
+.card.bg-warning h5,
+.card.bg-warning p,
+.card.bg-light .card-title,
+.card.bg-light .card-text,
+.card.bg-light h1,
+.card.bg-light h2,
+.card.bg-light h3,
+.card.bg-light h4,
+.card.bg-light h5,
+.card.bg-light p {
+    color: #111827 !important;
+    text-shadow: none !important;
+}
+
+.text-muted,
+.content-wrapper .text-muted,
+.card .text-muted,
+.lead.text-muted {
+    color: #475569 !important;
+}
+
+.content-wrapper,
+.content-wrapper p,
+.content-wrapper li,
+.card-body,
+.card-body p,
+.card-body li,
+.tab-content,
+.tab-content p,
+.tab-content li {
+    color: var(--gov-ink) !important;
+}
+
+.small-box,
+.small-box .inner,
+.small-box .inner h3,
+.small-box .inner p {
+    color: #ffffff !important;
+    text-shadow: none !important;
+}
+
+.small-box.bg-warning,
+.small-box.bg-warning .inner,
+.small-box.bg-warning .inner h3,
+.small-box.bg-warning .inner p {
+    color: #111827 !important;
+}
+
+.table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.table thead th,
+.table th {
+    background: #e8eff3 !important;
+    border-bottom: 1px solid var(--gov-line-strong) !important;
+    color: var(--gov-ink) !important;
+    font-weight: 900 !important;
+    white-space: nowrap;
+}
+
+.table td {
+    border-color: #e5ebef !important;
+    color: var(--gov-ink-soft) !important;
+    vertical-align: middle !important;
+}
+
+.table tbody tr:hover {
+    background: rgba(15,118,110,0.05) !important;
+}
+
+.btn {
+    border-radius: 12px !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.005em;
+}
+
+.btn-primary,
+.btn-info {
+    background: var(--gov-blue) !important;
+    border-color: var(--gov-blue) !important;
+}
+
+.btn-success {
+    background: var(--gov-green) !important;
+    border-color: var(--gov-green) !important;
+}
+
+.btn-warning {
+    background: var(--gov-gold) !important;
+    border-color: var(--gov-gold) !important;
+    color: #111827 !important;
+}
+
+.btn-danger {
+    background: var(--gov-red) !important;
+    border-color: var(--gov-red) !important;
+}
+
+.btn-light,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-secondary,
+.btn-outline-dark {
+    background: #ffffff !important;
+    border-color: var(--gov-line-strong) !important;
+    color: var(--gov-ink) !important;
+}
+
+.form-control,
+.custom-select,
+select,
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="search"] {
+    border: 1px solid var(--gov-line-strong) !important;
+    border-radius: 12px !important;
+    color: var(--gov-ink) !important;
+}
+
+.form-control:focus,
+select:focus,
+textarea:focus,
+input:focus {
+    border-color: var(--gov-teal) !important;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14) !important;
+}
+
+.alert {
+    border-radius: 16px !important;
+    border-width: 1px !important;
+}
+
+.badge,
+.status-label {
+    border-radius: 999px !important;
+    font-weight: 900 !important;
+    padding: 0.38em 0.72em !important;
+}
+
+.portal-header,
+.mb-hero,
+.nc-hero,
+.hero,
+.auth-card .card-header {
+    background: linear-gradient(135deg, var(--gov-navy-strong) 0%, var(--gov-navy) 52%, var(--gov-teal) 100%) !important;
+}
+
+.portal-header h1,
+.portal-header p,
+.mb-hero,
+.mb-hero h1,
+.mb-hero h2,
+.mb-hero p,
+.nc-hero,
+.nc-hero h1,
+.nc-hero h2,
+.nc-hero p,
+.hero,
+.hero h1,
+.hero h2,
+.hero p {
+    color: #ffffff !important;
+}
+
+.official-info-section,
+.login-section {
+    background: #f8fafb !important;
+}
+
+.main-footer {
+    background: #ffffff !important;
+    border-top: 1px solid var(--gov-line) !important;
+    color: var(--gov-ink-soft) !important;
+}
+
+.helpdesk-launcher {
+    box-shadow: 0 16px 38px rgba(15, 35, 54, 0.20) !important;
+}
+
+.helpdesk-widget,
+.helpdesk-widget p,
+.helpdesk-widget li,
+.helpdesk-widget strong,
+.helpdesk-widget small {
+    color: #1f2937 !important;
+}
+
+.helpdesk-widget .helpdesk-header,
+.helpdesk-widget .helpdesk-header h5,
+.helpdesk-widget .helpdesk-header small {
+    color: #ffffff !important;
+}
+
+.helpdesk-message.user,
+.helpdesk-message.user p,
+.helpdesk-message.user strong {
+    color: #ffffff !important;
+}
+
+/*
+ * Final readability guardrails for presentation and production review.
+ * These rules intentionally sit at the end of the enterprise stylesheet so
+ * older page-specific styles cannot accidentally make numbers or labels fade
+ * into white cards.
+ */
+body,
+.content-wrapper,
+.content-wrapper p,
+.content-wrapper li,
+.content-wrapper td,
+.content-wrapper th,
+.card,
+.card-body,
+.modal-content,
+.dropdown-menu {
+    color: #0f172a !important;
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+.card:not(.bg-primary):not(.bg-success):not(.bg-info):not(.bg-danger):not(.bg-dark):not(.bg-secondary):not(.bg-warning) .card-title,
+.card:not(.bg-primary):not(.bg-success):not(.bg-info):not(.bg-danger):not(.bg-dark):not(.bg-secondary):not(.bg-warning) .card-text,
+.card:not(.bg-primary):not(.bg-success):not(.bg-info):not(.bg-danger):not(.bg-dark):not(.bg-secondary):not(.bg-warning) h1,
+.card:not(.bg-primary):not(.bg-success):not(.bg-info):not(.bg-danger):not(.bg-dark):not(.bg-secondary):not(.bg-warning) h2,
+.card:not(.bg-primary):not(.bg-success):not(.bg-info):not(.bg-danger):not(.bg-dark):not(.bg-secondary):not(.bg-warning) h3,
+.card:not(.bg-primary):not(.bg-success):not(.bg-info):not(.bg-danger):not(.bg-dark):not(.bg-secondary):not(.bg-warning) h4,
+.metric-value,
+.metric-label,
+.summary-value,
+.summary-label {
+    color: #0f172a !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+}
+
+.card.bg-light,
+.card.bg-white,
+.card.text-white.bg-light,
+.card.text-white.bg-white,
+.small-box.bg-light,
+.small-box.bg-white {
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
+
+.card.bg-light *,
+.card.bg-white *,
+.card.text-white.bg-light *,
+.card.text-white.bg-white *,
+.small-box.bg-light *,
+.small-box.bg-white * {
+    color: #0f172a !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+}
+
+.table td,
+.table th,
+.table-responsive,
+.dataTable td,
+.dataTable th {
+    color: #0f172a !important;
+    opacity: 1 !important;
+}
+
+.badge-warning,
+.badge-light,
+.badge-white,
+.badge.badge-warning,
+.badge.badge-light {
+    color: #111827 !important;
+    text-shadow: none !important;
+}
+
+.text-muted,
+.small.text-muted,
+p.text-muted,
+span.text-muted,
+div.text-muted {
+    color: #475569 !important;
+    opacity: 1 !important;
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):not(.brand-link),
+.btn-link {
+    color: #12324a !important;
+    font-weight: 800;
+}
+
+/*
+ * Dark header correction.
+ * Many dashboard cards use `card-outline`, which receives a dark government
+ * gradient header. Keep those headings light so they do not disappear into the
+ * navy/teal background.
+ */
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white),
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white),
+.registrar-tools-card > .card-header:first-child:not(.bg-light):not(.bg-white) {
+    color: #f8fafc !important;
+}
+
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) .card-title,
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h1,
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h2,
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h3,
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h4,
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h5,
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h6,
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) strong,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) .card-title,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h1,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h2,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h3,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h4,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h5,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h6,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) strong,
+.registrar-tools-card > .card-header:first-child:not(.bg-light):not(.bg-white) .card-title {
+    color: #f8fafc !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28) !important;
+}
+
+.card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) .text-muted,
+.table-card > .card-header:first-child:not(.bg-light):not(.bg-white) .text-muted {
+    color: #dbeafe !important;
+}
+
+@media (max-width: 768px) {
+    .content-header {
+        padding: 16px 14px 4px !important;
+    }
+
+    .content > .container-fluid {
+        padding: 12px 14px 28px !important;
+    }
+
+    .small-box {
+        min-height: 126px;
+    }
+}
+
+/*
+ * Responsive hardening layer.
+ * These rules make the platform usable across desktop, tablet, and mobile
+ * without changing the underlying government workflow screens.
+ */
+html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+}
+
+body,
+.app-wrapper,
+.content-wrapper {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+    max-width: 100%;
+}
+
+img,
+svg,
+video {
+    height: auto;
+}
+
+pre,
+code,
+.text-break,
+.card,
+.card-body,
+.small-box,
+.info-box,
+.alert,
+.modal-content {
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.row {
+    row-gap: 1rem;
+}
+
+.row > [class*="col-"],
+.card,
+.card-body,
+.small-box,
+.info-box,
+.tab-content,
+.tab-pane {
+    min-width: 0;
+}
+
+.content-header h1,
+.content h1,
+.portal-header h1,
+.hero h1,
+.nc-hero h1,
+.mb-hero h1 {
+    font-size: clamp(1.45rem, 3.8vw, 2.55rem) !important;
+    line-height: 1.14 !important;
+}
+
+.content h2,
+.card-header h2 {
+    font-size: clamp(1.2rem, 2.8vw, 1.85rem) !important;
+}
+
+.content h3,
+.card-header h3,
+.card-title {
+    font-size: clamp(1.05rem, 2.2vw, 1.45rem) !important;
+    line-height: 1.25 !important;
+}
+
+.main-header.navbar {
+    min-height: 58px;
+}
+
+.main-header .navbar-nav {
+    align-items: center;
+    min-width: 0;
+}
+
+.main-header .navbar-nav.ml-auto {
+    gap: 0.25rem;
+    max-width: calc(100vw - 72px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
+.main-header .navbar-nav.ml-auto::-webkit-scrollbar {
+    height: 4px;
+}
+
+.main-header .navbar-nav.ml-auto::-webkit-scrollbar-thumb {
+    background: rgba(15, 35, 54, 0.22);
+    border-radius: 999px;
+}
+
+.main-header .nav-link {
+    white-space: nowrap;
+}
+
+.navbar-user-chip {
+    max-width: min(320px, 36vw);
+}
+
+.navbar-user-chip .value {
+    display: block;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.page-toolbar,
+.card-header.d-flex,
+.card-footer.d-flex,
+.portal-actions,
+.report-actions,
+.dashboard-actions,
+.filter-toolbar,
+.records-toolbar {
+    flex-wrap: wrap;
+}
+
+.page-toolbar .btn,
+.card-header .btn,
+.card-footer .btn,
+.portal-actions .btn,
+.report-actions .btn,
+.dashboard-actions .btn,
+.filter-toolbar .btn,
+.records-toolbar .btn {
+    min-height: 42px;
+}
+
+.btn,
+.nav-link,
+.dropdown-item,
+.form-control,
+.form-select,
+.custom-select,
+button,
+input,
+select,
+textarea {
+    touch-action: manipulation;
+}
+
+.form-control,
+.form-select,
+.custom-select,
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+.input-group {
+    min-width: 0;
+}
+
+.table-responsive,
+.ndoh-responsive-table {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 14px;
+}
+
+.table-responsive > .table,
+.ndoh-responsive-table > .table,
+.dataTables_wrapper table {
+    margin-bottom: 0;
+}
+
+.table-responsive table,
+.ndoh-responsive-table table {
+    min-width: max-content;
+}
+
+.dataTables_wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.dataTables_wrapper .row {
+    align-items: center;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    white-space: normal;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    width: min(100%, 260px);
+    margin-left: 0.35rem;
+}
+
+.chart-container,
+.chart-area,
+.chart-wrapper,
+.analytics-chart,
+.financial-chart,
+.dashboard-chart,
+.ndoh-chart-shell,
+.card:has(canvas) .card-body {
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.chart-container canvas,
+.chart-area canvas,
+.chart-wrapper canvas,
+.analytics-chart canvas,
+.financial-chart canvas,
+.dashboard-chart canvas,
+.ndoh-chart-shell canvas,
+.card-body > canvas {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.modal-dialog {
+    max-width: min(920px, calc(100vw - 1rem));
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.modal-body {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.app-loading-card {
+    max-width: calc(100vw - 1.25rem);
+}
+
+.staff-alert-toast {
+    width: min(380px, calc(100vw - 1rem));
+    min-width: 0 !important;
+}
+
+.helpdesk-launcher {
+    max-width: calc(100vw - 1rem);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+
+.helpdesk-launcher:active {
+    cursor: grabbing;
+}
+
+.helpdesk-widget {
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+}
+
+.helpdesk-chat-panel {
+    max-height: min(340px, calc(100vh - 250px));
+}
+
+@media (max-width: 1199.98px) {
+    .content > .container-fluid {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+    }
+
+    .small-box {
+        min-height: 132px;
+    }
+
+    .small-box .inner h3 {
+        font-size: clamp(1.45rem, 4vw, 2.05rem) !important;
+    }
+
+    .small-box .inner p {
+        font-size: 0.92rem !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    body.app-shell .app-sidebar,
+    body.app-shell .main-sidebar {
+        width: min(84vw, 320px) !important;
+        max-width: 320px !important;
+    }
+
+    body.app-shell .main-sidebar .sidebar {
+        height: calc(100vh - 66px);
+        padding-bottom: 5rem;
+    }
+
+    .brand-link .brand-text {
+        white-space: normal;
+    }
+
+    .navbar-search {
+        display: none !important;
+    }
+
+    .navbar-user-chip {
+        max-width: 190px;
+    }
+
+    .navbar-user-chip .value {
+        max-width: 126px;
+    }
+
+    .content-header {
+        padding: 16px 16px 4px !important;
+    }
+
+    .content > .container-fluid {
+        padding: 14px 16px 30px !important;
+    }
+
+    .page-toolbar {
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 767.98px) {
+    body {
+        font-size: 0.96rem !important;
+    }
+
+    .main-header.navbar {
+        padding-left: 0.35rem;
+        padding-right: 0.35rem;
+    }
+
+    .main-header .nav-link {
+        padding-left: 0.45rem !important;
+        padding-right: 0.45rem !important;
+        font-size: 0.92rem;
+    }
+
+    .navbar-user-chip {
+        max-width: 138px;
+        padding: 4px 7px;
+        gap: 6px;
+    }
+
+    .navbar-user-chip img,
+    .navbar-user-chip .label {
+        display: none;
+    }
+
+    .navbar-user-chip .value {
+        max-width: 118px;
+        font-size: 0.86rem;
+    }
+
+    .main-header .nav-label {
+        display: none;
+    }
+
+    .content-header {
+        padding: 12px 12px 2px !important;
+    }
+
+    .content > .container-fluid {
+        padding: 10px 12px 88px !important;
+    }
+
+    .page-toolbar {
+        gap: 0.5rem;
+        margin-bottom: 12px;
+    }
+
+    .page-toolbar .page-toolbar-spacer {
+        display: none;
+    }
+
+    .page-toolbar .btn {
+        flex: 1 1 140px;
+    }
+
+    .card,
+    .table-card,
+    .official-info-card,
+    .portal-card,
+    .auth-card,
+    .verify-card {
+        border-radius: 14px !important;
+    }
+
+    .card-header {
+        padding: 12px 14px !important;
+    }
+
+    .card-body {
+        padding: 14px !important;
+    }
+
+    .card-body.p-0 {
+        padding: 0 !important;
+    }
+
+    .card-footer {
+        padding: 12px 14px !important;
+    }
+
+    .small-box {
+        min-height: 116px;
+    }
+
+    .small-box .inner {
+        padding: 14px !important;
+    }
+
+    .small-box .inner h3 {
+        font-size: clamp(1.35rem, 8vw, 1.85rem) !important;
+    }
+
+    .small-box .inner p {
+        font-size: 0.9rem !important;
+        line-height: 1.25;
+    }
+
+    .info-box {
+        align-items: flex-start;
+    }
+
+    .info-box .info-box-icon {
+        width: 48px;
+        min-width: 48px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+
+    .btn-group,
+    .btn-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .btn-group > .btn,
+    .btn-toolbar > .btn {
+        border-radius: 12px !important;
+    }
+
+    .input-group {
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .input-group > .form-control,
+    .input-group > .form-select,
+    .input-group > .custom-select {
+        flex: 1 1 100%;
+        width: 100%;
+        border-radius: 12px !important;
+    }
+
+    .input-group > .btn,
+    .input-group > .input-group-append,
+    .input-group > .input-group-prepend {
+        flex: 1 1 auto;
+        border-radius: 12px !important;
+    }
+
+    .dataTables_wrapper .row > div {
+        width: 100%;
+        text-align: left !important;
+    }
+
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .form-control,
+    .dataTables_wrapper select {
+        width: 100% !important;
+        margin: 0.35rem 0 0;
+    }
+
+    .table th,
+    .table td {
+        font-size: 0.88rem;
+        padding: 0.55rem 0.65rem;
+    }
+
+    .helpdesk-launcher {
+        left: 12px !important;
+        right: auto !important;
+        bottom: 12px !important;
+        top: auto !important;
+        max-width: calc(100vw - 24px);
+        padding: 12px 14px;
+        font-size: 0.92rem;
+    }
+
+    .helpdesk-widget {
+        left: 8px !important;
+        right: 8px !important;
+        bottom: 72px !important;
+        top: auto !important;
+        width: auto !important;
+        max-height: calc(100vh - 92px);
+        border-radius: 18px;
+    }
+
+    .helpdesk-chat-panel {
+        max-height: calc(100vh - 290px);
+    }
+
+    .staff-alert-toast {
+        width: calc(100vw - 20px);
+    }
+
+    .main-footer {
+        padding: 12px;
+        text-align: center;
+    }
+
+    .main-footer .mx-2 {
+        display: none;
+    }
+
+    .ndoh-official-footer span,
+    .ndoh-official-footer a,
+    .ndoh-official-footer strong {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .content-header h1,
+    .content h1,
+    .portal-header h1,
+    .hero h1,
+    .nc-hero h1,
+    .mb-hero h1 {
+        font-size: clamp(1.3rem, 8.5vw, 1.9rem) !important;
+    }
+
+    .navbar-user-chip {
+        max-width: 104px;
+    }
+
+    .navbar-user-chip .value {
+        max-width: 88px;
+    }
+
+    .page-toolbar .btn,
+    .card-footer .btn,
+    .report-actions .btn,
+    .dashboard-actions .btn {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .card-header.d-flex {
+        align-items: flex-start !important;
+    }
+
+    .card-header.d-flex .btn,
+    .card-header.d-flex .btn-group {
+        width: 100%;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .app-loading-card {
+        padding: 18px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .btn,
+    .nav-link,
+    .dropdown-item,
+    .helpdesk-suggestion,
+    .page-back-button {
+        min-height: 44px;
+    }
+}
+
+/*
+ * Final contrast override.
+ * This must remain at the end of the file. Some dashboards apply generic
+ * `.card-title` colors after the header gradients, so the final rule forces
+ * readable white text only inside dark/gradient section headers.
+ */
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white),
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white),
+body.app-shell .content-wrapper .registrar-tools-card > .card-header:first-child:not(.bg-light):not(.bg-white) {
+    color: #ffffff !important;
+}
+
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) .card-title,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h1,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h2,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h3,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h4,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h5,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) h6,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) strong,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) p,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) span:not(.badge):not(.navbar-badge),
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) .card-title,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h1,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h2,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h3,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h4,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h5,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) h6,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) strong,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) p,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) span:not(.badge):not(.navbar-badge),
+body.app-shell .content-wrapper .registrar-tools-card > .card-header:first-child:not(.bg-light):not(.bg-white) .card-title {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) .btn,
+body.app-shell .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) .btn {
+    text-shadow: none !important;
+}
+
+/*
+ * Bootstrap dark-header override.
+ * Many pages use direct classes such as `card-header bg-success text-white`.
+ * Keep all text readable on those dark headers, even when generic title rules
+ * elsewhere try to force dark ink.
+ */
+body.app-shell .content-wrapper .card > .card-header.bg-primary,
+body.app-shell .content-wrapper .card > .card-header.bg-success,
+body.app-shell .content-wrapper .card > .card-header.bg-info,
+body.app-shell .content-wrapper .card > .card-header.bg-dark,
+body.app-shell .content-wrapper .card > .card-header.bg-secondary,
+body.app-shell .content-wrapper .card > .card-header.bg-danger,
+body.app-shell .content-wrapper .modal-header.bg-primary,
+body.app-shell .content-wrapper .modal-header.bg-success,
+body.app-shell .content-wrapper .modal-header.bg-info,
+body.app-shell .content-wrapper .modal-header.bg-dark,
+body.app-shell .content-wrapper .modal-header.bg-secondary,
+body.app-shell .content-wrapper .modal-header.bg-danger {
+    color: #ffffff !important;
+}
+
+body.app-shell .content-wrapper .card > .card-header.bg-primary *,
+body.app-shell .content-wrapper .card > .card-header.bg-success *,
+body.app-shell .content-wrapper .card > .card-header.bg-info *,
+body.app-shell .content-wrapper .card > .card-header.bg-dark *,
+body.app-shell .content-wrapper .card > .card-header.bg-secondary *,
+body.app-shell .content-wrapper .card > .card-header.bg-danger *,
+body.app-shell .content-wrapper .modal-header.bg-primary *,
+body.app-shell .content-wrapper .modal-header.bg-success *,
+body.app-shell .content-wrapper .modal-header.bg-info *,
+body.app-shell .content-wrapper .modal-header.bg-dark *,
+body.app-shell .content-wrapper .modal-header.bg-secondary *,
+body.app-shell .content-wrapper .modal-header.bg-danger * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.app-shell .content-wrapper .card > .card-header.bg-warning,
+body.app-shell .content-wrapper .modal-header.bg-warning {
+    color: #111827 !important;
+}
+
+body.app-shell .content-wrapper .card > .card-header.bg-warning *,
+body.app-shell .content-wrapper .modal-header.bg-warning * {
+    color: #111827 !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+}
+
+/*
+ * Dark hero/banner text override.
+ * Keep custom dashboard hero sections readable, including selected text, while
+ * leaving buttons inside those heroes with their proper button colors.
+ */
+body.app-shell .content-wrapper .mb-hero,
+body.app-shell .content-wrapper .medical-form-hero,
+body.app-shell .content-wrapper .portal-header,
+body.app-shell .content-wrapper .nc-hero,
+body.app-shell .content-wrapper .hero,
+body.app-shell .content-wrapper .admin-hero,
+body.app-shell .content-wrapper .card.bg-primary,
+body.app-shell .content-wrapper .card.bg-success,
+body.app-shell .content-wrapper .card.bg-info,
+body.app-shell .content-wrapper .card.bg-dark,
+body.app-shell .content-wrapper .card.bg-secondary,
+body.app-shell .content-wrapper .card.bg-danger {
+    color: #ffffff !important;
+}
+
+body.app-shell .content-wrapper .mb-hero h1,
+body.app-shell .content-wrapper .mb-hero h2,
+body.app-shell .content-wrapper .mb-hero h3,
+body.app-shell .content-wrapper .mb-hero h4,
+body.app-shell .content-wrapper .mb-hero h5,
+body.app-shell .content-wrapper .mb-hero h6,
+body.app-shell .content-wrapper .mb-hero p,
+body.app-shell .content-wrapper .mb-hero span:not(.badge),
+body.app-shell .content-wrapper .mb-hero strong,
+body.app-shell .content-wrapper .mb-hero small,
+body.app-shell .content-wrapper .mb-hero .eyebrow,
+body.app-shell .content-wrapper .medical-form-hero h1,
+body.app-shell .content-wrapper .medical-form-hero h2,
+body.app-shell .content-wrapper .medical-form-hero h3,
+body.app-shell .content-wrapper .medical-form-hero h4,
+body.app-shell .content-wrapper .medical-form-hero h5,
+body.app-shell .content-wrapper .medical-form-hero h6,
+body.app-shell .content-wrapper .medical-form-hero p,
+body.app-shell .content-wrapper .medical-form-hero span:not(.badge),
+body.app-shell .content-wrapper .medical-form-hero strong,
+body.app-shell .content-wrapper .portal-header h1,
+body.app-shell .content-wrapper .portal-header h2,
+body.app-shell .content-wrapper .portal-header h3,
+body.app-shell .content-wrapper .portal-header p,
+body.app-shell .content-wrapper .portal-header span:not(.badge),
+body.app-shell .content-wrapper .nc-hero h1,
+body.app-shell .content-wrapper .nc-hero h2,
+body.app-shell .content-wrapper .nc-hero h3,
+body.app-shell .content-wrapper .nc-hero p,
+body.app-shell .content-wrapper .hero h1,
+body.app-shell .content-wrapper .hero h2,
+body.app-shell .content-wrapper .hero h3,
+body.app-shell .content-wrapper .hero p,
+body.app-shell .content-wrapper .admin-hero h1,
+body.app-shell .content-wrapper .admin-hero h2,
+body.app-shell .content-wrapper .admin-hero h3,
+body.app-shell .content-wrapper .admin-hero p,
+body.app-shell .content-wrapper .card.bg-primary h1,
+body.app-shell .content-wrapper .card.bg-primary h2,
+body.app-shell .content-wrapper .card.bg-primary h3,
+body.app-shell .content-wrapper .card.bg-primary h4,
+body.app-shell .content-wrapper .card.bg-primary h5,
+body.app-shell .content-wrapper .card.bg-primary h6,
+body.app-shell .content-wrapper .card.bg-primary p,
+body.app-shell .content-wrapper .card.bg-primary span:not(.badge),
+body.app-shell .content-wrapper .card.bg-success h1,
+body.app-shell .content-wrapper .card.bg-success h2,
+body.app-shell .content-wrapper .card.bg-success h3,
+body.app-shell .content-wrapper .card.bg-success h4,
+body.app-shell .content-wrapper .card.bg-success h5,
+body.app-shell .content-wrapper .card.bg-success h6,
+body.app-shell .content-wrapper .card.bg-success p,
+body.app-shell .content-wrapper .card.bg-success span:not(.badge),
+body.app-shell .content-wrapper .card.bg-info h1,
+body.app-shell .content-wrapper .card.bg-info h2,
+body.app-shell .content-wrapper .card.bg-info h3,
+body.app-shell .content-wrapper .card.bg-info h4,
+body.app-shell .content-wrapper .card.bg-info h5,
+body.app-shell .content-wrapper .card.bg-info h6,
+body.app-shell .content-wrapper .card.bg-info p,
+body.app-shell .content-wrapper .card.bg-info span:not(.badge),
+body.app-shell .content-wrapper .card.bg-dark h1,
+body.app-shell .content-wrapper .card.bg-dark h2,
+body.app-shell .content-wrapper .card.bg-dark h3,
+body.app-shell .content-wrapper .card.bg-dark h4,
+body.app-shell .content-wrapper .card.bg-dark h5,
+body.app-shell .content-wrapper .card.bg-dark h6,
+body.app-shell .content-wrapper .card.bg-dark p,
+body.app-shell .content-wrapper .card.bg-dark span:not(.badge),
+body.app-shell .content-wrapper .card.bg-secondary h1,
+body.app-shell .content-wrapper .card.bg-secondary h2,
+body.app-shell .content-wrapper .card.bg-secondary h3,
+body.app-shell .content-wrapper .card.bg-secondary h4,
+body.app-shell .content-wrapper .card.bg-secondary h5,
+body.app-shell .content-wrapper .card.bg-secondary h6,
+body.app-shell .content-wrapper .card.bg-secondary p,
+body.app-shell .content-wrapper .card.bg-secondary span:not(.badge),
+body.app-shell .content-wrapper .card.bg-danger h1,
+body.app-shell .content-wrapper .card.bg-danger h2,
+body.app-shell .content-wrapper .card.bg-danger h3,
+body.app-shell .content-wrapper .card.bg-danger h4,
+body.app-shell .content-wrapper .card.bg-danger h5,
+body.app-shell .content-wrapper .card.bg-danger h6,
+body.app-shell .content-wrapper .card.bg-danger p,
+body.app-shell .content-wrapper .card.bg-danger span:not(.badge) {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.app-shell .content-wrapper .mb-hero ::selection,
+body.app-shell .content-wrapper .medical-form-hero ::selection,
+body.app-shell .content-wrapper .portal-header ::selection,
+body.app-shell .content-wrapper .nc-hero ::selection,
+body.app-shell .content-wrapper .hero ::selection,
+body.app-shell .content-wrapper .admin-hero ::selection,
+body.app-shell .content-wrapper .card.bg-primary ::selection,
+body.app-shell .content-wrapper .card.bg-success ::selection,
+body.app-shell .content-wrapper .card.bg-info ::selection,
+body.app-shell .content-wrapper .card.bg-dark ::selection,
+body.app-shell .content-wrapper .card.bg-secondary ::selection,
+body.app-shell .content-wrapper .card.bg-danger ::selection {
+    background: #dbeafe !important;
+    color: #071827 !important;
+    text-shadow: none !important;
+}
+
+body.app-shell .staff-alert-toast .toast-header,
+body.app-shell .staff-alert-toast .toast-header * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.32) !important;
+}
+
+body.app-shell .staff-alert-toast .toast-header ::selection {
+    background: #dbeafe !important;
+    color: #071827 !important;
+    text-shadow: none !important;
+}

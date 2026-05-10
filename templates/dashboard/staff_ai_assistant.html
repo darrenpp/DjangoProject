@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Registrar Assistant{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title mb-0">{{ agent_label }}</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    This assistant is reserved for admin and registrar roles only. It is designed to help staff align imported data, filter incomplete applicant files,
+                    answer staff questions, and generate reports and office briefs. Applicants continue to use the separate public applicant assistant only.
+                </p>
+                <div class="alert alert-light border">
+                    <strong>Current scope:</strong> {{ scope_label }}.
+                    The assistant reads the same live registry, import, review, and application queues already used by staff across the platform.
+                </div>
+                <div class="alert alert-info border mb-0">
+                    <strong>AI mode:</strong> {{ ai_provider.label }}.
+                    {{ ai_provider.detail }}
+                    {% if ai_provider.openai_ready %}
+                        Model: {{ ai_provider.model }}.
+                    {% elif ai_provider.ollama_ready %}
+                        Free local model: {{ ai_provider.ollama_model }}.
+                    {% elif ai_provider.local_llm_ready %}
+                        Private model: {{ ai_provider.local_model }}.
+                    {% else %}
+                        This mode works without internet access or external API billing. Configure Ollama to enable a free local GPT model.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner"><h3>{{ screening_total }}</h3><p>Applicants In Screening</p></div>
+            <div class="icon"><i class="fas fa-user-check"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>{{ missing_review_count }}</h3><p>Missing Data Reviews</p></div>
+            <div class="icon"><i class="fas fa-triangle-exclamation"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner"><h3>{{ duplicate_review_count }}</h3><p>Duplicate Candidates</p></div>
+            <div class="icon"><i class="fas fa-clone"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>{{ pending_application_count }}</h3><p>Pending Applications</p></div>
+            <div class="icon"><i class="fas fa-hourglass-half"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card card-outline card-primary">
+            <div class="card-header"><h3 class="card-title mb-0">Staff AI Chat</h3></div>
+            <div class="card-body">
+                <div class="helpdesk-chat-panel border rounded p-3 mb-3" id="staff-ai-messages" style="height: 360px; overflow-y: auto;">
+                    <div class="helpdesk-message assistant">
+                        <strong>{{ agent_label }}</strong>
+                        <p>You can ask about pending applications, missing data, imports, reports, role access, documents, or what action to take next.</p>
+                    </div>
+                </div>
+                <form id="staff-ai-form">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="staff-ai-question" placeholder="Ask the staff assistant a question..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </form>
+                <div class="helpdesk-suggestions mt-3">
+                    {% for suggestion in chat_suggestions %}
+                        <button type="button" class="helpdesk-suggestion" data-staff-ai-question="{{ suggestion }}">{{ suggestion }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="card card-outline card-success mt-4">
+            <div class="card-header"><h3 class="card-title mb-0">AI Recommendations</h3></div>
+            <div class="card-body">
+                {% for item in assistant_recommendations %}
+                    <div class="border rounded p-3 mb-2">{{ item }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-outline card-success">
+            <div class="card-header"><h3 class="card-title mb-0">How to Use It</h3></div>
+            <div class="card-body">
+                <ol class="mb-0 pl-3">
+                    {% for item in guide_rows %}
+                        <li class="mb-2">{{ item }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        <div class="card card-outline card-primary">
+            <div class="card-header"><h3 class="card-title mb-0">Staff Actions</h3></div>
+            <div class="card-body">
+                <div class="row">
+                    {% for action in action_rows %}
+                    <div class="col-md-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <strong>{{ action.label }}</strong>
+                            <div class="small text-muted mb-3">{{ action.description }}</div>
+                            <a href="{% url action.url_name %}" class="btn btn-primary btn-sm">Open</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-outline card-dark mt-4">
+            <div class="card-header"><h3 class="card-title mb-0">Latest Import Intelligence</h3></div>
+            <div class="card-body">
+                {% if latest_import %}
+                    <div class="row text-sm">
+                        <div class="col-md-6 mb-2"><strong>Source file:</strong> {{ latest_import.source_file_name }}</div>
+                        <div class="col-md-6 mb-2"><strong>Source kind:</strong> {{ latest_import.source_kind }}</div>
+                        <div class="col-md-6 mb-2"><strong>Processed rows:</strong> {{ latest_import.processed_rows }}</div>
+                        <div class="col-md-6 mb-2"><strong>Total rows:</strong> {{ latest_import.total_rows }}</div>
+                        <div class="col-md-6 mb-2"><strong>Duplicates detected:</strong> {{ latest_import.duplicates_detected }}</div>
+                        <div class="col-md-6 mb-2"><strong>New applications created:</strong> {{ latest_import.applications_created }}</div>
+                        <div class="col-md-6 mb-2"><strong>Applications updated:</strong> {{ latest_import.applications_updated }}</div>
+                        <div class="col-md-6 mb-2"><strong>Practice records created:</strong> {{ latest_import.practice_records_created }}</div>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No completed import batch is available in your current scope.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+        <div class="card card-outline card-warning">
+            <div class="card-header"><h3 class="card-title mb-0">Top Missing Fields</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                    <tr><th>Field</th><th>Open Review Count</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in top_missing_fields %}
+                        <tr>
+                            <td>{{ item.0 }}</td>
+                            <td>{{ item.1 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="text-muted">No active missing-field counts were found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card card-outline card-secondary mt-4">
+            <div class="card-header"><h3 class="card-title mb-0">Recent Import Runs</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                    <tr><th>Batch</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for batch in recent_imports %}
+                        <tr>
+                            <td>
+                                <div class="font-weight-bold">{{ batch.source_file_name }}</div>
+                                <div class="small text-muted">{{ batch.started_at|date:"d M Y H:i" }}</div>
+                            </td>
+                            <td>{{ batch.status|title }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="text-muted">No recent imports recorded.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-outline card-success">
+            <div class="card-header"><h3 class="card-title mb-0">Applicant Screening Queue</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>Form</th>
+                        <th>Applicant</th>
+                        <th>Scope</th>
+                        <th>Receipts</th>
+                        <th>Documents</th>
+                        <th>AI Screening Flags</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in screening_rows %}
+                        <tr>
+                            <td>
+                                <div class="font-weight-bold">{{ row.application.form_code }}</div>
+                                <div class="small text-muted">{{ row.application.submitted_date|date:"d M Y" }}</div>
+                            </td>
+                            <td>{{ row.professional|default:"Unlinked applicant record" }}</td>
+                            <td>{{ row.domain|title }}</td>
+                            <td>{{ row.receipt_count }}</td>
+                            <td>{{ row.document_count }}</td>
+                            <td>
+                                <div class="small font-weight-bold mb-1">{{ row.status_label }}</div>
+                                {% for flag in row.flags %}
+                                    <div class="small text-muted">{{ flag }}</div>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="text-muted p-3">No pending applications are waiting in the screening queue.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('staff-ai-form');
+    const input = document.getElementById('staff-ai-question');
+    const messages = document.getElementById('staff-ai-messages');
+
+    if (!form || !input || !messages) {
+        return;
+    }
+
+    function appendMessage(html, type) {
+        const node = document.createElement('div');
+        node.className = 'helpdesk-message ' + (type || 'assistant');
+        node.innerHTML = html;
+        messages.appendChild(node);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function askStaffAssistant(question) {
+        appendMessage('<p>' + window.ndohEscapeHtml(question) + '</p>', 'user');
+        const waitingNode = document.createElement('div');
+        waitingNode.className = 'helpdesk-message assistant';
+        waitingNode.innerHTML = '<p>Checking live registry context and preparing an answer...</p>';
+        messages.appendChild(waitingNode);
+        messages.scrollTop = messages.scrollHeight;
+        fetch('{% url "staff_ai_chat" %}', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.ndohGetCsrfToken()
+            },
+            body: JSON.stringify({ question: question })
+        }).then(function (response) {
+            if (!response.ok) {
+                throw new Error('Staff assistant request failed.');
+            }
+            return response.json();
+        }).then(function (data) {
+            waitingNode.remove();
+            const bullets = (data.bullets || []).map(function (item) {
+                return '<li>' + window.ndohEscapeHtml(item) + '</li>';
+            }).join('');
+            const links = (data.links || []).map(function (link) {
+                return '<a href="' + window.ndohEscapeHtml(link.url) + '">' + window.ndohEscapeHtml(link.label) + '</a>';
+            }).join('');
+            const suggestions = (data.suggestions || []).length
+                ? '<div class="small text-muted mt-2">Try also: ' + data.suggestions.map(window.ndohEscapeHtml).join(', ') + '</div>'
+                : '';
+            appendMessage(
+                '<strong>' + window.ndohEscapeHtml(data.title || '{{ agent_label|escapejs }}') + '</strong>'
+                + '<p>' + window.ndohEscapeHtml(data.answer || 'No response available.') + '</p>'
+                + (bullets ? '<ul class="mb-2">' + bullets + '</ul>' : '')
+                + (links ? '<div class="helpdesk-links">' + links + '</div>' : '')
+                + suggestions,
+                'assistant'
+            );
+        }).catch(function () {
+            waitingNode.remove();
+            appendMessage('<p>Sorry, the staff assistant could not answer right now. Please try again or open Staff Inbox & Chat.</p>', 'assistant');
+        });
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const question = input.value.trim();
+        if (!question) {
+            return;
+        }
+        input.value = '';
+        askStaffAssistant(question);
+    });
+
+    document.querySelectorAll('[data-staff-ai-question]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const question = button.getAttribute('data-staff-ai-question');
+            if (question) {
+                askStaffAssistant(question);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

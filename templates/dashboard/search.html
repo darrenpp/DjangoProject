@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Search{% endblock %}
+{% block title_label %}Registry Search{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-body">
+        <form method="get" action="{% url 'dashboard_search' %}">
+            <div class="input-group input-group-lg">
+                <input type="search" name="q" class="form-control" value="{{ query }}" placeholder="{% if staff_user %}Search staff, licence numbers, applications, facilities, provinces...{% else %}Search registration, renewal, forms, payments, documents...{% endif %}" autofocus>
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search mr-1"></i> Search
+                </button>
+            </div>
+        </form>
+        {% if query %}
+            <div class="mt-3 text-muted">
+                Found {{ result_count }} result{{ result_count|pluralize }} for <strong>{{ query }}</strong>.
+            </div>
+        {% else %}
+            <div class="mt-3 text-muted">
+                Use this search to find registry records, application status, facilities, or registration guidance.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if helpdesk_answer %}
+<div class="card card-outline card-success mb-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0"><i class="fas fa-robot mr-1"></i> Registration Help Answer</h3>
+    </div>
+    <div class="card-body">
+        <h5>{{ helpdesk_answer.title }}</h5>
+        <p class="mb-2">{{ helpdesk_answer.answer }}</p>
+        {% if helpdesk_answer.suggestions %}
+            <div class="small text-muted">Related: {{ helpdesk_answer.suggestions|join:", " }}</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if staff_user %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card card-outline card-info mb-4">
+            <div class="card-header"><h3 class="card-title mb-0">Professional Records</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead><tr><th>Name</th><th>Type</th><th>Registration</th><th></th></tr></thead>
+                    <tbody>
+                    {% for item in results.professionals %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.name }}</strong>
+                                <div class="small text-muted">{{ item.detail }}</div>
+                            </td>
+                            <td>{{ item.type }}</td>
+                            <td>{{ item.registration }}</td>
+                            <td><a href="{% url item.url item.pk %}" class="btn btn-sm btn-primary">Open</a></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="4" class="text-muted text-center">No professional records found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-outline card-warning mb-4">
+            <div class="card-header"><h3 class="card-title mb-0">Applications</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead><tr><th>Form</th><th>Applicant</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                    {% for item in results.applications %}
+                        <tr>
+                            <td>{{ item.form_code }}</td>
+                            <td>
+                                <strong>{{ item.professional }}</strong>
+                                <div class="small text-muted">{{ item.submitted|date:"d M Y" }}</div>
+                            </td>
+                            <td><span class="badge badge-warning">{{ item.status }}</span></td>
+                            <td><a href="{% url item.url item.pk %}" class="btn btn-sm btn-primary">Review</a></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="4" class="text-muted text-center">No applications found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card card-outline card-secondary mb-4">
+            <div class="card-header"><h3 class="card-title mb-0">Imported Workbook Records</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead><tr><th>Name</th><th>Registration</th><th>Category</th><th>Year</th><th>Province</th></tr></thead>
+                    <tbody>
+                    {% for item in results.imported_records %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.registration }}</td>
+                            <td>{{ item.category }}<div class="small text-muted">{{ item.record_type }}</div></td>
+                            <td>{{ item.year }}</td>
+                            <td>{{ item.province }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5" class="text-muted text-center">No imported records found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card card-outline card-success mb-4">
+            <div class="card-header"><h3 class="card-title mb-0">Facilities</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead><tr><th>Facility</th><th>Type</th><th>Location</th></tr></thead>
+                    <tbody>
+                    {% for item in results.facilities %}
+                        <tr>
+                            <td><strong>{{ item.name }}</strong><div class="small text-muted">{{ item.code }}</div></td>
+                            <td>{{ item.type }}</td>
+                            <td>{{ item.location }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3" class="text-muted text-center">No facilities found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card card-outline card-primary">
+    <div class="card-header"><h3 class="card-title mb-0">Registration and Renewal Information</h3></div>
+    <div class="card-body">
+        {% for item in results.guidance %}
+            <div class="border rounded p-3 mb-2 bg-white">
+                <h5 class="mb-1">{{ item.title }}</h5>
+                <div class="small text-muted mb-2">{{ item.audience }}</div>
+                <p class="mb-0">{{ item.summary }}</p>
+            </div>
+        {% empty %}
+            <p class="text-muted mb-0">No guidance results yet. Try searching for “renewal”, “NC2”, “documents”, “payment”, or “Medical Board”.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

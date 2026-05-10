@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load record_tags %}
+
+{% block title_label %}{{ model_plural_label }}{% endblock %}
+
+{% block content %}
+<div class="card table-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-0">{{ model_plural_label }}</h3>
+            <small class="text-white-50">Search, sort, and filter records directly in the table.</small>
+        </div>
+        <div class="d-flex">
+            <form method="get" class="form-inline mr-2">
+                <div class="input-group input-group-sm">
+                    <input type="search" name="q" value="{{ search_term }}" class="form-control" placeholder="Search records">
+                    <div class="input-group-append">
+                        <button class="btn btn-light" type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+            <a href="{% url 'record_create' model_slug %}" class="btn btn-sm btn-success">
+                <i class="fas fa-plus mr-1"></i>Add New
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        {% if is_professional_model %}
+                            <th>Image</th>
+                        {% endif %}
+                        {% for field in fields %}
+                            <th>{{ field|title }}</th>
+                        {% endfor %}
+                        {% if is_professional_model %}
+                            <th>Document</th>
+                        {% endif %}
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in objects %}
+                    <tr>
+                        {% if is_professional_model %}
+                            <td style="width: 92px;">
+                                {% with photo=media_lookup|get_item:row.pk %}
+                                    {% if photo and photo.image %}
+                                        <a href="{{ photo.image.url }}" target="_blank">
+                                            <img src="{{ photo.image.url }}" alt="Image" class="img-thumbnail" style="width: 64px; height: 64px; object-fit: cover;">
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No image</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        {% endif %}
+                        {% for field in fields %}
+                            <td>{{ row|attr:field|default:"-" }}</td>
+                        {% endfor %}
+                        {% if is_professional_model %}
+                            <td>
+                                {% with doc=document_lookup|get_item:row.pk %}
+                                    {% if doc and doc.file %}
+                                        <a href="{{ doc.file.url }}" target="_blank" class="btn btn-outline-info btn-sm">View</a>
+                                    {% else %}
+                                        <span class="text-muted">No file</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        {% endif %}
+                        <td class="text-right">
+                            {% if is_professional_model %}
+                                <a href="{% url 'professional_detail' row.pk %}" class="btn btn-info btn-sm">View</a>
+                            {% else %}
+                                <a href="{% url 'record_detail' model_slug row.pk %}" class="btn btn-info btn-sm">View</a>
+                            {% endif %}
+                            <a href="{% url 'record_update' model_slug row.pk %}" class="btn btn-primary btn-sm">Edit</a>
+                            <a href="{% url 'record_delete' model_slug row.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ fields|length|add:extra_columns }}" class="text-center text-muted py-4">
+                            No records found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+<nav aria-label="Record pages" class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?q={{ search_term }}&page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        <li class="page-item disabled">
+            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?q={{ search_term }}&page={{ page_obj.next_page_number }}">Next</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

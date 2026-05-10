@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Repository Document{% endblock %}
+{% block title_label %}Repository Document{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card card-outline card-primary">
+            <div class="card-header d-flex justify-content-between align-items-start">
+                <div>
+                    <h3 class="card-title mb-0">{{ document.title }}</h3>
+                    <small class="text-muted">{{ document.get_office_scope_display }} / {{ document.folder.full_path|default:"No folder" }}</small>
+                </div>
+                <div>
+                    <span class="badge badge-secondary">{{ document.get_status_display }}</span>
+                    {% if document.is_record %}<span class="badge badge-info">Official Record</span>{% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <p>{{ document.description|default:"No description recorded." }}</p>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row small">
+                            <dt class="col-sm-5">Repository ID</dt>
+                            <dd class="col-sm-7">{{ document.repository_id }}</dd>
+                            <dt class="col-sm-5">Document Type</dt>
+                            <dd class="col-sm-7">{{ document.document_type|default:"-" }}</dd>
+                            <dt class="col-sm-5">Retention</dt>
+                            <dd class="col-sm-7">{% if document.retention_years %}{{ document.retention_years }} years{% else %}-{% endif %}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row small">
+                            <dt class="col-sm-5">Linked Record</dt>
+                            <dd class="col-sm-7">{{ document.related_object|default:"-" }}</dd>
+                            <dt class="col-sm-5">Created By</dt>
+                            <dd class="col-sm-7">{{ document.created_by|default:"-" }}</dd>
+                            <dt class="col-sm-5">Updated</dt>
+                            <dd class="col-sm-7">{{ document.updated_at|date:"d M Y H:i" }}</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <h5 class="mt-3">Metadata</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <tbody>
+                            {% for key, value in document.metadata.items %}
+                            <tr>
+                                <th style="width: 35%;">{{ key }}</th>
+                                <td>{{ value }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td class="text-muted">No metadata recorded.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <h5 class="mt-4">Versions</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Version</th>
+                                <th>File</th>
+                                <th>Size</th>
+                                <th>Checksum</th>
+                                <th>Uploaded By</th>
+                                <th>Date</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for version in versions %}
+                            <tr>
+                                <td>
+                                    v{{ version.version_number }}
+                                    {% if version.is_current %}<span class="badge badge-success">Current</span>{% endif %}
+                                </td>
+                                <td>
+                                    {{ version.original_filename|default:"-" }}
+                                    {% if version.extracted_text %}<span class="badge badge-info ml-1">OCR</span>{% endif %}
+                                    {% if version.notes %}<div class="text-muted small">{{ version.notes }}</div>{% endif %}
+                                </td>
+                                <td>{{ version.file_size|filesizeformat }}</td>
+                                <td><code>{{ version.checksum|slice:":12" }}</code></td>
+                                <td>{{ version.uploaded_by|default:"-" }}</td>
+                                <td>{{ version.uploaded_at|date:"d M Y H:i" }}</td>
+                                <td class="text-right">
+                                    {% if can_download_document %}
+                                    <a href="{% url 'repository_download' document.pk version.pk %}" class="btn btn-outline-primary btn-xs">Download</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-muted text-center">No versions have been uploaded.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'repository_search' %}" class="btn btn-outline-secondary">Back to Repository</a>
+            </div>
+        </div>
+
+        <div class="card card-outline card-secondary">
+            <div class="card-header"><h3 class="card-title mb-0">Audit Trail</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Action</th>
+                            <th>User</th>
+                            <th>Version</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in audit_events %}
+                        <tr>
+                            <td>{{ event.created_at|date:"d M Y H:i" }}</td>
+                            <td>{{ event.get_event_type_display }}</td>
+                            <td>{{ event.user|default:"System" }}</td>
+                            <td>{% if event.version %}v{{ event.version.version_number }}{% else %}-{% endif %}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-muted text-center">No audit events recorded.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        {% if can_edit_document %}
+        <div class="card card-outline card-warning">
+            <div class="card-header"><h3 class="card-title mb-0">Update Metadata</h3></div>
+            <form method="post" action="{% url 'repository_update_metadata' document.pk %}">
+                {% csrf_token %}
+                <div class="card-body">
+                    {{ update_form.non_field_errors }}
+                    <div class="form-group">
+                        <label>Title</label>
+                        {{ update_form.title }}
+                    </div>
+                    <div class="form-group">
+                        <label>Scope</label>
+                        {{ update_form.office_scope }}
+                    </div>
+                    <div class="form-group">
+                        <label>Folder</label>
+                        {{ update_form.folder }}
+                    </div>
+                    <div class="form-group">
+                        <label>Document Type</label>
+                        {{ update_form.document_type }}
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        {{ update_form.status }}
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        {{ update_form.description }}
+                    </div>
+                    <div class="form-group">
+                        <label>Retention Years</label>
+                        {{ update_form.retention_years }}
+                    </div>
+                    <div class="custom-control custom-checkbox mb-3">
+                        {{ update_form.is_record }}
+                        <label class="custom-control-label" for="{{ update_form.is_record.id_for_label }}">Official managed record</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Metadata</label>
+                        {{ update_form.metadata_text }}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-warning btn-block">Save Metadata</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card card-outline card-success">
+            <div class="card-header"><h3 class="card-title mb-0">Add New Version</h3></div>
+            <form method="post" enctype="multipart/form-data" action="{% url 'repository_add_version' document.pk %}" data-loading-text="Uploading new document version" data-loading-meta="The new file will become the current repository version.">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>File</label>
+                        {{ version_form.file }}
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        {{ version_form.notes }}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success btn-block">Upload Version</button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            You can view this repository record, but editing and version uploads require approved registrar, reviewer, or System Admin access.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

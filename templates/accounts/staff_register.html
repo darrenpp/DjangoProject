@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Registration - PNG Regulatory Bodies The Medical Board &amp; Nursing Council</title>
+  <script>
+    window.ndohAssets = {
+      bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
+      bootstrapJs: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
+      fontawesomeCss: "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css",
+      adminlteCss: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/css/adminlte.min.css",
+      adminlteJs: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/js/adminlte.min.js"
+    };
+    window.ndohLoadCss = function (href, id) {
+      if (id && document.getElementById(id)) return;
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      if (id) link.id = id;
+      document.head.appendChild(link);
+    };
+    window.ndohLoadScript = function (src, test, id) {
+      if (test && test()) return;
+      if (id && document.getElementById(id)) return;
+      const script = document.createElement('script');
+      script.src = src;
+      if (id) script.id = id;
+      document.body.appendChild(script);
+    };
+  </script>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.bootstrapCss, 'ndoh-bootstrap-cdn')">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.fontawesomeCss, 'ndoh-fontawesome-cdn')">
+  <link rel="stylesheet" href="{% static 'vendor/adminlte/css/adminlte.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.adminlteCss, 'ndoh-adminlte-cdn')">
+  <style>
+    body.auth-page {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(47, 95, 83, 0.10), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.10), transparent 26%),
+        linear-gradient(180deg, #f7f7f4 0%, #edf1ee 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+    }
+    .auth-shell { width: 100%; max-width: 760px; }
+    .auth-card {
+      background: rgba(255,255,255,.95);
+      border: 1px solid #d7dfdb;
+      border-radius: 28px;
+      box-shadow: 0 24px 60px rgba(14, 32, 49, .10);
+      overflow: hidden;
+    }
+    .auth-card .card-body { padding: 40px; }
+    h1, h2, h3 { color: #15293d; font-weight: 800; }
+    .btn-primary, .btn-success, .btn-info, .btn-danger { color: #fff !important; font-weight: 700; }
+    .btn-primary {
+      background: linear-gradient(135deg, #18324a 0%, #2f5f53 100%);
+      border-color: #2f5f53;
+      border-radius: 14px;
+      min-height: 46px;
+    }
+    .form-control,
+    .form-select {
+      min-height: 46px;
+      border-radius: 14px;
+      border-color: #d2dcd8;
+    }
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #2f5f53;
+      box-shadow: 0 0 0 .2rem rgba(47, 95, 83, .12);
+    }
+    .form-control-file {
+      display: block;
+      width: 100%;
+      padding: .75rem 1rem;
+      border: 1px solid #d2dcd8;
+      border-radius: 14px;
+      background: #fff;
+    }
+    .staff-logo {
+      width: 92px;
+      height: 92px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body class="auth-page">
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="card-body">
+      <div class="text-center mb-3">
+        <img src="{% static 'img/NDOH_LOGO.png' %}" alt="NDOH Logo" class="staff-logo">
+        <h2 class="mt-3 mb-2">PNG Regulatory Bodies The Medical Board &amp; Nursing Council</h2>
+        <h1 class="mt-0">Staff Registration</h1>
+        <p class="text-muted mb-0">For Registrar and Admin requests only</p>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>First Name</label>
+            <input type="text" name="first_name" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" value="{{ form.first_name.value|default:'' }}" required>
+            {% if form.first_name.errors %}<div class="invalid-feedback d-block">{{ form.first_name.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Last Name</label>
+            <input type="text" name="last_name" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" value="{{ form.last_name.value|default:'' }}" required>
+            {% if form.last_name.errors %}<div class="invalid-feedback d-block">{{ form.last_name.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Username</label>
+            <input type="text" name="username" class="form-control {% if form.username.errors %}is-invalid{% endif %}" value="{{ form.username.value|default:'' }}" required>
+            {% if form.username.errors %}<div class="invalid-feedback d-block">{{ form.username.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" value="{{ form.email.value|default:'' }}">
+            {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Phone</label>
+            <input type="text" name="phone" class="form-control {% if form.phone.errors %}is-invalid{% endif %}" value="{{ form.phone.value|default:'' }}">
+            {% if form.phone.errors %}<div class="invalid-feedback d-block">{{ form.phone.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Department</label>
+            <input type="text" name="department" class="form-control {% if form.department.errors %}is-invalid{% endif %}" value="{{ form.department.value|default:'' }}">
+            {% if form.department.errors %}<div class="invalid-feedback d-block">{{ form.department.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Role</label>
+            <select name="role" class="form-control {% if form.role.errors %}is-invalid{% endif %}" required>
+              <option value="registrar" {% if form.role.value == 'registrar' or not form.role.value %}selected{% endif %}>Registrar</option>
+              <option value="admin" {% if form.role.value == 'admin' %}selected{% endif %}>Admin Request</option>
+            </select>
+            {% if form.role.errors %}<div class="invalid-feedback d-block">{{ form.role.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Profile Picture</label>
+            <input type="file" name="profile_image" class="form-control-file {% if form.profile_image.errors %}is-invalid{% endif %}" accept="image/*">
+            {% if form.profile_image.errors %}<div class="invalid-feedback d-block">{{ form.profile_image.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Password</label>
+            <input type="password" name="password1" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" required>
+            {% if form.password1.errors %}<div class="invalid-feedback d-block">{{ form.password1.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="form-group col-md-6">
+            <label>Confirm Password</label>
+            <input type="password" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" required>
+            {% if form.password2.errors %}<div class="invalid-feedback d-block">{{ form.password2.errors|join:", " }}</div>{% endif %}
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+      </form>
+
+      <div class="text-center mt-3">
+        <a href="{% url 'staff_login' %}">Back to staff login</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
+<script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
+<script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
+</body>
+</html>

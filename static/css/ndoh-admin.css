@@ -1,0 +1,312 @@
+:root {
+    --ndoh-admin-navy: #12304a;
+    --ndoh-admin-navy-deep: #0a1e31;
+    --ndoh-admin-green: #17634f;
+    --ndoh-admin-gold: #b7791f;
+    --ndoh-admin-surface: #f5f7f8;
+    --ndoh-admin-card: #ffffff;
+    --ndoh-admin-border: #d7dee6;
+    --ndoh-admin-text: #223242;
+    --ndoh-admin-muted: #5b6b7b;
+}
+
+body,
+input,
+select,
+textarea,
+button {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.86), rgba(245,247,248,0.98)),
+        radial-gradient(circle at top left, rgba(15,118,110,0.08), transparent 30%);
+    color: var(--ndoh-admin-text);
+}
+
+#header {
+    background: linear-gradient(90deg, var(--ndoh-admin-navy-deep) 0%, var(--ndoh-admin-navy) 58%, var(--ndoh-admin-green) 100%) !important;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(11, 34, 56, 0.18);
+}
+
+#header a:link,
+#header a:visited,
+#user-tools,
+#user-tools a {
+    color: #fff !important;
+}
+
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited {
+    color: #fff !important;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+#branding h1 a {
+    align-items: center;
+    display: inline-flex;
+    gap: 12px;
+    max-width: min(980px, calc(100vw - 420px));
+}
+
+.admin-brand-logo {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 10px;
+    height: 46px;
+    object-fit: contain;
+    padding: 4px;
+    width: 56px;
+}
+
+div.breadcrumbs {
+    background: #eef3f6;
+    color: var(--ndoh-admin-muted);
+    border-bottom: 1px solid var(--ndoh-admin-border);
+}
+
+div.breadcrumbs a {
+    color: var(--ndoh-admin-navy);
+}
+
+#content {
+    color: var(--ndoh-admin-text);
+}
+
+#content h1,
+#content h2,
+#content h3,
+#content h4 {
+    color: var(--ndoh-admin-navy);
+    font-weight: 800;
+}
+
+.module,
+.inline-group,
+#changelist,
+#content-main,
+.dashboard .module {
+    background: var(--ndoh-admin-card);
+    border: 1px solid var(--ndoh-admin-border);
+    border-radius: 18px;
+    box-shadow: 0 14px 34px rgba(11, 34, 56, 0.07);
+    overflow: hidden;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    background: linear-gradient(90deg, var(--ndoh-admin-navy) 0%, #0f766e 100%) !important;
+    color: #fff !important;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.dashboard .module table th,
+#changelist table thead th,
+.results thead th {
+    background: #edf3f7;
+    color: var(--ndoh-admin-navy) !important;
+    font-weight: 800;
+}
+
+#changelist table tbody th,
+#changelist table tbody td,
+.results tbody th,
+.results tbody td,
+.dashboard .module table td,
+.dashboard .module table th {
+    color: var(--ndoh-admin-text) !important;
+}
+
+.badge,
+.label,
+span[class*="badge-"],
+td.field-status span,
+td.field-application_status span,
+td.field-license_status span {
+    border-radius: 999px;
+    display: inline-block;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    padding: 0.34em 0.68em;
+    text-shadow: none !important;
+}
+
+.badge-success,
+.badge-approved,
+.badge-active,
+.badge-complete,
+.badge-completed,
+.status-approved,
+.status-active {
+    background: #166534 !important;
+    color: #fff !important;
+}
+
+.badge-warning,
+.badge-pending,
+.badge-submitted,
+.badge-review,
+.badge-under_review,
+.status-pending,
+.status-review,
+.status-submitted {
+    background: #f59e0b !important;
+    color: #111827 !important;
+}
+
+.badge-info,
+.badge-processing,
+.badge-in_progress,
+.status-processing,
+.status-in-progress {
+    background: #0369a1 !important;
+    color: #fff !important;
+}
+
+.badge-danger,
+.badge-rejected,
+.badge-expired,
+.badge-cancelled,
+.status-rejected,
+.status-expired {
+    background: #b91c1c !important;
+    color: #fff !important;
+}
+
+.badge-secondary,
+.badge-draft,
+.badge-inactive,
+.status-draft,
+.status-inactive {
+    background: #475569 !important;
+    color: #fff !important;
+}
+
+.badge-light {
+    background: #f8fafc !important;
+    border: 1px solid var(--ndoh-admin-border);
+    color: #0f172a !important;
+}
+
+a:link,
+a:visited {
+    color: var(--ndoh-admin-navy);
+}
+
+a:hover {
+    color: var(--ndoh-admin-green);
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+.object-tools a,
+.selector-chosen h2 + a {
+    border-radius: 10px !important;
+    border: 1px solid var(--ndoh-admin-green) !important;
+    background: var(--ndoh-admin-green) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    font-weight: 600;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+}
+
+.object-tools a.viewsitelink,
+.object-tools a.historylink {
+    background: var(--ndoh-admin-navy) !important;
+    border-color: var(--ndoh-admin-navy) !important;
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+    background: var(--ndoh-admin-gold) !important;
+    border-color: var(--ndoh-admin-gold) !important;
+}
+
+input,
+textarea,
+select,
+.vTextField,
+.vLargeTextField,
+.vURLField,
+.vIntegerField,
+.vDateField,
+.vTimeField,
+.vForeignKeyRawIdAdminField {
+    border-radius: 10px !important;
+    border: 1px solid var(--ndoh-admin-border) !important;
+    padding: 10px 12px !important;
+    background: #fff !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--ndoh-admin-green) !important;
+    box-shadow: 0 0 0 3px rgba(47, 107, 79, 0.14);
+    outline: 0;
+}
+
+#nav-sidebar {
+    background: linear-gradient(180deg, var(--ndoh-admin-navy) 0%, var(--ndoh-admin-navy-deep) 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#nav-sidebar .current-model,
+#nav-sidebar .current-app .section,
+#nav-sidebar a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+#nav-sidebar a {
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+}
+
+#changelist-filter {
+    border-left: 1px solid var(--ndoh-admin-border);
+    background: #f9fbfc;
+}
+
+.selector,
+.calendarbox,
+.clockbox {
+    border-radius: 12px;
+    border-color: var(--ndoh-admin-border);
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.help,
+p.help,
+.helptext {
+    color: var(--ndoh-admin-muted);
+}
+
+@media (max-width: 1024px) {
+    .module,
+    .inline-group,
+    #changelist,
+    #content-main,
+    .dashboard .module {
+        border-radius: 12px;
+    }
+
+    #branding h1 a {
+        max-width: min(720px, calc(100vw - 220px));
+    }
+}

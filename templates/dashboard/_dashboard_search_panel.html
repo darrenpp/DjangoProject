@@ -1,0 +1,15 @@
+<div class="card card-outline card-primary mb-4">
+    <div class="card-body">
+        <form method="get" action="{% url 'dashboard_search' %}">
+            <div class="input-group input-group-lg">
+                <input type="search" name="q" class="form-control" placeholder="{{ search_placeholder|default:'Search records, applications, facilities, licence numbers, or registration guidance...' }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search mr-1"></i> Search
+                </button>
+            </div>
+        </form>
+        <div class="small text-muted mt-2">
+            Staff can search registry records, applications, imported workbook rows, facilities, and guidance. Regular users can search registration, renewal, payment, and document information.
+        </div>
+    </div>
+</div>

@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}Duplicate Review Workflow{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-outline card-danger">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Duplicate Review Workflow</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    This review screen is for admin and registrar users only. It focuses on practitioner records that were flagged because the same name appears with the same registration number or practitioner or licence number.
+                </p>
+                <div class="alert alert-light border mb-0">
+                    <strong>Current scope:</strong> {{ scope_label }}.
+                    Exact imported duplicates have already been removed. The cases below are the remaining grouped records that still need human review before reporting, merging, or follow-up.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner"><h3>{{ pending_total }}</h3><p>Pending Reviews</p></div>
+            <div class="icon"><i class="fas fa-clone"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>{{ reviewed_total }}</h3><p>Reviewed Cases</p></div>
+            <div class="icon"><i class="fas fa-eye"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner"><h3>{{ merged_total }}</h3><p>Merged Decisions</p></div>
+            <div class="icon"><i class="fas fa-check-double"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>{{ largest_group_size }}</h3><p>Largest Group On Page</p></div>
+            <div class="icon"><i class="fas fa-layer-group"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-outline card-primary mt-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Filter Duplicate Cases</h3>
+    </div>
+    <div class="card-body">
+        <form method="get" class="form-row align-items-end">
+            <div class="form-group col-md-4">
+                <label for="duplicate-search">Search name or number</label>
+                <input type="text" name="q" id="duplicate-search" value="{{ search_query }}" class="form-control" placeholder="Practitioner name, registration number, licence number">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="duplicate-status">Status</label>
+                <select name="status" id="duplicate-status" class="form-control">
+                    {% for value, label in status_options %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="duplicate-model">Practitioner type</label>
+                <select name="model" id="duplicate-model" class="form-control">
+                    {% for option in model_options %}
+                        <option value="{{ option.value }}" {% if model_filter == option.value %}selected{% endif %}>{{ option.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-2">
+                <button type="submit" class="btn btn-primary btn-block">Apply</button>
+            </div>
+        </form>
+        <div class="alert alert-light border mt-3 mb-0">
+            <strong>How to use this workflow:</strong>
+            Confirm the same identifier is truly referring to the same person, inspect the grouped imported rows, then mark the case as reviewed or merged. Reopen it to pending if it still needs office follow-up.
+        </div>
+    </div>
+</div>
+
+<div class="card card-outline card-secondary mt-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Duplicate Review Queue</h3>
+    </div>
+    <div class="card-body p-0">
+        {% if review_rows %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>Practitioner</th>
+                        <th>Type</th>
+                        <th>Match Basis</th>
+                        <th>Grouped Rows</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in review_rows %}
+                        <tr>
+                            <td>
+                                <div class="font-weight-bold">{{ row.full_name }}</div>
+                                <div class="small text-muted">{{ row.identifier_field }}: {{ row.identifier_value }}</div>
+                                <div class="small text-muted">Review #{{ row.review.id }}</div>
+                            </td>
+                            <td>
+                                <div>{{ row.target_label }}</div>
+                                <div class="small text-muted">{{ row.record_type }}{% if row.record_year %} · {{ row.record_year }}{% endif %}</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-light border">{{ row.audit_label }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-danger">{{ row.member_count }}</span>
+                            </td>
+                            <td>
+                                {% if row.review.status == 'pending' %}
+                                    <span class="badge badge-danger">Pending</span>
+                                {% elif row.review.status == 'merged' %}
+                                    <span class="badge badge-success">Merged</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Reviewed</span>
+                                {% endif %}
+                                {% if row.review.reviewed_by %}
+                                    <div class="small text-muted mt-1">
+                                        {{ row.review.reviewed_by.get_full_name|default:row.review.reviewed_by.username }}
+                                        {% if row.review.review_date %}· {{ row.review.review_date|date:"d M Y H:i" }}{% endif %}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap">
+                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mr-2 mb-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="reviewed">
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">Mark Reviewed</button>
+                                    </form>
+                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mr-2 mb-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="merged">
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Mark Merged</button>
+                                    </form>
+                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mb-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="pending">
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Reopen</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="bg-light">
+                            <td colspan="6">
+                                <details>
+                                    <summary class="font-weight-bold" style="cursor:pointer;">View grouped source rows</summary>
+                                    <div class="table-responsive mt-3">
+                                        <table class="table table-sm table-bordered bg-white mb-0">
+                                            <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Registration No</th>
+                                                <th>Practitioner No</th>
+                                                <th>Record Type</th>
+                                                <th>Year</th>
+                                                <th>Province</th>
+                                                <th>Reference</th>
+                                                <th>Source Sheet</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for member in row.members %}
+                                                <tr>
+                                                    <td>{{ member.id }}</td>
+                                                    <td>{{ member.full_name }}</td>
+                                                    <td>{{ member.registration_no|default:"-" }}</td>
+                                                    <td>{{ member.practitioner_number|default:"-" }}</td>
+                                                    <td>{{ member.record_type }}</td>
+                                                    <td>{{ member.record_year|default:"-" }}</td>
+                                                    <td>{{ member.province }}</td>
+                                                    <td>{{ member.reference_number }}</td>
+                                                    <td>
+                                                        <div>{{ member.sheet_name }}</div>
+                                                        <div class="small text-muted">Row {{ member.source_row }} · {{ member.batch_name }}</div>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="9" class="text-muted">The grouped source rows are no longer available. This can happen if the imported duplicates were already removed during cleanup.</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-4 text-muted">No duplicate-review items matched the current filters.</div>
+        {% endif %}
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <div class="small text-muted">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </div>
+            <div>
+                {% if page_obj.has_previous %}
+                    <a href="?{% if query_string_without_page %}{{ query_string_without_page }}&{% endif %}page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a href="?{% if query_string_without_page %}{{ query_string_without_page }}&{% endif %}page={{ page_obj.next_page_number }}" class="btn btn-sm btn-outline-secondary">Next</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

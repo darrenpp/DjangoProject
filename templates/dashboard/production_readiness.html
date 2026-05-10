@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Production Readiness Dashboard{% endblock %}
+{% block page_title %}Production Readiness Dashboard{% endblock %}
+
+{% block content %}
+<div class="alert alert-info border">
+    <h5 class="mb-2"><i class="fas fa-shield-halved mr-2"></i>Government Launch Data Rule</h5>
+    <p class="mb-1">{{ production_rule }}</p>
+    <p class="mb-0"><strong>Current scope:</strong> {{ scope_label }}. Staff should correct issues from source records, not from memory.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-{% if critical_total %}danger{% else %}success{% endif %}">
+            <div class="inner">
+                <h3>{{ critical_total }}</h3>
+                <p>{{ readiness_status }}</p>
+            </div>
+            <div class="icon"><i class="fas fa-clipboard-check"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ total_date_issues }}</h3>
+                <p>Date Issues</p>
+            </div>
+            <div class="icon"><i class="fas fa-calendar-triangle-exclamation"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-dark">
+            <div class="inner">
+                <h3>{{ missing_data.open }}</h3>
+                <p>Open Missing-Data Reviews</p>
+            </div>
+            <div class="icon"><i class="fas fa-list-check"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ duplicate_review_open }}</h3>
+                <p>Duplicate Review Backlog</p>
+            </div>
+            <div class="icon"><i class="fas fa-clone"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-calendar-days mr-2"></i>Date Issues Requiring Source Verification</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Issue</th>
+                                <th class="text-right">Count</th>
+                                <th>Why It Matters</th>
+                                <th>Sample Records</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for issue in date_issues %}
+                            <tr>
+                                <td><strong>{{ issue.label }}</strong></td>
+                                <td class="text-right">
+                                    <span class="badge {% if issue.count %}badge-warning{% else %}badge-success{% endif %}">{{ issue.count }}</span>
+                                </td>
+                                <td>{{ issue.risk }}</td>
+                                <td>
+                                    {% if issue.records %}
+                                        {% for record in issue.records %}
+                                            <div class="small mb-1">
+                                                <strong>{{ record.name|default:"Unnamed record" }}</strong>
+                                                <span class="text-muted">
+                                                    {{ record.identifier|default:"-" }}
+                                                    | {{ record.date_value|date:"Y-m-d" }}
+                                                    | {{ record.source }}
+                                                </span>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">No sample records.</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-triangle-exclamation mr-2"></i>Missing-Data Review Backlog</h3>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-md-3 mb-2">
+                        <div class="border rounded p-3 bg-light">
+                            <div class="h3 mb-0">{{ missing_data.open }}</div>
+                            <div class="text-muted">Open</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="border rounded p-3 bg-light">
+                            <div class="h3 mb-0 text-danger">{{ missing_data.high }}</div>
+                            <div class="text-muted">High</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="border rounded p-3 bg-light">
+                            <div class="h3 mb-0 text-warning">{{ missing_data.medium }}</div>
+                            <div class="text-muted">Medium</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="border rounded p-3 bg-light">
+                            <div class="h3 mb-0 text-info">{{ missing_data.low }}</div>
+                            <div class="text-muted">Low</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5>Top Record Types With Missing Data</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>Record Type</th><th class="text-right">Open Reviews</th></tr></thead>
+                        <tbody>
+                            {% for row in missing_data.by_type %}
+                            <tr>
+                                <td>{{ row.professional_type|default:"Unclassified" }}</td>
+                                <td class="text-right">{{ row.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-muted text-center">No missing-data backlog.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <h5 class="mt-4">Recent Missing-Data Records Needing Action</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Record</th>
+                                <th>Missing Information</th>
+                                <th>Source</th>
+                                <th>Status</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in missing_data.recent %}
+                            <tr>
+                                <td>
+                                    <strong>{{ review.full_name }}</strong>
+                                    <div class="small text-muted">{{ review.professional_type }} | {{ review.registration_no }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{% if review.severity == 'high' %}danger{% elif review.severity == 'medium' %}warning{% else %}info{% endif %}">
+                                        {{ review.severity|title }}
+                                    </span>
+                                    <span class="small">{{ review.missing_fields }}</span>
+                                </td>
+                                <td class="small text-muted">
+                                    {{ review.source_label }}
+                                    {% if review.source_row %}row {{ review.source_row }}{% endif %}
+                                </td>
+                                <td>{{ review.status_label }}</td>
+                                <td class="text-right">
+                                    {% if review.record_url %}
+                                    <a href="{{ review.record_url }}" class="btn btn-outline-primary btn-xs mb-1">Edit Record</a>
+                                    {% endif %}
+                                    <form method="post" action="{% url 'production_readiness_missing_review_update' review.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="notified">
+                                        <button type="submit" class="btn btn-outline-warning btn-xs mb-1">Mark Notified</button>
+                                    </form>
+                                    <form method="post" action="{% url 'production_readiness_missing_review_update' review.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="resolved">
+                                        <button type="submit" class="btn btn-outline-success btn-xs mb-1">Mark Resolved</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-muted text-center">No recent missing-data reviews for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-traffic-light mr-2"></i>Launch Action Plan</h3>
+            </div>
+            <div class="card-body">
+                <ol class="pl-3 mb-0">
+                    <li>Fix future receipt/payment dates first because they affect finance and reports.</li>
+                    <li>Review old dates before 2000 against original source files.</li>
+                    <li>Clear high-severity missing-data reviews before publishing official statistics.</li>
+                    <li>Use Duplicate Reviews for same person / same identifier issues.</li>
+                    <li>Re-run production data preparation after each major import.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-file-lines mr-2"></i>Latest Readiness Reports</h3>
+            </div>
+            <div class="card-body">
+                {% for report in latest_reports %}
+                    <div class="border rounded p-2 mb-2 bg-light">
+                        <div><strong>{{ report.name }}</strong></div>
+                        <div class="small text-muted">{{ report.modified_at|date:"Y-m-d H:i" }} | {{ report.size }} bytes</div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted mb-0">No production readiness reports found yet.</p>
+                {% endfor %}
+                <div class="alert alert-light border mt-3 mb-0">
+                    Run <code>manage.py prepare_production_data --write-report</code> after imports or major cleansing.
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-database mr-2"></i>Recent Import Batches</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Source</th><th>Status</th><th class="text-right">Rows</th></tr></thead>
+                        <tbody>
+                            {% for batch in import_batches %}
+                            <tr>
+                                <td>
+                                    <strong>{{ batch.source_file_name|truncatechars:34 }}</strong>
+                                    <div class="small text-muted">{{ batch.source_kind }}</div>
+                                </td>
+                                <td><span class="badge badge-light">{{ batch.get_status_display }}</span></td>
+                                <td class="text-right">{{ batch.processed_rows|default:batch.total_rows }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-muted text-center">No import batches.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-fingerprint mr-2"></i>Identifier Conflicts / Dirty Identifier Samples</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead><tr><th>Model</th><th>Field</th><th>Value</th><th>Record</th></tr></thead>
+                        <tbody>
+                            {% for row in unique_conflict_rows %}
+                            <tr>
+                                <td>{{ row.model }}</td>
+                                <td>{{ row.field }}</td>
+                                <td><code>{{ row.value }}</code></td>
+                                <td>
+                                    {{ row.name }} <span class="text-muted">#{{ row.id }}</span>
+                                    {% if row.record_url %}
+                                    <a href="{{ row.record_url }}" class="btn btn-outline-primary btn-xs ml-2">Edit</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No dirty identifier samples detected.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-copy mr-2"></i>Duplicate Identifier Groups</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead><tr><th>Model</th><th>Field</th><th>Value</th><th class="text-right">Count</th></tr></thead>
+                        <tbody>
+                            {% for row in duplicate_identifier_rows %}
+                            <tr>
+                                <td>{{ row.model }}</td>
+                                <td>{{ row.field }}</td>
+                                <td><code>{{ row.value }}</code></td>
+                                <td class="text-right">{{ row.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No duplicate live identifier groups detected.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'duplicate_review_workflow' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-clone mr-1"></i> Open Duplicate Review Workflow
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="text-muted small mt-3">Generated at {{ generated_at|date:"Y-m-d H:i:s" }}. This dashboard is a management view; source documents still control final corrections.</p>
+{% endblock %}

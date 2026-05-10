@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ model_label }}{% endblock %}
+{% block title_label %}Delete {{ model_label }}{% endblock %}
+
+{% block content %}
+<div class="card card-danger card-outline">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Confirm Delete</h3>
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete this record: <strong>{{ object }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete</button>
+            <a href="{% url 'record_detail' model_slug object.pk %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,660 @@
+{% extends 'base.html' %}
+
+{% block title %}Financial Forecast{% endblock %}
+
+{% block extra_css %}
+<style>
+    .finance-chart-wrap {
+        position: relative;
+        height: 320px;
+        min-height: 320px;
+        width: 100%;
+    }
+
+    .finance-chart-wrap canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
+    }
+    
+    .finance-chart-card h5 {
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-outline card-success">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Financial Forecast and Receipt Tracking</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    This page separates Nursing Council receipts from Medical Board receipts and combines live receipt entries with spreadsheet-imported payment rows for financial tracking.
+                </p>
+                <div class="alert alert-light border mb-0">
+                    <strong>Current scope:</strong> {{ scope_label }}.
+                    <span class="ml-2"><strong>Prepared by:</strong> {{ generated_by }} on {{ generated_on }}.</span>
+                    Use the export buttons below to generate full detailed finance reports in Excel, PDF, and Word.
+                </div>
+                {% if finance_office_options %}
+                <div class="mt-3">
+                    <div class="text-muted small text-uppercase mb-2">Separate finance views</div>
+                    <div class="btn-group flex-wrap" role="group" aria-label="Financial forecast office selector">
+                        {% for option in finance_office_options %}
+                        <a href="{% url 'financial_forecast_dashboard' %}{% if option.office != 'all' %}?office={{ option.office }}{% endif %}"
+                           class="btn {% if option.active %}btn-primary{% else %}btn-outline-primary{% endif %} mb-2">
+                            {{ option.label }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if is_finance_officer_view %}
+                <div class="alert alert-warning mt-3 mb-0">
+                    <strong>Finance Officer read-only access:</strong>
+                    this account can view Workforce Flow and the selected office's Financial Forecast only. CRUD, imports, approvals, receipt editing, and operational command tools remain locked unless approved by the Registrar and System Admin.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if combined %}
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner"><h3>PGK {{ combined.manual_completed_total }}</h3><p>Combined Manual Receipts</p></div>
+            <div class="icon"><i class="fas fa-cash-register"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner"><h3>PGK {{ combined.imported_total }}</h3><p>Combined Imported Receipts</p></div>
+            <div class="icon"><i class="fas fa-file-import"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>PGK {{ combined.combined_total }}</h3><p>Total Financial Intake</p></div>
+            <div class="icon"><i class="fas fa-chart-line"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>{{ combined.manual_pending_count }}</h3><p>Pending Manual Receipts</p></div>
+            <div class="icon"><i class="fas fa-hourglass-half"></i></div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0">Finance Report Exports</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-light border">
+            <strong>How to use this page:</strong>
+            first confirm the office scope, then review manual receipts, spreadsheet-imported receipts, monthly and yearly totals, and finally export the finance report in the format needed for management or audit review.
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <a href="{% url 'export_financial_forecast_excel' %}{{ financial_forecast_return_query }}" class="btn btn-success btn-block" data-progress-link data-download-link data-success-redirect="{% url 'financial_forecast_dashboard' %}{{ financial_forecast_return_query }}" data-progress-text="Preparing the Excel financial forecast workbook.">
+                    <i class="fas fa-file-excel mr-1"></i> Export Excel Finance Report
+                </a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a href="{% url 'export_financial_forecast_pdf' %}{{ financial_forecast_return_query }}" class="btn btn-danger btn-block" data-progress-link data-download-link data-success-redirect="{% url 'financial_forecast_dashboard' %}{{ financial_forecast_return_query }}" data-progress-text="Preparing the PDF financial forecast report.">
+                    <i class="fas fa-file-pdf mr-1"></i> Export PDF Finance Report
+                </a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a href="{% url 'export_financial_forecast_docx' %}{{ financial_forecast_return_query }}" class="btn btn-primary btn-block" data-progress-link data-download-link data-success-redirect="{% url 'financial_forecast_dashboard' %}{{ financial_forecast_return_query }}" data-progress-text="Preparing the Word financial forecast report.">
+                    <i class="fas fa-file-word mr-1"></i> Export Word Finance Report
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for office in office_sections %}
+<div class="card card-outline card-secondary mb-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0">{{ office.label }}</h3>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary">
+                    <div class="inner"><h3>PGK {{ office.manual_completed_total }}</h3><p>Manual Receipts</p></div>
+                    <div class="icon"><i class="fas fa-receipt"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner"><h3>PGK {{ office.imported_total }}</h3><p>Spreadsheet Receipts</p></div>
+                    <div class="icon"><i class="fas fa-file-import"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner"><h3>PGK {{ office.combined_total }}</h3><p>Combined Total</p></div>
+                    <div class="icon"><i class="fas fa-coins"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner"><h3>{{ office.manual_pending_count }}</h3><p>Pending Manual Receipts</p></div>
+                    <div class="icon"><i class="fas fa-clock"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Financial Summary</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-striped mb-0">
+                            <tbody>
+                            <tr><th>Current Month Completed Manual Receipts</th><td>PGK {{ office.manual_current_month_total }}</td></tr>
+                            <tr><th>Current Year Completed Manual Receipts</th><td>PGK {{ office.manual_current_year_total }}</td></tr>
+                            <tr><th>Current Month Combined Receipts</th><td>PGK {{ office.combined_current_month_total }}</td></tr>
+                            <tr><th>Current Year Combined Receipts</th><td>PGK {{ office.combined_current_year_total }}</td></tr>
+                            <tr><th>Completed Manual Receipts</th><td>{{ office.manual_completed_count }}</td></tr>
+                            <tr><th>Imported Spreadsheet Receipt Amount</th><td>PGK {{ office.imported_total }}</td></tr>
+                            <tr><th>Imported Spreadsheet Rows Processed</th><td>{{ office.imported_count }}</td></tr>
+                            <tr><th>Flagged Source-Date Issues</th><td>{{ office.date_quality_issue_count }}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">How To Understand These Figures</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for row in office.guide_rows %}
+                            <div class="border rounded p-2 mb-2 small">{{ row }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Financial Analytics and Audit Charts</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-6 mb-4">
+                                <div class="finance-chart-card">
+                                    <h5 class="mb-3">Monthly Receipt Inflow Trend</h5>
+                                    <div class="finance-chart-wrap">
+                                        <canvas id="financeMonthlyChart{{ forloop.counter }}"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 mb-4">
+                                <div class="finance-chart-card">
+                                    <h5 class="mb-3">Yearly Combined Receipt Trend</h5>
+                                    <div class="finance-chart-wrap">
+                                        <canvas id="financeYearlyChart{{ forloop.counter }}"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 mb-4">
+                                <div class="finance-chart-card">
+                                    <h5 class="mb-3">Receipt Category Mix</h5>
+                                    <div class="finance-chart-wrap">
+                                        <canvas id="financeCategoryChart{{ forloop.counter }}"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 mb-4">
+                                <div class="finance-chart-card">
+                                    <h5 class="mb-3">Audit and Reconciliation Overview</h5>
+                                    <div class="finance-chart-wrap">
+                                        <canvas id="financeAuditChart{{ forloop.counter }}"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-light border mb-0">
+                            <strong>Audit note:</strong> {{ office.outflow_note }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Receipt Categories</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                            <tr><th>Category</th><th>Amount (PGK)</th></tr>
+                            </thead>
+                            <tbody>
+                            {% for row in office.category_rows %}
+                                <tr>
+                                    <td>{{ row.label }}</td>
+                                    <td>PGK {{ row.amount }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Forecast Outlook</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>Forecast Month</th>
+                                <th>Projected</th>
+                                <th>Lower Range</th>
+                                <th>Upper Range</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in office.forecast_rows %}
+                                <tr>
+                                    <td>{{ row.period }}</td>
+                                    <td>PGK {{ row.forecast_amount }}</td>
+                                    <td>PGK {{ row.low_amount }}</td>
+                                    <td>PGK {{ row.high_amount }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4" class="text-muted text-center">No forecast data available yet.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Monthly Financial Tracking</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-hover mb-0 {% if office.monthly_rows %}datatable{% endif %}">
+                            <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Manual</th>
+                                <th>Imported</th>
+                                <th>Total</th>
+                                <th>Renewals</th>
+                                <th>Full Registration</th>
+                                <th>New Applications</th>
+                                <th>Temporary</th>
+                                <th>Other</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in office.monthly_rows %}
+                                <tr>
+                                    <td>{{ row.period }}</td>
+                                    <td>PGK {{ row.manual_amount }}</td>
+                                    <td>PGK {{ row.imported_amount }}</td>
+                                    <td>PGK {{ row.total_amount }}</td>
+                                    <td>PGK {{ row.renewal_amount }}</td>
+                                    <td>PGK {{ row.full_registration_amount }}</td>
+                                    <td>PGK {{ row.new_application_amount }}</td>
+                                    <td>PGK {{ row.temporary_amount }}</td>
+                                    <td>PGK {{ row.other_amount }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="9" class="text-muted text-center">No monthly financial rows available yet.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Yearly Financial Tracking</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-hover mb-0 {% if office.yearly_rows %}datatable{% endif %}">
+                            <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Manual</th>
+                                <th>Imported</th>
+                                <th>Total</th>
+                                <th>Renewals</th>
+                                <th>Full Registration</th>
+                                <th>New Applications</th>
+                                <th>Temporary</th>
+                                <th>Other</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in office.yearly_rows %}
+                                <tr>
+                                    <td>{{ row.period }}</td>
+                                    <td>PGK {{ row.manual_amount }}</td>
+                                    <td>PGK {{ row.imported_amount }}</td>
+                                    <td>PGK {{ row.total_amount }}</td>
+                                    <td>PGK {{ row.renewal_amount }}</td>
+                                    <td>PGK {{ row.full_registration_amount }}</td>
+                                    <td>PGK {{ row.new_application_amount }}</td>
+                                    <td>PGK {{ row.temporary_amount }}</td>
+                                    <td>PGK {{ row.other_amount }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="9" class="text-muted text-center">No yearly financial rows available yet.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Recent Receipt Transactions</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>Source</th>
+                                <th>Reporting Date</th>
+                                <th>Source Date Issue</th>
+                                <th>Category</th>
+                                <th>Reference</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in office.recent_transactions %}
+                                <tr>
+                                    <td>{{ row.source }}</td>
+                                    <td>{{ row.date }}</td>
+                                    <td>
+                                        {% if row.date_note %}
+                                            <span class="badge badge-warning text-dark">Review</span>
+                                            <div class="small text-muted">{{ row.date_note }}</div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ row.category }}</td>
+                                    <td>{{ row.reference }}</td>
+                                    <td>PGK {{ row.amount }}</td>
+                                    <td>{{ row.status }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="7" class="text-muted text-center">No recent transactions available yet.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Recent Spreadsheet Sources</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>Source File</th>
+                                <th>Kind</th>
+                                <th>Completed</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for batch in office.latest_batches %}
+                                <tr>
+                                    <td>{{ batch.source_file_name }}</td>
+                                    <td>{{ batch.source_kind }}</td>
+                                    <td>{{ batch.completed_at|date:"d M Y H:i" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="3" class="text-muted text-center">No completed spreadsheet imports recorded.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if office.date_quality_issues %}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card card-outline card-warning">
+                    <div class="card-header bg-light">
+                        <h3 class="card-title mb-0">Flagged Financial Source-Date Issues</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            These rows had dates beyond the current system date and were not allowed to drive the forecast month. The report groups them under the safe import or transaction date until the source spreadsheet is corrected.
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Source</th>
+                                    <th>Original Source Date</th>
+                                    <th>Reporting Date Used</th>
+                                    <th>Reason</th>
+                                    <th>Reference</th>
+                                    <th>Amount</th>
+                                    <th>Detail</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for issue in office.date_quality_issues %}
+                                    <tr>
+                                        <td>{{ issue.source }}</td>
+                                        <td>{{ issue.source_date }}</td>
+                                        <td>{{ issue.reporting_date }}</td>
+                                        <td>{{ issue.reason }}</td>
+                                        <td>{{ issue.reference }}</td>
+                                        <td>PGK {{ issue.amount }}</td>
+                                        <td>{{ issue.detail }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (!window.Chart) {
+        return;
+    }
+
+    function buildCurrencyAxis(value) {
+        return 'PGK ' + Number(value || 0).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    }
+
+    {% for office in office_sections %}
+    (function () {
+        const monthlyCanvas = document.getElementById('financeMonthlyChart{{ forloop.counter }}');
+        const yearlyCanvas = document.getElementById('financeYearlyChart{{ forloop.counter }}');
+        const categoryCanvas = document.getElementById('financeCategoryChart{{ forloop.counter }}');
+        const auditCanvas = document.getElementById('financeAuditChart{{ forloop.counter }}');
+
+        if (monthlyCanvas) {
+            new Chart(monthlyCanvas, {
+                type: 'line',
+                data: {
+                    labels: {{ office.monthly_chart_labels|safe }},
+                    datasets: [
+                        {
+                            label: 'Manual Receipts',
+                            data: {{ office.monthly_manual_values|safe }},
+                            borderColor: '#1d4ed8',
+                            backgroundColor: 'rgba(29, 78, 216, 0.14)',
+                            tension: 0.28,
+                            fill: false
+                        },
+                        {
+                            label: 'Imported Spreadsheet Receipts',
+                            data: {{ office.monthly_imported_values|safe }},
+                            borderColor: '#15803d',
+                            backgroundColor: 'rgba(21, 128, 61, 0.14)',
+                            tension: 0.28,
+                            fill: false
+                        },
+                        {
+                            label: 'Combined Total',
+                            data: {{ office.monthly_total_values|safe }},
+                            borderColor: '#b45309',
+                            backgroundColor: 'rgba(180, 83, 9, 0.16)',
+                            tension: 0.28,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) { return buildCurrencyAxis(value); }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (yearlyCanvas) {
+            new Chart(yearlyCanvas, {
+                type: 'bar',
+                data: {
+                    labels: {{ office.yearly_chart_labels|safe }},
+                    datasets: [{
+                        label: 'Yearly Combined Total',
+                        data: {{ office.yearly_total_values|safe }},
+                        backgroundColor: ['#0f766e', '#1d4ed8', '#7c3aed', '#ea580c', '#059669', '#be123c', '#0369a1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) { return buildCurrencyAxis(value); }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (categoryCanvas) {
+            new Chart(categoryCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ office.category_chart_labels|safe }},
+                    datasets: [{
+                        data: {{ office.category_chart_values|safe }},
+                        backgroundColor: ['#1d4ed8', '#15803d', '#ca8a04', '#7c3aed', '#dc2626']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        if (auditCanvas) {
+            new Chart(auditCanvas, {
+                type: 'bar',
+                data: {
+                    labels: {{ office.audit_flow_labels|safe }},
+                    datasets: [{
+                        label: 'Audit Flow',
+                        data: {{ office.audit_flow_values|safe }},
+                        backgroundColor: ['#1d4ed8', '#15803d', '#f59e0b', '#0f766e']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) { return buildCurrencyAxis(value); }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    })();
+    {% endfor %}
+});
+</script>
+{% endblock %}

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Council System Brief</title>
+    <style>
+        :root {
+            --ink: #18324a;
+            --muted: #5f6f7f;
+            --line: #d8e0e8;
+            --paper: #f4f7fb;
+            --card: #ffffff;
+            --accent: #0f6b57;
+            --accent-2: #245fa8;
+            --warn: #9a5a00;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            color: var(--ink);
+            background: var(--paper);
+            line-height: 1.55;
+        }
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 28px 48px;
+        }
+        .hero, .section, .pair, .metrics, .note {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 8px 22px rgba(24, 50, 74, 0.06);
+        }
+        .hero {
+            padding: 28px;
+            margin-bottom: 22px;
+        }
+        h1, h2, h3 {
+            margin: 0 0 12px;
+            line-height: 1.2;
+        }
+        h1 { font-size: 2rem; }
+        h2 { font-size: 1.35rem; }
+        h3 { font-size: 1rem; }
+        p { margin: 0 0 12px; }
+        .small { color: var(--muted); font-size: 0.95rem; }
+        .section {
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .pair {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 22px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        figure {
+            margin: 0;
+        }
+        figure img {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            display: block;
+            background: #eef3f8;
+        }
+        figcaption {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        .explain {
+            border-left: 4px solid var(--accent);
+            padding-left: 16px;
+        }
+        .metrics {
+            padding: 18px;
+            margin: 16px 0 18px;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .metric {
+            background: #f8fbfe;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 14px;
+        }
+        .metric strong {
+            display: block;
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid var(--line);
+            padding: 10px 12px;
+            vertical-align: top;
+            text-align: left;
+        }
+        th {
+            background: #edf4fb;
+        }
+        ul, ol {
+            margin: 0 0 12px 20px;
+            padding: 0;
+        }
+        .note {
+            padding: 16px 18px;
+            border-left: 5px solid var(--warn);
+        }
+        .pill {
+            display: inline-block;
+            margin: 4px 8px 4px 0;
+            padding: 6px 10px;
+            background: #edf6f3;
+            color: var(--accent);
+            border-radius: 999px;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+        @media (max-width: 980px) {
+            .pair {
+                grid-template-columns: 1fr;
+            }
+            .image-grid,
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="hero">
+        <h1>Nursing Council Workforce Registry: Simple Management Brief</h1>
+        <p>This brief explains the Nursing Council side of the system in plain language for non-technical staff, managers, and executives. It describes what the system does, what each role can see, how privacy is protected, what information is captured, and what needs to improve for cleaner data from paper files into the electronic register.</p>
+        <p class="small">Prepared from the live project on May 4, 2026. Screenshots below are examples of the current user interface.</p>
+    </div>
+
+    <div class="section">
+        <h2>1. What This System Is</h2>
+        <p>The system is a web-based workforce registry for the National Department of Health. On the Nursing Council side, it is used to register nurses, midwives, nurse aides, and graduands, store their supporting records, track licence history, and monitor workforce numbers and trends.</p>
+        <p>In simple terms, it is both an <strong>operations tool</strong> and a <strong>record-keeping tool</strong>. It helps staff process forms, review records, attach qualifications and documents, follow up missing data, and produce management reports.</p>
+        <div>
+            <span class="pill">Registration and renewal</span>
+            <span class="pill">Professional records</span>
+            <span class="pill">Qualification tracking</span>
+            <span class="pill">Document storage</span>
+            <span class="pill">Dashboard reporting</span>
+            <span class="pill">Data quality review</span>
+        </div>
+    </div>
+
+    <div class="pair">
+        <div class="image-grid">
+            <figure>
+                <img src="management_brief_assets/nursing_dashboard.png" alt="Nursing Council dashboard screenshot">
+                <figcaption>Nursing Council dashboard: key totals, pending work, and council operations.</figcaption>
+            </figure>
+            <figure>
+                <img src="management_brief_assets/workforce_flow.png" alt="Workforce flow dashboard screenshot">
+                <figcaption>Workforce flow view: charts and tables showing how records move through the system over time.</figcaption>
+            </figure>
+        </div>
+        <div class="explain">
+            <h2>2. Interface Set 1: Dashboard and Monitoring</h2>
+            <p>The Nursing Council dashboard is the main working screen for registry staff. It gives a quick picture of how many nursing records exist, how many applications are still waiting, how many provisional records are active, and how many training institutions are linked to the system.</p>
+            <p>The workforce flow screen is more management-focused. It helps the office understand movement across years, provinces, and licence stages. This is important for planning, staffing, follow-up, and reporting to leadership.</p>
+            <ul>
+                <li>Shows pending applications that need action.</li>
+                <li>Shows province and year-based distribution for nursing records.</li>
+                <li>Shows the pipeline from graduand and provisional status through to full registration and practising licence.</li>
+                <li>Supports exports and management reporting.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="pair">
+        <div class="image-grid">
+            <figure>
+                <img src="management_brief_assets/nursing_forms.png" alt="Nursing forms portal screenshot">
+                <figcaption>Nursing forms portal: guides users to the correct Nursing Council form code and pathway.</figcaption>
+            </figure>
+            <figure>
+                <img src="management_brief_assets/professional_detail.png" alt="Professional record detail screenshot">
+                <figcaption>Individual professional record: identity, qualifications, images, documents, and related information.</figcaption>
+            </figure>
+        </div>
+        <div class="explain">
+            <h2>3. Interface Set 2: Forms and Individual Records</h2>
+            <p>The Nursing Forms screen is the intake side of the system. It directs users or staff to the correct form pathway, such as provisional licence, full licence, renewal, or graduate documents. This reduces the chance that the wrong form is used.</p>
+            <p>The individual professional record is the detailed file for one person. It brings together the basic profile, licence information, qualification history, attached images, supporting documents, and other related records in one place.</p>
+            <ul>
+                <li>Supports multiple Nursing Council form families such as NC1, NC2, NC3, G1, G3, G4, G5, G6, and others.</li>
+                <li>Allows qualifications to be stored and reviewed with the rest of the person’s information.</li>
+                <li>Allows document and image upload for a more complete personnel file.</li>
+                <li>Creates a single working reference for each professional.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>4. Roles, Accessibility, and Privacy</h2>
+        <p>The system is role-based. This means people do not all see the same thing. What they can view depends on whether they are back-office staff, Nursing Council users, Medical Board users, or personal applicant-level users.</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Role</th>
+                <th>Main Access</th>
+                <th>What They Can View</th>
+                <th>Privacy Position</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Admin</td>
+                <td>Full back-office access</td>
+                <td>Both Nursing Council and Medical Board dashboards, reports, records, and staff tools</td>
+                <td>Can cross domains because this is the supervisory role</td>
+            </tr>
+            <tr>
+                <td>Nursing Council Registrar / staff</td>
+                <td>Nursing Council operational screens</td>
+                <td>Nursing dashboard, nursing forms, nursing records, nursing applications, nursing reports, nursing data quality work</td>
+                <td>Should not see Medical Board doctor or CHW records</td>
+            </tr>
+            <tr>
+                <td>Medical Board Registrar / staff</td>
+                <td>Medical Board operational screens</td>
+                <td>Medical Board dashboard, doctor and CHW records, medical forms, medical reports</td>
+                <td>Should not see Nursing Council records</td>
+            </tr>
+            <tr>
+                <td>Nurse / Nurse Aide / Graduand</td>
+                <td>Personal user-level portal</td>
+                <td>Their own profile, their own applications, receipt submission, and related self-service actions</td>
+                <td>Should not see other people’s records</td>
+            </tr>
+            <tr>
+                <td>Viewer / Reviewer</td>
+                <td>Limited or support access depending on setup</td>
+                <td>Used for controlled review or viewing tasks rather than full registrar operations</td>
+                <td>Should stay within assigned workflow only</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="note" style="margin-top: 16px;">
+            <strong>Privacy point:</strong> the system now separates Nursing Council data from Medical Board data at dashboard level, record level, application level, export level, and staff API level. This is important because nursing records should not be visible to Medical Board users, and medical or CHW records should not be visible to Nursing Council users.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>5. What The System Is Able To Capture</h2>
+        <p>For the Nursing Council side, the system can capture and connect many different pieces of information for one person or application:</p>
+        <ul>
+            <li>Personal details such as name, registration number, gender, contact details, province, and date of birth.</li>
+            <li>Professional track such as nurse, midwife, nurse aide, or graduand.</li>
+            <li>Licence details such as date issued, expiry date, provisional status, and renewal status.</li>
+            <li>Qualification records including institution, programme completed, completion year, and country.</li>
+            <li>Supporting documents such as certificates, transcripts, IDs, and other required attachments.</li>
+            <li>Photos and scanned images linked to the person’s record.</li>
+            <li>Applications by official form code and processing status such as pending, approved, or rejected.</li>
+            <li>Payment and receipt records linked to applications.</li>
+            <li>Imported historical licence and practice records from workbook data.</li>
+            <li>Data quality review flags for missing or suspicious information.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>6. What The Cleansing Work Shows About Data Quality</h2>
+        <p>The project already includes a serious data-cleaning layer. It normalizes names, registration numbers, provinces, institutions, dates, and historical workbook rows. It also flags missing information for follow-up.</p>
+        <div class="metrics">
+            <div class="metric-grid">
+                <div class="metric">
+                    <strong>5,935</strong>
+                    Cleaned full-registration records
+                </div>
+                <div class="metric">
+                    <strong>5,807</strong>
+                    Full-registration quality issue rows flagged
+                </div>
+                <div class="metric">
+                    <strong>7,623</strong>
+                    Cleaned provisional / graduand records
+                </div>
+                <div class="metric">
+                    <strong>403</strong>
+                    Provisional / graduand issue rows flagged
+                </div>
+            </div>
+        </div>
+        <p>From the existing cleansing summaries and issue files, the main problems are:</p>
+        <ul>
+            <li>Invalid practitioner number formats.</li>
+            <li>Duplicate practitioner numbers.</li>
+            <li>Missing or invalid issued dates.</li>
+            <li>Missing graduation year.</li>
+            <li>Missing institution information.</li>
+            <li>Conflicting names sharing the same registration number.</li>
+            <li>Date values that had to be repaired because the year was clearly wrong.</li>
+        </ul>
+        <p>Examples from the current issue files show the system is already finding records that have the same registration number but different names, missing issue dates, and incomplete qualification history. This is exactly the kind of problem that causes wrong reporting, duplicate files, and difficulty when tracing a person’s true registration history.</p>
+    </div>
+
+    <div class="section">
+        <h2>7. What Must Be Done For Clean Data Flow From Paper To Electronic Records</h2>
+        <ol>
+            <li><strong>Use one standard paper intake pack.</strong> Every paper application should follow the same form version and the same document checklist.</li>
+            <li><strong>Assign one intake number at first contact.</strong> Before data entry starts, every file should receive a unique intake or tracking number.</li>
+            <li><strong>Scan the full paper pack early.</strong> The form, ID, certificates, receipt, and supporting documents should be scanned together before or during data entry.</li>
+            <li><strong>Enter data into a staging area first.</strong> Raw information should first go into a review queue, not directly into the final master register.</li>
+            <li><strong>Make critical fields mandatory.</strong> Name, registration number, institution, province, issue date, qualification, and applicant pathway should never be left blank if the record is meant to move forward.</li>
+            <li><strong>Use lookup lists instead of free typing where possible.</strong> Provinces, institutions, cadres, document types, and pathways should come from controlled dropdowns.</li>
+            <li><strong>Run duplicate checks before approval.</strong> The system should always compare registration number, practitioner number, name, and email before a record is accepted into the live register.</li>
+            <li><strong>Registrar review should confirm the source document.</strong> Approval should mean someone has compared the electronic record with the scanned source.</li>
+            <li><strong>Resolve missing data quickly.</strong> Records with missing issue dates, institutions, or qualification details should be held for follow-up instead of silently accepted.</li>
+            <li><strong>Audit regularly.</strong> Monthly or quarterly data quality audits should become routine so errors do not build up again.</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>8. Practical Management Recommendations</h2>
+        <ul>
+            <li>Keep Nursing Council and Medical Board data separated by design, not just by policy.</li>
+            <li>Require a basic completeness check before any record becomes part of the official register.</li>
+            <li>Train data-entry and registrar staff on standard naming, date, and registration-number rules.</li>
+            <li>Adopt a scan-first workflow so the electronic record always has document evidence behind it.</li>
+            <li>Use the existing missing-data review tools as an operational process, not only as a one-time cleanup exercise.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>9. Bottom Line</h2>
+        <p>The system is already capable of doing far more than simple registration storage. It can guide users to the correct form, keep an individual’s qualifications and documents together, provide management dashboards, and protect privacy through role-based access.</p>
+        <p>The main remaining challenge is not the dashboard itself. It is the quality of raw source data. If paper intake, scanning, data entry standards, and registrar review are strengthened, the system can become a reliable national source of truth for Nursing Council records.</p>
+    </div>
+</div>
+</body>
+</html>

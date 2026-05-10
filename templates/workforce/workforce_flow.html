@@ -1,0 +1,25 @@
+<canvas id="yearlyTrendChart" height="120"></canvas>
+
+<script>
+new Chart(document.getElementById('yearlyTrendChart'), {
+    type: 'line',
+    data: {
+        labels: {{ years|safe }},
+        datasets: [
+            {
+                label: 'Total Active Workforce',
+                data: {{ total_workers_by_year|safe }},
+                borderColor: '#0d6efd',
+                tension: 0.3
+            },
+            {
+                label: 'New Graduates Joined',
+                data: {{ new_graduates_by_year|safe }},
+                borderColor: '#28a745',
+                tension: 0.3
+            }
+        ]
+    },
+    options: { responsive: true }
+});
+</script>

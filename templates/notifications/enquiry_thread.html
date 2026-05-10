@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}{{ thread.subject }}{% endblock %}
+{% block title_label %}Enquiry Thread{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card card-outline card-primary">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="card-title mb-1">{{ thread.subject }}</h3>
+                    <div class="text-muted small">{{ thread.get_office_display }} · {{ thread.get_status_display }}</div>
+                </div>
+                <a href="{% url 'enquiry_inbox' %}" class="btn btn-outline-secondary">Back to Inbox</a>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    {% for message in thread.messages.all %}
+                    <div class="border rounded p-3 mb-3 {% if message.sender_id == request.user.id %}bg-light{% endif %}">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ message.sender.get_full_name|default:message.sender.username }}</strong>
+                            <span class="text-muted small">{{ message.created_at|date:"d M Y H:i" }}</span>
+                        </div>
+                        <div class="mt-2">{{ message.body|linebreaksbr }}</div>
+                        {% if message.emailed %}
+                        <div class="small text-success mt-2"><i class="fas fa-envelope mr-1"></i>Email notification sent</div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No messages yet.</p>
+                    {% endfor %}
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    {% if request.user.role == 'admin' or request.user.role == 'registrar' %}
+                    <div class="form-group mb-3">
+                        <label for="status">Thread Status</label>
+                        <select name="status" id="status" class="form-control">
+                            <option value="open" {% if thread.status == 'open' %}selected{% endif %}>Open</option>
+                            <option value="pending" {% if thread.status == 'pending' %}selected{% endif %}>Pending Response</option>
+                            <option value="closed" {% if thread.status == 'closed' %}selected{% endif %}>Closed</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div class="form-group mb-3">
+                        <label for="body">Reply</label>
+                        <textarea name="body" id="body" rows="5" class="form-control" placeholder="Type your reply to continue the conversation..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Reply</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-outline card-info">
+            <div class="card-header"><strong>Conversation Details</strong></div>
+            <div class="card-body">
+                <div class="mb-2"><strong>Office:</strong> {{ thread.get_office_display }}</div>
+                <div class="mb-2"><strong>Status:</strong> {{ thread.get_status_display }}</div>
+                <div class="mb-2"><strong>Created By:</strong> {{ thread.created_by.get_full_name|default:thread.created_by.username }}</div>
+                <div class="mb-2"><strong>Assigned To:</strong> {{ thread.assigned_to.get_full_name|default:thread.assigned_to.username|default:"Unassigned" }}</div>
+                <div class="mb-2"><strong>Messages:</strong> {{ thread.messages.count }}</div>
+                <div class="small text-muted">Use this chat thread to keep approval, enquiry, and support conversations in one auditable place.</div>
+            </div>
+        </div>
+        {% if request.user.role == 'admin' or request.user.role == 'registrar' %}
+        <div class="card card-outline card-warning">
+            <div class="card-header"><strong>Staff Queue Snapshot</strong></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                    <span>Pending Applications</span>
+                    <strong>{{ staff_summary.pending_application_count }}</strong>
+                </div>
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                    <span>Open Conversations</span>
+                    <strong>{{ staff_summary.open_thread_count }}</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Draft Documents</span>
+                    <strong>{{ staff_summary.document_review_count }}</strong>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

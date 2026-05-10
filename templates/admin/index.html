@@ -1,0 +1,178 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .admin-hero {
+        background: linear-gradient(135deg, #18324a, #2f5f53 72%, #ab7b2d);
+        color: #fff;
+        border-radius: 20px;
+        padding: 28px 30px;
+        margin-bottom: 22px;
+        box-shadow: 0 18px 36px rgba(14, 32, 49, .10);
+    }
+    .admin-hero h1 {
+        color: #fff;
+        margin: 0 0 6px;
+        font-size: 1.7rem;
+    }
+    .admin-hero-logo {
+        align-items: center;
+        display: flex;
+        gap: 0;
+        justify-content: center;
+        margin-bottom: 12px;
+    }
+    .admin-hero-logo img {
+        background: rgba(255,255,255,.95);
+        border-radius: 12px;
+        max-height: 78px;
+        object-fit: contain;
+        padding: 6px;
+    }
+    .admin-hero p {
+        margin: 0;
+        color: rgba(255, 255, 255, .86);
+    }
+    .admin-shortcuts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+    .admin-shortcuts a {
+        background: #fff;
+        border: 1px solid #dbe4ee;
+        border-radius: 14px;
+        color: #0f172a;
+        display: block;
+        font-weight: 700;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+    .admin-shortcuts a:hover {
+        border-color: #0f766e;
+        color: #0f766e;
+    }
+    #content-main {
+        width: min(100%, 980px);
+    }
+    .admin-app-list {
+        display: grid;
+        gap: 16px;
+    }
+    .admin-app-card {
+        background: #fff;
+        border: 1px solid #dbe4ee;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .admin-app-card caption {
+        background: #0f766e;
+        color: #fff;
+        font-weight: 700;
+        padding: 10px 14px;
+        text-align: left;
+    }
+    .admin-app-card th,
+    .admin-app-card td {
+        padding: 10px 14px;
+    }
+    .admin-app-card th {
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-hero">
+    <div class="admin-hero-logo">
+        <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest">
+    </div>
+    <h1>The National Department Of Health Regulatory Bodies Nursing Council &amp; The Medical Board Online Workforce System</h1>
+    <p>Manage workforce records, licensing, applications, imports, documents, users, and payment data.</p>
+</div>
+
+<div class="admin-shortcuts">
+    <a href="{% url 'admin:workforce_nursingprofessional_changelist' %}">Nursing Professionals</a>
+    <a href="{% url 'admin:workforce_application_changelist' %}">Applications</a>
+    <a href="{% url 'admin:dashboard_receipt_changelist' %}">Receipts</a>
+    <a href="{% url 'admin:workforce_dataimportbatch_changelist' %}">Import Batches</a>
+    <a href="{% url 'admin:workforce_workforcesnapshot_changelist' %}">Workforce Snapshots</a>
+    <a href="{% url 'admin:accounts_user_changelist' %}">Users</a>
+</div>
+
+<div id="content-main">
+    {% if app_list %}
+        <div class="admin-app-list">
+            {% for app in app_list %}
+                <table class="admin-app-card">
+                    <caption>
+                        <a href="{{ app.app_url }}" class="section" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
+                            {{ app.name }}
+                        </a>
+                    </caption>
+                    {% for model in app.models %}
+                        <tr class="model-{{ model.object_name|lower }}">
+                            <th scope="row">
+                                {% if model.admin_url %}
+                                    <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                                {% else %}
+                                    {{ model.name }}
+                                {% endif %}
+                            </th>
+                            <td>
+                                {% if model.add_url %}
+                                    <a href="{{ model.add_url }}" class="addlink">{% translate "Add" %}</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if model.admin_url and model.view_only %}
+                                    <a href="{{ model.admin_url }}" class="viewlink">{% translate "View" %}</a>
+                                {% elif model.admin_url %}
+                                    <a href="{{ model.admin_url }}" class="changelink">{% translate "Change" %}</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>{% translate "You do not have permission to view or edit anything." %}</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module" id="recent-actions-module">
+        <h2>{% translate "Recent actions" %}</h2>
+        <h3>{% translate "My actions" %}</h3>
+        {% load log %}
+        {% get_admin_log 10 as admin_log for_user user %}
+        {% if not admin_log %}
+            <p>{% translate "None available" %}</p>
+        {% else %}
+            <ul class="actionlist">
+                {% for entry in admin_log %}
+                    <li class="{% if entry.is_addition %}addlink{% elif entry.is_change %}changelink{% elif entry.is_deletion %}deletelink{% endif %}">
+                        {% if entry.is_deletion or not entry.get_admin_url %}
+                            {{ entry.object_repr }}
+                        {% else %}
+                            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                        {% endif %}
+                        <br>
+                        {% if entry.content_type %}
+                            <span class="mini quiet">{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}</span>
+                        {% else %}
+                            <span class="mini quiet">{% translate "Unknown content" %}</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

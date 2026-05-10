@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Repository{% endblock %}
+{% block title_label %}Document Repository{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-outline card-primary">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div>
+                    <h3 class="card-title mb-0">OpenKM-Style Document Repository</h3>
+                    <small class="text-muted">Search official evidence, OCR text, metadata, versions, and repository records.</small>
+                </div>
+                {% if can_upload_documents %}
+                <a href="{% url 'repository_upload' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-upload mr-1"></i> Upload Document
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if forbidden %}
+                    <div class="alert alert-danger mb-0">{{ forbidden_message|default:"You do not have permission to search the document repository." }}</div>
+                {% else %}
+                    <form method="get" class="mb-4">
+                        <div class="form-row">
+                            <div class="form-group col-md-5">
+                                <label>Search</label>
+                                <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search title, metadata, file name, receipt no, registration no, or OCR text">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label>Scope</label>
+                                <select name="scope" class="form-control">
+                                    <option value="">All visible scopes</option>
+                                    {% for item in visible_scopes %}
+                                        <option value="{{ item }}" {% if scope_filter == item %}selected{% endif %}>{{ item|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All statuses</option>
+                                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+                                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>Archived</option>
+                                    <option value="superseded" {% if status_filter == 'superseded' %}selected{% endif %}>Superseded</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-block">Search</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-light border">
+                        <strong>Visible scope:</strong> {{ scope }}.
+                        <strong>Total results:</strong> {{ total_results }}.
+                        <strong>Duplicate file groups:</strong> {{ duplicate_groups }}.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Scope</th>
+                                    <th>Status</th>
+                                    <th>Folder</th>
+                                    <th>Current File</th>
+                                    <th>Index</th>
+                                    <th>Duplicates</th>
+                                    <th>Updated</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in page_obj %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ document.title }}</strong>
+                                            {% if document.is_record %}<span class="badge badge-info ml-1">Official Record</span>{% endif %}
+                                        </td>
+                                        <td>{{ document.get_office_scope_display }}</td>
+                                        <td><span class="badge badge-secondary">{{ document.get_status_display }}</span></td>
+                                        <td>{{ document.folder.full_path|default:"-" }}</td>
+                                        <td>{{ document.current_version.original_filename|default:"-" }}</td>
+                                        <td>
+                                            {% if document.current_version.extracted_text %}
+                                                <span class="badge badge-success">OCR/Searchable</span>
+                                            {% else %}
+                                                <span class="badge badge-light">Metadata only</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if document.current_duplicate_count %}
+                                                <span class="badge badge-warning">{{ document.current_duplicate_count }} duplicate</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ document.updated_at|date:"d M Y H:i" }}</td>
+                                        <td class="text-right">
+                                            <a href="{% url 'repository_detail' document.pk %}" class="btn btn-outline-primary btn-xs">Open</a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">No repository documents matched your search.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Repository pages">
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&scope={{ scope_filter }}&status={{ status_filter }}">Previous</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&scope={{ scope_filter }}&status={{ status_filter }}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Viewer Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ full_name }}</h3>
+                <p>Signed in as {{ role|title }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{% if role == 'reviewer' %}Review{% else %}Limited{% endif %}</h3>
+                <p>Access Level</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>Ready</h3>
+                <p>Portal Links</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-light border">
+    {{ role_note }}
+</div>
+
+<div class="card card-outline card-primary table-card mt-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Available Dashboards</h3>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Dashboard</th>
+                    <th>Purpose</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in available_dashboards %}
+                <tr>
+                    <td>{{ item.label }}</td>
+                    <td>{{ item.description }}</td>
+                    <td><a class="btn btn-sm btn-outline-primary" href="{% url item.url %}">Open</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

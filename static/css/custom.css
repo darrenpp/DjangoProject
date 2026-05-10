@@ -1,0 +1,23 @@
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.badge {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+}
+
+.btn {
+    border-radius: 8px;
+}
+
+.navbar .brand-link {
+    font-size: 1.25rem;
+    font-weight: 700;
+}

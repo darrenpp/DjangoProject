@@ -1,0 +1,2 @@
+national_id,first_name,last_name,date_of_birth,gender,primary_phone,email,registration_number,license_number,license_expiry,qualification_level,cadre,is_active
+MID001,Anna,Kopi,1991-06-01,F,67570000002,anna.kopi@example.com,MW123,MWLIC01,2028-03-31,Post-Graduate,Midwife,True

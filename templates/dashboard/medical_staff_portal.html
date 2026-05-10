@@ -1,0 +1,761 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Medical Staff Portal{% endblock %}
+
+{% block content %}
+<div class="medical-staff-portal">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-1"><i class="fas fa-users mr-2"></i>Medical Staff Portal</h2>
+                            <p class="mb-0">Community Health Workers & Allied Health Professionals Management</p>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <i class="fas fa-user-friends fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ chw_count|default:0 }}</h3>
+                    <p>Community Health Workers</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-user-friends"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ pending_applications|default:0 }}</h3>
+                    <p>Pending Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ active_staff|default:0 }}</h3>
+                    <p>Active Staff</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>{{ documents_count|default:0 }}</h3>
+                    <p>Documents</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Management Actions -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0"><i class="fas fa-cogs mr-2"></i>Medical Staff Operations</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <button class="btn btn-success btn-block mb-3" onclick="executeCommand('bootstrap_reference_data')">
+                                <i class="fas fa-database"></i><br>Bootstrap Data
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-info btn-block mb-3" onclick="executeCommand('import_workforce_files')">
+                                <i class="fas fa-file-import"></i><br>Import Staff
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-warning btn-block mb-3" onclick="executeCommand('generate_snapshot')">
+                                <i class="fas fa-camera"></i><br>Generate Report
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'report_csv' 'workforce_summary' %}" class="btn btn-primary btn-block mb-3">
+                                <i class="fas fa-download"></i><br>Export Data
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Directory -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="card-title mb-0"><i class="fas fa-address-book mr-2"></i>Medical Staff Directory</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search by name or ID...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control" id="roleFilter">
+                                <option value="">All Roles</option>
+                                <option value="chw">Community Health Worker</option>
+                                <option value="nurse">Nurse</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-success btn-block" onclick="refreshTable()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Staff Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover datatable" id="staffTable">
+                            <thead class="bg-primary text-white">
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Name</th>
+                                    <th>ID</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Location</th>
+                                    <th>Documents</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staffTableBody">
+                                <!-- Data will be loaded via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <small class="text-muted">Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalRecords">0</span> entries</small>
+                        </div>
+                        <nav aria-label="Staff pagination">
+                            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                <!-- Pagination controls will be generated here -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics and Analysis -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h3 class="card-title mb-0"><i class="fas fa-chart-bar mr-2"></i>Staff Distribution by Location</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="locationChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="card-title mb-0"><i class="fas fa-chart-pie mr-2"></i>Staff Status Overview</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="card-title mb-0"><i class="fas fa-history mr-2"></i>Recent Activity</h3>
+                </div>
+                <div class="card-body">
+                    <div class="timeline" id="activityTimeline">
+                        <!-- Activity items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Staff Detail Modal -->
+<div class="modal fade" id="staffModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-user mr-2"></i>Staff Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="staffModalBody">
+                <!-- Staff details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editStaff()">Edit Staff</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documents Modal -->
+<div class="modal fade" id="documentsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-folder-open mr-2"></i>Staff Documents</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="documentsModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/axios/axios.min.js' %}"></script>
+<script src="{% static 'js/Chart.min.js' %}"></script>
+<script>
+// Global variables
+let currentPage = 1;
+let totalPages = 1;
+let searchTerm = '';
+let statusFilter = '';
+let roleFilter = '';
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadStaffData();
+    initializeCharts();
+});
+
+// Execute management command
+function executeCommand(command) {
+    if (confirm('Are you sure you want to execute this command?')) {
+        if (window.showAppLoading) {
+            window.showAppLoading('Running staff command', 'Please wait while the system processes the requested command.', 'The status bar remains active while records and statistics are updated.');
+        }
+        axios.post('{% url "execute_management_command" %}', {
+            command: command,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, {
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            const message = response.data && response.data.message ? response.data.message : 'The staff command completed successfully.';
+            if (window.showAppSuccess) {
+                window.showAppSuccess('Successful', message, 'Redirecting you back to your dashboard.', '{% url "main_dashboard" %}', 1600);
+            } else {
+                location.href = '{% url "main_dashboard" %}';
+            }
+        }).catch(error => {
+            if (window.hideAppLoading) window.hideAppLoading();
+            alert('Error: ' + (error.response?.data?.error || error.message));
+        });
+    }
+}
+
+// Load staff data with pagination
+function loadStaffData(page = 1) {
+    currentPage = page;
+    const params = new URLSearchParams({
+        page: page,
+        search: searchTerm,
+        status: statusFilter,
+        role: roleFilter
+    });
+
+    fetch(`/api/staff/?${params}`)
+        .then(response => response.json())
+        .then(data => {
+            renderStaffTable(data.results);
+            updatePagination(data);
+        })
+        .catch(error => {
+            console.error('Error loading staff data:', error);
+            document.getElementById('staffTableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading data</td></tr>';
+        });
+}
+
+// Render staff table
+function renderStaffTable(staff) {
+    const tbody = document.getElementById('staffTableBody');
+    tbody.innerHTML = '';
+
+    if (staff.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No staff found</td></tr>';
+        return;
+    }
+
+    staff.forEach(person => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <img src="${person.photo || '/static/img/default-avatar.png'}"
+                     alt="Photo" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+            </td>
+            <td>${person.first_name} ${person.last_name}</td>
+            <td>${person.registration_no}</td>
+            <td>
+                <span class="badge badge-${getRoleBadgeClass(person.cadre)}">${person.cadre || 'Staff'}</span>
+            </td>
+            <td>
+                <span class="badge badge-${person.is_active ? 'success' : 'secondary'}">
+                    ${person.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td>${person.location || 'Not specified'}</td>
+            <td>
+                <button class="btn btn-sm btn-info" onclick="viewDocuments('${person.id}')">
+                    <i class="fas fa-file"></i> ${person.document_count || 0}
+                </button>
+            </td>
+            <td>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-primary" onclick="viewStaff('${person.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="editStaff('${person.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteStaff('${person.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Update pagination controls
+function updatePagination(data) {
+    totalPages = Math.ceil(data.count / 10); // Assuming 10 items per page
+    document.getElementById('showingFrom').textContent = ((currentPage - 1) * 10) + 1;
+    document.getElementById('showingTo').textContent = Math.min(currentPage * 10, data.count);
+    document.getElementById('totalRecords').textContent = data.count;
+
+    const paginationControls = document.getElementById('paginationControls');
+    paginationControls.innerHTML = '';
+
+    // Previous button
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a class="page-link" href="#" onclick="loadStaffData(${currentPage - 1})">Previous</a>`;
+    paginationControls.appendChild(prevLi);
+
+    // Page numbers
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        pageLi.innerHTML = `<a class="page-link" href="#" onclick="loadStaffData(${i})">${i}</a>`;
+        paginationControls.appendChild(pageLi);
+    }
+
+    // Next button
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a class="page-link" href="#" onclick="loadStaffData(${currentPage + 1})">Next</a>`;
+    paginationControls.appendChild(nextLi);
+}
+
+// Search and filter functionality
+document.getElementById('searchInput').addEventListener('input', function() {
+    searchTerm = this.value;
+    loadStaffData(1);
+});
+
+document.getElementById('statusFilter').addEventListener('change', function() {
+    statusFilter = this.value;
+    loadStaffData(1);
+});
+
+document.getElementById('roleFilter').addEventListener('change', function() {
+    roleFilter = this.value;
+    loadStaffData(1);
+});
+
+function refreshTable() {
+    loadStaffData(currentPage);
+}
+
+// Helper functions
+function getRoleBadgeClass(cadre) {
+    const classes = {
+        'nursing': 'primary',
+        'medical': 'danger',
+        'chw': 'success',
+        'other': 'secondary'
+    };
+    return classes[cadre] || 'secondary';
+}
+
+function viewStaff(staffId) {
+    // Implement view staff details
+    $('#staffModal').modal('show');
+    document.getElementById('staffModalBody').innerHTML = '<p>Loading staff details...</p>';
+
+    fetch(`/api/staff/${staffId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('staffModalBody').innerHTML = `
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <img src="${data.photo || '/static/img/default-avatar.png'}"
+                             alt="Staff Photo" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                        <h5>${data.first_name} ${data.last_name}</h5>
+                        <p class="text-muted">${data.registration_no}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tr><td><strong>Role:</strong></td><td>${data.cadre || 'Staff'}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td>${data.is_active ? 'Active' : 'Inactive'}</td></tr>
+                            <tr><td><strong>Email:</strong></td><td>${data.email || 'Not provided'}</td></tr>
+                            <tr><td><strong>Phone:</strong></td><td>${data.primary_phone || 'Not provided'}</td></tr>
+                            <tr><td><strong>Location:</strong></td><td>${data.location || 'Not specified'}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+        })
+        .catch(error => {
+            document.getElementById('staffModalBody').innerHTML = '<p class="text-danger">Error loading staff details</p>';
+        });
+}
+
+function viewDocuments(staffId) {
+    $('#documentsModal').modal('show');
+    document.getElementById('documentsModalBody').innerHTML = '<p>Loading documents...</p>';
+
+    fetch(`/api/staff/${staffId}/documents/`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.length) {
+                document.getElementById('documentsModalBody').innerHTML = '<p class="text-muted">No documents uploaded.</p>';
+                return;
+            }
+
+            const rows = data.map(doc => `
+                <tr>
+                    <td>${doc.document_type || 'Document'}</td>
+                    <td>${doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleString() : '-'}</td>
+                    <td><a href="${doc.file_url}" target="_blank" class="btn btn-sm btn-info">View File</a></td>
+                </tr>
+            `).join('');
+
+            document.getElementById('documentsModalBody').innerHTML = `
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover datatable">
+                        <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th>Uploaded</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+        })
+        .catch(error => {
+            document.getElementById('documentsModalBody').innerHTML = '<p class="text-danger">Error loading documents.</p>';
+        });
+}
+
+function editStaff(staffId) {
+    // Implement edit staff functionality
+    alert('Staff editing functionality will be implemented');
+}
+
+function deleteStaff(staffId) {
+    if (confirm('Are you sure you want to delete this staff member?')) {
+        // Implement delete functionality
+        alert('Staff deletion functionality will be implemented');
+    }
+}
+
+// Initialize charts
+function initializeCharts() {
+    new Chart(document.getElementById('locationChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Port Moresby', 'Lae', 'Madang', 'Kokopo', 'Other'],
+            datasets: [{
+                label: 'Staff Count',
+                data: [45, 32, 18, 12, 25],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545', '#6c757d']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Active', 'Inactive', 'On Leave'],
+            datasets: [{
+                data: [85, 10, 5],
+                backgroundColor: ['#28a745', '#6c757d', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.medical-staff-portal {
+    background: linear-gradient(135deg, #48bb78 0%, #28a745 100%);
+    min-height: 100vh;
+}
+
+.medical-staff-portal .main-sidebar {
+    background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+}
+
+.medical-staff-portal .brand-link {
+    background: #1a202c;
+    color: #e2e8f0;
+    border-bottom: 1px solid #2d3748;
+}
+
+.medical-staff-portal .nav-sidebar .nav-link {
+    color: #cbd5e0;
+    border-radius: 8px;
+    margin: 2px 8px;
+    transition: all 0.3s ease;
+}
+
+.medical-staff-portal .nav-sidebar .nav-link:hover {
+    background: #2d3748;
+    color: #ffffff;
+    transform: translateX(5px);
+}
+
+.medical-staff-portal .nav-sidebar .nav-link.active {
+    background: #28a745;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.medical-staff-portal .content-wrapper {
+    background: #f0f9f0;
+}
+
+.medical-staff-portal .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.medical-staff-portal .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.medical-staff-portal .btn-success {
+    background: linear-gradient(135deg, #48bb78 0%, #28a745 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.medical-staff-portal .btn-success:hover {
+    background: linear-gradient(135deg, #38a169 0%, #218838 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.medical-staff-portal .small-box {
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.medical-staff-portal .small-box .inner {
+    padding: 20px;
+}
+
+.medical-staff-portal .small-box.bg-success {
+    background: linear-gradient(135deg, #48bb78 0%, #28a745 100%) !important;
+}
+
+.medical-staff-portal .small-box.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+}
+
+.medical-staff-portal .small-box.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+}
+
+.medical-staff-portal .small-box.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+}
+
+.medical-staff-portal .table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.medical-staff-portal .table thead th {
+    background: #28a745;
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.medical-staff-portal .badge {
+    border-radius: 20px;
+    padding: 6px 12px;
+}
+
+.medical-staff-portal .pagination .page-link {
+    color: #28a745;
+    border-color: #28a745;
+}
+
+.medical-staff-portal .pagination .page-item.active .page-link {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.medical-staff-portal .timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.medical-staff-portal .timeline::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #28a745;
+}
+
+.medical-staff-portal .timeline-item {
+    margin-left: 60px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.medical-staff-portal .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -42px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #28a745;
+    border: 2px solid #fff;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.btn {
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+</style>
+{% endblock %}

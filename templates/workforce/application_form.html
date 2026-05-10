@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Edit Application{% endblock %}
+{% block title_label %}Edit Application{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-outline card-warning">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Application {{ object.pk }} - {{ object.form_code }}</h3>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-body">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="form-row">
+                        {% for field in form %}
+                        <div class="form-group {% if field.name == 'reviewer_notes' %}col-md-12{% else %}col-md-6{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save mr-1"></i> Save Changes
+                    </button>
+                    <a href="{% url 'application_detail' object.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,2356 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head><base href="http://127.0.0.1:8765/"><style>html,body{background:#f8fafc!important;color:#0f172a!important;}*{text-shadow:none!important;}.content-wrapper,.card,.card-body,.table td,.table th{color:#0f172a!important;}.bg-primary *,.bg-success *,.bg-info *,.bg-danger *,.bg-dark *,.bg-secondary *{color:#fff!important;}.bg-warning *,.bg-light *,.bg-white *{color:#111827!important;}.main-sidebar,.main-header,.main-footer{display:none!important;}.app-wrapper,.wrapper{display:block!important;width:100%!important;min-height:auto!important;}.content-wrapper{margin:0!important;width:100%!important;min-height:1100px!important;position:static!important;transform:none!important;}.content-wrapper>.content,.content,.content>.container-fluid,.container-fluid{max-width:none!important;width:100%!important;margin:0!important;padding:18px!important;}.content-header{padding:18px 18px 0!important;}.row{max-width:100%!important;}.helpdesk-launcher,.helpdesk-widget{display:none!important;}</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document Repository</title>
+    <script>
+        window.ndohAssets = {
+            bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
+            bootstrapJs: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
+            fontawesomeCss: "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css",
+            adminlteCss: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/css/adminlte.min.css",
+            adminlteJs: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/js/adminlte.min.js",
+            datatablesCss: "https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css",
+            datatablesJs: "https://cdn.datatables.net/2.0.8/js/dataTables.min.js",
+            datatablesBootstrapJs: "https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js",
+            jqueryJs: "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js",
+            axiosJs: "https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js",
+            chartJs: "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
+        };
+        window.ndohLoadCss = function (href, id) {
+            if (id && document.getElementById(id)) return;
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = href;
+            if (id) link.id = id;
+            document.head.appendChild(link);
+        };
+        window.ndohLoadScript = function (src, test, id) {
+            if (test && test()) return;
+            if (id && document.getElementById(id)) return;
+            const script = document.createElement('script');
+            script.src = src;
+            if (id) script.id = id;
+            document.body.appendChild(script);
+        };
+    </script>
+
+    <link rel="stylesheet" href="/static/vendor/bootstrap/css/bootstrap.min.css" onerror="window.ndohLoadCss(window.ndohAssets.bootstrapCss, 'ndoh-bootstrap-cdn')">
+    <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css" onerror="window.ndohLoadCss(window.ndohAssets.fontawesomeCss, 'ndoh-fontawesome-cdn')">
+    <link rel="stylesheet" href="/static/vendor/adminlte/css/adminlte.min.css" onerror="window.ndohLoadCss(window.ndohAssets.adminlteCss, 'ndoh-adminlte-cdn')">
+    <link rel="stylesheet" href="/static/vendor/datatables/css/dataTables.bootstrap5.min.css" onerror="window.ndohLoadCss(window.ndohAssets.datatablesCss, 'ndoh-datatables-cdn')">
+    <style>
+        :root {
+            --ndoh-navy: #18324a;
+            --ndoh-navy-deep: #0e2031;
+            --ndoh-green: #2f5f53;
+            --ndoh-green-soft: #dbe9e3;
+            --ndoh-gold: #ab7b2d;
+            --ndoh-surface: #f3f5f4;
+            --ndoh-surface-deep: #e7ecea;
+            --ndoh-card: rgba(255, 255, 255, 0.92);
+            --ndoh-border: #d2dcd8;
+            --ndoh-text: #20303c;
+            --ndoh-muted: #637381;
+        }
+
+        body {
+            background: var(--ndoh-surface);
+            color: var(--ndoh-text);
+            font-family: "Segoe UI", "Source Sans 3", system-ui, sans-serif;
+        }
+
+        body.app-shell {
+            overflow-x: hidden;
+        }
+
+        body.app-shell .app-wrapper {
+            min-height: 100vh;
+        }
+
+        h1, h2, h3,
+        .h1, .h2, .h3,
+        .content-header h1,
+        .card-title {
+            color: var(--ndoh-navy-deep);
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .bg-primary h1,
+        .bg-primary h2,
+        .bg-primary h3,
+        .bg-success h1,
+        .bg-success h2,
+        .bg-success h3,
+        .bg-info h1,
+        .bg-info h2,
+        .bg-info h3,
+        .bg-warning h1,
+        .bg-warning h2,
+        .bg-warning h3,
+        .bg-danger h1,
+        .bg-danger h2,
+        .bg-danger h3,
+        .text-white h1,
+        .text-white h2,
+        .text-white h3 {
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+        }
+
+        .content-header h1 {
+            font-size: clamp(1.2rem, 2vw, 1.75rem);
+            line-height: 1.2;
+        }
+
+        .content-wrapper {
+            min-height: calc(100vh - 57px);
+            background:
+                radial-gradient(circle at top right, rgba(171, 123, 45, 0.08), transparent 26%),
+                linear-gradient(180deg, #f6f7f5 0%, #edf1ee 100%);
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 66px;
+        }
+
+        .brand-link .brand-image {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.96);
+            padding: 5px;
+            box-shadow: 0 10px 18px rgba(0,0,0,0.14);
+        }
+
+        .brand-link .brand-text {
+            font-weight: 800;
+            letter-spacing: 0;
+            line-height: 1.15;
+        }
+
+        body.app-shell .main-sidebar {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body.app-shell .main-sidebar .sidebar {
+            height: calc(100vh - 66px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.24) transparent;
+        }
+
+        body.app-shell .main-sidebar .sidebar::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        body.app-shell .main-sidebar .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.24);
+            border-radius: 999px;
+        }
+
+        body.app-shell .main-sidebar .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .small-box {
+            border-radius: 18px;
+            overflow: hidden;
+            color: #fff !important;
+            box-shadow: 0 18px 38px rgba(14, 32, 49, 0.12);
+        }
+
+        .small-box .inner,
+        .small-box .inner h3,
+        .small-box .inner p {
+            color: #fff !important;
+            opacity: 1 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.26);
+        }
+
+        .small-box .inner h3 {
+            font-size: clamp(1.65rem, 2vw, 2.35rem);
+            font-weight: 900;
+            line-height: 1.05;
+            word-break: break-word;
+        }
+
+        .small-box .inner p {
+            font-weight: 800;
+            letter-spacing: 0.01em;
+        }
+
+        .small-box .icon,
+        .small-box .icon i {
+            color: rgba(255, 255, 255, 0.44) !important;
+            font-size: 2.2rem;
+            opacity: 1;
+        }
+
+        .small-box .small-box-footer {
+            background: rgba(0, 0, 0, 0.16) !important;
+            color: #fff !important;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .small-box.bg-warning,
+        .small-box.bg-light,
+        .small-box.bg-white {
+            color: #111827 !important;
+        }
+
+        .small-box.bg-warning .inner,
+        .small-box.bg-warning .inner h3,
+        .small-box.bg-warning .inner p,
+        .small-box.bg-light .inner,
+        .small-box.bg-light .inner h3,
+        .small-box.bg-light .inner p,
+        .small-box.bg-white .inner,
+        .small-box.bg-white .inner h3,
+        .small-box.bg-white .inner p {
+            color: #111827 !important;
+            text-shadow: none;
+        }
+
+        .small-box.bg-warning .icon,
+        .small-box.bg-warning .icon i,
+        .small-box.bg-light .icon,
+        .small-box.bg-light .icon i,
+        .small-box.bg-white .icon,
+        .small-box.bg-white .icon i {
+            color: rgba(17, 24, 39, 0.30) !important;
+        }
+
+        .small-box.bg-warning .small-box-footer,
+        .small-box.bg-light .small-box-footer,
+        .small-box.bg-white .small-box-footer {
+            background: rgba(255, 255, 255, 0.45) !important;
+            color: #111827 !important;
+        }
+
+        .card {
+            border-radius: 18px;
+            box-shadow: 0 18px 42px rgba(14, 32, 49, 0.08);
+            border: 1px solid rgba(210, 220, 216, 0.92);
+            background: var(--ndoh-card);
+        }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 700;
+            box-shadow: none !important;
+        }
+
+        .btn-primary {
+            background: #1e4f7a !important;
+            border-color: #1e4f7a !important;
+        }
+
+        .btn-success {
+            background: #166534 !important;
+            border-color: #166534 !important;
+        }
+
+        .btn-info {
+            background: #0369a1 !important;
+            border-color: #0369a1 !important;
+        }
+
+        .btn-danger {
+            background: #b91c1c !important;
+            border-color: #b91c1c !important;
+        }
+
+        .btn-secondary {
+            background: #475569 !important;
+            border-color: #475569 !important;
+        }
+
+        .btn-dark {
+            background: #111827 !important;
+            border-color: #111827 !important;
+        }
+
+        .btn-primary,
+        .btn-success,
+        .btn-info,
+        .btn-danger,
+        .btn-secondary,
+        .btn-dark {
+            color: #fff !important;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.18);
+        }
+
+        .btn-warning {
+            background: #f59e0b !important;
+            border-color: #f59e0b !important;
+            color: #1f2937 !important;
+            text-shadow: none;
+        }
+
+        .btn-outline-primary,
+        .btn-outline-success,
+        .btn-outline-secondary,
+        .btn-outline-dark {
+            background: rgba(255,255,255,0.78);
+        }
+
+        .table {
+            color: var(--ndoh-text);
+        }
+
+        .table th {
+            background-color: #eef3f1;
+            border-top: none;
+            color: #102a43 !important;
+            font-weight: 800;
+        }
+
+        .table td {
+            color: var(--ndoh-text);
+        }
+
+        .badge,
+        .status-label {
+            border-radius: 999px;
+            display: inline-block;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            padding: 0.38em 0.68em;
+            text-shadow: none;
+            vertical-align: baseline;
+        }
+
+        .badge-success,
+        .badge-approved,
+        .badge-active,
+        .badge-complete,
+        .badge-completed,
+        .bg-success.badge {
+            background: #166534 !important;
+            color: #fff !important;
+        }
+
+        .badge-warning,
+        .badge-pending,
+        .badge-submitted,
+        .badge-review,
+        .badge-under_review,
+        .bg-warning.badge {
+            background: #f59e0b !important;
+            color: #111827 !important;
+        }
+
+        .badge-info,
+        .badge-processing,
+        .badge-in_progress,
+        .bg-info.badge {
+            background: #0369a1 !important;
+            color: #fff !important;
+        }
+
+        .badge-danger,
+        .badge-rejected,
+        .badge-expired,
+        .badge-cancelled,
+        .bg-danger.badge {
+            background: #b91c1c !important;
+            color: #fff !important;
+        }
+
+        .badge-secondary,
+        .badge-draft,
+        .badge-inactive,
+        .bg-secondary.badge {
+            background: #475569 !important;
+            color: #fff !important;
+        }
+
+        .badge-light,
+        .bg-light.badge {
+            background: #f8fafc !important;
+            border: 1px solid var(--ndoh-border);
+            color: #0f172a !important;
+        }
+
+        .badge-dark,
+        .bg-dark.badge {
+            background: #111827 !important;
+            color: #fff !important;
+        }
+
+        .card-header.bg-primary,
+        .card-header.bg-success,
+        .card-header.bg-info,
+        .card-header.bg-danger,
+        .card-header.bg-secondary,
+        .card-header.bg-dark {
+            color: #fff !important;
+        }
+
+        .card-header.bg-primary h1,
+        .card-header.bg-primary h2,
+        .card-header.bg-primary h3,
+        .card-header.bg-primary .card-title,
+        .card-header.bg-success h1,
+        .card-header.bg-success h2,
+        .card-header.bg-success h3,
+        .card-header.bg-success .card-title,
+        .card-header.bg-info h1,
+        .card-header.bg-info h2,
+        .card-header.bg-info h3,
+        .card-header.bg-info .card-title,
+        .card-header.bg-danger h1,
+        .card-header.bg-danger h2,
+        .card-header.bg-danger h3,
+        .card-header.bg-danger .card-title,
+        .card-header.bg-secondary h1,
+        .card-header.bg-secondary h2,
+        .card-header.bg-secondary h3,
+        .card-header.bg-secondary .card-title,
+        .card-header.bg-dark h1,
+        .card-header.bg-dark h2,
+        .card-header.bg-dark h3,
+        .card-header.bg-dark .card-title {
+            color: #fff !important;
+        }
+
+        .card-header.bg-warning,
+        .card-header.bg-light {
+            color: #111827 !important;
+        }
+
+        .card-header.bg-warning h1,
+        .card-header.bg-warning h2,
+        .card-header.bg-warning h3,
+        .card-header.bg-warning .card-title,
+        .card-header.bg-light h1,
+        .card-header.bg-light h2,
+        .card-header.bg-light h3,
+        .card-header.bg-light .card-title {
+            color: #111827 !important;
+        }
+
+        .table-card .card-header {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: #fff;
+        }
+
+        .table-card .card-header .btn {
+            color: #fff;
+            border-color: rgba(255,255,255,.3);
+        }
+
+        .table-card .card-header .btn-light,
+        .table-card .card-header .btn-warning {
+            color: #111827 !important;
+            text-shadow: none;
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+            background-color: var(--ndoh-green);
+            border-radius: 8px;
+        }
+
+        .main-header.navbar {
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 28px rgba(14, 32, 49, 0.06);
+            border-bottom: 1px solid var(--ndoh-border);
+        }
+
+        .navbar-user-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #f6f9fb;
+            border: 1px solid var(--ndoh-border);
+            color: var(--ndoh-text);
+            box-shadow: 0 8px 18px rgba(14, 32, 49, 0.05);
+        }
+
+        .navbar-user-chip img {
+            width: 34px;
+            height: 34px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid rgba(22, 50, 79, 0.12);
+        }
+
+        .navbar-user-chip .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #64748b;
+            display: block;
+            line-height: 1.1;
+        }
+
+        .navbar-user-chip .value {
+            font-weight: 700;
+            color: var(--ndoh-navy);
+            display: block;
+            line-height: 1.1;
+        }
+
+        .page-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .page-toolbar .page-toolbar-spacer {
+            flex: 1 1 auto;
+        }
+
+        .page-back-button {
+            border-radius: 999px;
+            padding-inline: 14px;
+        }
+
+        .app-loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(12, 34, 56, 0.42);
+            backdrop-filter: blur(2px);
+        }
+
+        .app-loading-overlay.is-visible {
+            display: flex;
+        }
+
+        .app-loading-overlay.is-success {
+            background: rgba(18, 82, 62, 0.42);
+        }
+
+        .app-loading-card {
+            width: min(460px, calc(100vw - 28px));
+            padding: 24px;
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 24px 60px rgba(12, 34, 56, 0.22);
+        }
+
+        .app-loading-overlay.is-success .app-loading-card {
+            border: 1px solid rgba(22, 101, 52, 0.22);
+        }
+
+        .app-loading-card h4 {
+            margin-bottom: 8px;
+            color: var(--ndoh-navy);
+            font-weight: 700;
+        }
+
+        .app-loading-overlay.is-success .app-loading-card h4 {
+            color: #166534;
+        }
+
+        .app-loading-card p {
+            margin-bottom: 16px;
+            color: #64748b;
+        }
+
+        .app-loading-progress {
+            height: 10px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #e2e8f0;
+        }
+
+        .app-loading-progress-bar {
+            width: 35%;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--ndoh-green) 0%, var(--ndoh-gold) 100%);
+            animation: ndoh-progress 1.25s ease-in-out infinite;
+        }
+
+        .app-loading-overlay.is-success .app-loading-progress-bar {
+            width: 100%;
+            background: linear-gradient(90deg, #166534 0%, #22c55e 100%);
+            animation: none;
+        }
+
+        .app-loading-meta {
+            margin-top: 12px;
+            font-size: 0.88rem;
+            color: #64748b;
+        }
+
+        .app-loading-actions {
+            display: none;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .app-loading-overlay.is-success .app-loading-actions {
+            display: flex;
+        }
+
+        .app-loading-actions .btn {
+            border-radius: 999px;
+            font-weight: 800;
+            min-width: 104px;
+        }
+
+        @keyframes ndoh-progress {
+            0% { transform: translateX(-110%); }
+            100% { transform: translateX(320%); }
+        }
+
+        body.public-body .content-wrapper {
+            margin-left: 0 !important;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(47, 95, 83, 0.08), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.08), transparent 24%),
+                linear-gradient(180deg, #f8f9f7 0%, #eef2ef 100%);
+        }
+
+        body.public-body .main-header,
+        body.public-body .main-sidebar,
+        body.public-body .main-footer,
+        body.public-body .content-header {
+            display: none !important;
+        }
+
+        body.public-body .content > .container-fluid {
+            padding: 40px 18px 56px;
+        }
+
+        .brand-link,
+        .sidebar-dark-primary {
+            background: linear-gradient(180deg, var(--ndoh-navy) 0%, var(--ndoh-navy-deep) 100%) !important;
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link {
+            border-radius: 10px;
+            margin: 4px 10px;
+            color: rgba(255,255,255,0.86);
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .card-primary.card-outline {
+            border-top: 4px solid var(--ndoh-green);
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--ndoh-border);
+        }
+
+        .form-control,
+        .form-control-file {
+            border-radius: 12px;
+            border-color: var(--ndoh-border);
+            min-height: 44px;
+        }
+
+        .form-select,
+        .custom-select {
+            border-radius: 12px;
+            border-color: var(--ndoh-border);
+            min-height: 44px;
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        .custom-select:focus {
+            border-color: var(--ndoh-green);
+            box-shadow: 0 0 0 0.2rem rgba(43, 107, 74, 0.12);
+        }
+
+        .ndoh-form-section {
+            background: #fbfcfd;
+            border-color: var(--ndoh-border) !important;
+        }
+
+        .ndoh-form-section h5 {
+            color: var(--ndoh-navy);
+            font-weight: 700;
+        }
+
+        .ndoh-checkboxes ul,
+        .ndoh-radios ul,
+        ul.ndoh-checkbox-group,
+        ul.ndoh-radio-group {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px 14px;
+        }
+
+        .ndoh-checkboxes li,
+        .ndoh-radios li,
+        ul.ndoh-checkbox-group li,
+        ul.ndoh-radio-group li {
+            margin: 0;
+        }
+
+        .ndoh-checkboxes label,
+        .ndoh-radios label,
+        ul.ndoh-checkbox-group label,
+        ul.ndoh-radio-group label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 0;
+            padding: 12px 14px;
+            border: 1px solid var(--ndoh-border);
+            border-radius: 10px;
+            background: #fff;
+            font-weight: 600;
+            line-height: 1.35;
+        }
+
+        .ndoh-checkboxes input[type="checkbox"],
+        .ndoh-radios input[type="radio"],
+        ul.ndoh-checkbox-group input[type="checkbox"],
+        ul.ndoh-radio-group input[type="radio"] {
+            margin-top: 3px;
+            position: static;
+            flex: 0 0 auto;
+        }
+
+        .mr-1 { margin-right: .25rem !important; }
+        .mr-2 { margin-right: .5rem !important; }
+        .mr-3 { margin-right: 1rem !important; }
+        .ml-2 { margin-left: .5rem !important; }
+        .ml-auto { margin-left: auto !important; }
+        .pr-3 { padding-right: 1rem !important; }
+        .pl-3 { padding-left: 1rem !important; }
+        .text-right { text-align: right !important; }
+        .float-right { float: right !important; }
+        .float-left { float: left !important; }
+        .form-row { display: flex; flex-wrap: wrap; margin-right: -.75rem; margin-left: -.75rem; }
+        .form-row > .col,
+        .form-row > [class*="col-"] { padding-right: .75rem; padding-left: .75rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-control-file { display: block; width: 100%; padding: .6rem .9rem; background: #fff; }
+        .input-group-append,
+        .input-group-prepend { display: flex; }
+
+        .helpdesk-launcher {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 4200;
+            border: 0;
+            border-radius: 999px;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, var(--ndoh-navy) 0%, var(--ndoh-green) 72%, var(--ndoh-gold) 100%);
+            color: #fff;
+            font-weight: 900;
+            box-shadow: 0 18px 38px rgba(14, 32, 49, 0.24);
+        }
+
+        .helpdesk-launcher:hover,
+        .helpdesk-launcher:focus {
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .helpdesk-widget {
+            position: fixed;
+            right: 22px;
+            bottom: 88px;
+            z-index: 4201;
+            width: min(390px, calc(100vw - 28px));
+            display: none;
+            overflow: hidden;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 22px;
+            background: #fff;
+            box-shadow: 0 28px 70px rgba(14, 32, 49, 0.26);
+        }
+
+        .helpdesk-widget.is-open {
+            display: block;
+        }
+
+        .staff-alert-toast {
+            min-width: 340px;
+            border-radius: 14px;
+            border: 1px solid #dbe4ee;
+            box-shadow: 0 18px 32px rgba(15, 23, 42, 0.16);
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .staff-alert-toast .toast-header {
+            background: linear-gradient(135deg, var(--ndoh-navy) 0%, var(--ndoh-green) 100%);
+            color: #fff;
+            border-bottom: none;
+        }
+
+        .staff-alert-toast .toast-body {
+            background: #fff;
+            color: #20303c;
+        }
+
+        .helpdesk-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, var(--ndoh-navy) 0%, var(--ndoh-green) 100%);
+            color: #fff;
+        }
+
+        .helpdesk-header h5 {
+            margin: 0;
+            color: #fff;
+            font-weight: 900;
+        }
+
+        .helpdesk-close {
+            border: 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            width: 32px;
+            height: 32px;
+        }
+
+        .helpdesk-chat-panel {
+            max-height: 340px;
+            overflow-y: auto;
+            padding: 14px;
+            background: #f8fafc;
+        }
+
+        .helpdesk-message {
+            margin-bottom: 10px;
+            padding: 11px 13px;
+            border-radius: 14px;
+            line-height: 1.42;
+        }
+
+        .helpdesk-message p {
+            margin: 5px 0 0;
+        }
+
+        .helpdesk-message.assistant {
+            background: #fff;
+            border: 1px solid #dbe4ee;
+            color: #1f2937;
+        }
+
+        .helpdesk-message.user {
+            margin-left: 42px;
+            background: #1e4f7a;
+            color: #fff;
+        }
+
+        .helpdesk-message.user strong,
+        .helpdesk-message.user p {
+            color: #fff;
+        }
+
+        .helpdesk-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 9px;
+        }
+
+        .helpdesk-links a,
+        .helpdesk-suggestion {
+            border: 1px solid #d4af37;
+            border-radius: 999px;
+            background: #fffbeb;
+            color: #111827;
+            font-size: 0.82rem;
+            font-weight: 800;
+            padding: 5px 9px;
+            text-decoration: none;
+        }
+
+        .helpdesk-form {
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+        }
+
+        .helpdesk-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 12px 12px;
+            background: #fff;
+        }
+
+        .navbar-search {
+            width: min(480px, 44vw);
+            margin-left: 14px;
+        }
+
+        .navbar-search .form-control {
+            min-height: 38px;
+            border-radius: 999px 0 0 999px;
+            background: #f8fafc;
+        }
+
+        .navbar-search .btn {
+            border-radius: 0 999px 999px 0;
+        }
+
+        @media (max-width: 576px) {
+            .helpdesk-launcher {
+                right: 14px;
+                bottom: 14px;
+            }
+
+            .helpdesk-widget {
+                right: 14px;
+                bottom: 76px;
+            }
+        }
+    </style>
+    
+    <style id="ndoh-government-contrast-guardrails">
+        /*
+         * Final government-theme guardrails.
+         * This layer intentionally loads after page-specific CSS so custom dashboards
+         * can keep their layouts while still meeting readable contrast.
+         */
+        :root {
+            --ndoh-gov-ink: #0f1f2f;
+            --ndoh-gov-ink-soft: #24384a;
+            --ndoh-gov-muted: #4f6273;
+            --ndoh-gov-navy: #12304a;
+            --ndoh-gov-navy-2: #1e4f7a;
+            --ndoh-gov-green: #1f6b4d;
+            --ndoh-gov-teal: #0f766e;
+            --ndoh-gov-blue: #075985;
+            --ndoh-gov-gold: #d99a16;
+            --ndoh-gov-red: #b91c1c;
+            --ndoh-gov-slate: #475569;
+            --ndoh-gov-paper: #ffffff;
+            --ndoh-gov-panel: #f8fafc;
+            --ndoh-gov-border: #cbd5e1;
+        }
+
+        body,
+        .content-wrapper,
+        .card,
+        .card-body,
+        .modal-content,
+        .dropdown-menu,
+        .list-group-item,
+        .table,
+        .table td,
+        .form-control,
+        .form-select,
+        .custom-select,
+        .select2-container,
+        .dataTables_wrapper {
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        p,
+        li,
+        dd,
+        dt,
+        label,
+        output,
+        .card-text,
+        .form-text,
+        .helptext,
+        .small,
+        small {
+            color: inherit;
+        }
+
+        .text-muted,
+        .text-black-50,
+        .text-white-50,
+        .form-text,
+        .helptext,
+        small.text-muted,
+        .small.text-muted {
+            color: var(--ndoh-gov-muted) !important;
+            opacity: 1 !important;
+        }
+
+        .content-wrapper a:not(.btn):not(.nav-link):not(.dropdown-item):not(.brand-link),
+        body.public-body a:not(.btn):not(.nav-link):not(.dropdown-item):not(.brand-link) {
+            color: #075985 !important;
+            font-weight: 700;
+        }
+
+        .content-wrapper a:not(.btn):hover,
+        body.public-body a:not(.btn):hover {
+            color: var(--ndoh-gov-green) !important;
+        }
+
+        h1, h2, h3, h4, h5, h6,
+        .h1, .h2, .h3, .h4, .h5, .h6,
+        .content-header h1,
+        .card-title,
+        .modal-title {
+            color: var(--ndoh-gov-ink) !important;
+            font-weight: 850;
+        }
+
+        .card {
+            background: var(--ndoh-gov-paper) !important;
+            border: 1px solid var(--ndoh-gov-border) !important;
+        }
+
+        .card-header {
+            background: #f1f5f9 !important;
+            border-bottom: 1px solid var(--ndoh-gov-border) !important;
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        .card-header .card-title,
+        .card-header h1,
+        .card-header h2,
+        .card-header h3,
+        .card-header h4,
+        .card-header h5,
+        .card-header h6,
+        .card-header p,
+        .card-header span:not(.badge) {
+            color: inherit !important;
+        }
+
+        .bg-primary,
+        .card-header.bg-primary,
+        .small-box.bg-primary {
+            background: linear-gradient(135deg, var(--ndoh-gov-navy) 0%, var(--ndoh-gov-navy-2) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-success,
+        .card-header.bg-success,
+        .small-box.bg-success {
+            background: linear-gradient(135deg, #14532d 0%, var(--ndoh-gov-green) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-info,
+        .card-header.bg-info,
+        .small-box.bg-info {
+            background: linear-gradient(135deg, var(--ndoh-gov-blue) 0%, var(--ndoh-gov-teal) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-danger,
+        .card-header.bg-danger,
+        .small-box.bg-danger {
+            background: linear-gradient(135deg, #7f1d1d 0%, var(--ndoh-gov-red) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-secondary,
+        .card-header.bg-secondary,
+        .small-box.bg-secondary,
+        .bg-dark,
+        .card-header.bg-dark,
+        .small-box.bg-dark {
+            background: linear-gradient(135deg, #1f2937 0%, var(--ndoh-gov-slate) 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .bg-warning,
+        .card-header.bg-warning,
+        .small-box.bg-warning {
+            background: linear-gradient(135deg, #fbbf24 0%, var(--ndoh-gov-gold) 100%) !important;
+            color: #111827 !important;
+            text-shadow: none !important;
+        }
+
+        .bg-light,
+        .bg-white,
+        .card-header.bg-light,
+        .card-header.bg-white,
+        .small-box.bg-light,
+        .small-box.bg-white {
+            background: #f8fafc !important;
+            color: #111827 !important;
+            text-shadow: none !important;
+        }
+
+        .bg-primary *,
+        .bg-success *,
+        .bg-info *,
+        .bg-danger *,
+        .bg-secondary *,
+        .bg-dark *,
+        .card-header.bg-primary *,
+        .card-header.bg-success *,
+        .card-header.bg-info *,
+        .card-header.bg-danger *,
+        .card-header.bg-secondary *,
+        .card-header.bg-dark *,
+        .small-box.bg-primary *,
+        .small-box.bg-success *,
+        .small-box.bg-info *,
+        .small-box.bg-danger *,
+        .small-box.bg-secondary *,
+        .small-box.bg-dark * {
+            color: #ffffff !important;
+        }
+
+        .bg-warning *,
+        .bg-light *,
+        .bg-white *,
+        .card-header.bg-warning *,
+        .card-header.bg-light *,
+        .card-header.bg-white *,
+        .small-box.bg-warning *,
+        .small-box.bg-light *,
+        .small-box.bg-white * {
+            color: #111827 !important;
+            text-shadow: none !important;
+        }
+
+        .small-box {
+            border: 1px solid rgba(15, 23, 42, 0.12);
+        }
+
+        .small-box .small-box-footer {
+            background: rgba(15, 23, 42, 0.22) !important;
+            color: #ffffff !important;
+        }
+
+        .small-box.bg-warning .small-box-footer,
+        .small-box.bg-light .small-box-footer,
+        .small-box.bg-white .small-box-footer {
+            background: rgba(255, 255, 255, 0.55) !important;
+            color: #111827 !important;
+        }
+
+        .btn {
+            border-width: 1px !important;
+            font-weight: 800 !important;
+        }
+
+        .btn-primary {
+            background: var(--ndoh-gov-navy-2) !important;
+            border-color: var(--ndoh-gov-navy-2) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-success {
+            background: var(--ndoh-gov-green) !important;
+            border-color: var(--ndoh-gov-green) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-info {
+            background: var(--ndoh-gov-blue) !important;
+            border-color: var(--ndoh-gov-blue) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-danger {
+            background: var(--ndoh-gov-red) !important;
+            border-color: var(--ndoh-gov-red) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-secondary,
+        .btn-dark {
+            background: var(--ndoh-gov-slate) !important;
+            border-color: var(--ndoh-gov-slate) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-warning {
+            background: var(--ndoh-gov-gold) !important;
+            border-color: var(--ndoh-gov-gold) !important;
+            color: #111827 !important;
+        }
+
+        .btn-light,
+        .btn-white {
+            background: #ffffff !important;
+            border-color: var(--ndoh-gov-border) !important;
+            color: #111827 !important;
+        }
+
+        .btn-outline-primary,
+        .btn-outline-info,
+        .btn-outline-success,
+        .btn-outline-secondary,
+        .btn-outline-dark,
+        .btn-outline-danger {
+            background: #ffffff !important;
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        .btn-outline-primary { border-color: var(--ndoh-gov-navy-2) !important; }
+        .btn-outline-success { border-color: var(--ndoh-gov-green) !important; }
+        .btn-outline-info { border-color: var(--ndoh-gov-blue) !important; }
+        .btn-outline-secondary,
+        .btn-outline-dark { border-color: var(--ndoh-gov-slate) !important; }
+        .btn-outline-danger { border-color: var(--ndoh-gov-red) !important; }
+
+        .btn-outline-primary:hover,
+        .btn-outline-info:hover,
+        .btn-outline-success:hover,
+        .btn-outline-secondary:hover,
+        .btn-outline-dark:hover,
+        .btn-outline-danger:hover {
+            color: #ffffff !important;
+        }
+
+        .btn-outline-primary:hover { background: var(--ndoh-gov-navy-2) !important; }
+        .btn-outline-success:hover { background: var(--ndoh-gov-green) !important; }
+        .btn-outline-info:hover { background: var(--ndoh-gov-blue) !important; }
+        .btn-outline-secondary:hover,
+        .btn-outline-dark:hover { background: var(--ndoh-gov-slate) !important; }
+        .btn-outline-danger:hover { background: var(--ndoh-gov-red) !important; }
+
+        .badge,
+        .status-label,
+        [class*="badge-"] {
+            border: 1px solid transparent;
+            color: #ffffff !important;
+            opacity: 1 !important;
+            text-shadow: none !important;
+        }
+
+        .badge-success,
+        .badge-approved,
+        .badge-active,
+        .badge-complete,
+        .badge-completed,
+        .bg-success.badge,
+        .badge.bg-success {
+            background: #166534 !important;
+            color: #ffffff !important;
+        }
+
+        .badge-warning,
+        .badge-pending,
+        .badge-submitted,
+        .badge-review,
+        .badge-under_review,
+        .bg-warning.badge,
+        .badge.bg-warning {
+            background: #f59e0b !important;
+            color: #111827 !important;
+        }
+
+        .badge-info,
+        .badge-processing,
+        .badge-in_progress,
+        .bg-info.badge,
+        .badge.bg-info {
+            background: #075985 !important;
+            color: #ffffff !important;
+        }
+
+        .badge-danger,
+        .badge-rejected,
+        .badge-expired,
+        .badge-cancelled,
+        .bg-danger.badge,
+        .badge.bg-danger {
+            background: #b91c1c !important;
+            color: #ffffff !important;
+        }
+
+        .badge-secondary,
+        .badge-draft,
+        .badge-inactive,
+        .bg-secondary.badge,
+        .badge.bg-secondary {
+            background: #475569 !important;
+            color: #ffffff !important;
+        }
+
+        .badge-light,
+        .badge.bg-light {
+            background: #f8fafc !important;
+            border-color: #94a3b8 !important;
+            color: #111827 !important;
+        }
+
+        .alert {
+            border-width: 1px !important;
+            color: #111827 !important;
+        }
+
+        .alert-success {
+            background: #dcfce7 !important;
+            border-color: #86efac !important;
+            color: #14532d !important;
+        }
+
+        .alert-info {
+            background: #e0f2fe !important;
+            border-color: #7dd3fc !important;
+            color: #0c4a6e !important;
+        }
+
+        .alert-warning {
+            background: #fef3c7 !important;
+            border-color: #fbbf24 !important;
+            color: #78350f !important;
+        }
+
+        .alert-danger {
+            background: #fee2e2 !important;
+            border-color: #fca5a5 !important;
+            color: #7f1d1d !important;
+        }
+
+        .table {
+            background: #ffffff !important;
+            border-color: var(--ndoh-gov-border) !important;
+        }
+
+        .table thead th,
+        .table th {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+            border-color: var(--ndoh-gov-border) !important;
+            font-weight: 850 !important;
+        }
+
+        .table td {
+            background: #ffffff;
+            border-color: #e2e8f0 !important;
+            color: #1f2937 !important;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) td,
+        .table-hover tbody tr:hover td {
+            background: #f8fafc !important;
+            color: #111827 !important;
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate,
+        .dataTables_wrapper label {
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        .form-control,
+        .form-select,
+        .custom-select,
+        input,
+        select,
+        textarea {
+            background: #ffffff !important;
+            border-color: #94a3b8 !important;
+            color: #111827 !important;
+        }
+
+        .form-control::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #64748b !important;
+            opacity: 1 !important;
+        }
+
+        .main-header.navbar,
+        .navbar-white,
+        .navbar-light {
+            background: rgba(255, 255, 255, 0.96) !important;
+            color: var(--ndoh-gov-ink) !important;
+        }
+
+        .main-header .nav-link,
+        .main-header .navbar-nav .nav-link {
+            color: var(--ndoh-gov-ink) !important;
+            font-weight: 800;
+        }
+
+        .main-header .nav-link:hover,
+        .main-header .navbar-nav .nav-link:hover {
+            color: var(--ndoh-gov-green) !important;
+        }
+
+        .sidebar-dark-primary .brand-link,
+        .sidebar-dark-primary,
+        .app-sidebar {
+            background: linear-gradient(180deg, #0f2a43 0%, #071827 100%) !important;
+        }
+
+        .brand-link .brand-text,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link p,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link i {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+            background: #245f4b !important;
+            color: #ffffff !important;
+        }
+
+        .main-footer {
+            background: #ffffff !important;
+            color: var(--ndoh-gov-ink) !important;
+            border-top: 1px solid var(--ndoh-gov-border) !important;
+        }
+
+        .ndoh-official-footer {
+            line-height: 1.55;
+        }
+
+        .ndoh-official-footer a {
+            color: #075985 !important;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .ndoh-official-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .progress {
+            background: #e2e8f0 !important;
+        }
+
+        .progress-bar {
+            color: #ffffff !important;
+            font-weight: 800;
+        }
+
+        canvas {
+            color: var(--ndoh-gov-ink);
+        }
+
+        @media print {
+            body,
+            .content-wrapper,
+            .card,
+            .table,
+            .table td,
+            .table th {
+                color: #000000 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/static/css/government-enterprise.css">
+</head>
+<body class="hold-transition layout-fixed sidebar-expand-lg app-shell">
+<div class="app-wrapper">
+    
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light border-bottom">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+        
+        <form class="navbar-search d-none d-md-flex" method="get" action="/dashboard/search/">
+            <div class="input-group input-group-sm">
+                <input type="search" name="q" class="form-control" placeholder="Search records, staff, facilities..." value="">
+                <button class="btn btn-primary" type="submit" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+        
+        <ul class="navbar-nav ml-auto">
+            
+                
+                <li class="nav-item d-flex align-items-center pr-2">
+                    <a href="/notifications/communications/" class="nav-link position-relative" title="Inbox, chat, and review notifications">
+                        <i class="fas fa-bell"></i>
+                        
+                        <span class="badge badge-warning navbar-badge">2</span>
+                        
+                    </a>
+                </li>
+                
+                <li class="nav-item d-flex align-items-center pr-3">
+                    <a href="/accounts/profile/" class="navbar-user-chip text-decoration-none">
+                        
+                            <img src="/static/img/avatar.png" alt="Profile picture">
+                        
+                        <span>
+                            <span class="label">Signed in as</span>
+                            <span class="value">nursing_registrar</span>
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/accounts/profile/?settings=1" title="Open profile settings">
+                        <i class="fas fa-cog"></i> Profile Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/accounts/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            
+            
+        </ul>
+    </nav>
+
+    <aside class="app-sidebar main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/dashboard/main/" class="brand-link">
+            <img src="/static/img/NDOH_LOGO.png" alt="NDOH Crest" class="brand-image">
+            <span class="brand-text">NDOH Regulatory Bodies System</span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a href="/dashboard/main/" class="nav-link">
+                            <i class="nav-icon fas fa-house"></i>
+                            <p>Home</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-gauge-high"></i>
+                            <p>Overall Dashboard</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/search/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-search"></i>
+                            <p>Registry Search</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/nursing-council/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-user-nurse"></i>
+                            <p>Nursing Council Portal</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/fee-structure/" class="nav-link">
+                        <i class="nav-icon fas fa-money-bill"></i>
+                        <p>Fee Structure & Guidelines</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/flow/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>Workforce Flow</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/nursing/forms/" class="nav-link">
+                            <i class="nav-icon fas fa-user-plus"></i>
+                            <p>Nursing Forms</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/notifications/communications/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-envelope-open-text"></i>
+                            <p>Staff Inbox & Chat</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/staff-ai/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-brain"></i>
+                            <p>AI Staff Assistant</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/duplicate-reviews/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-clone"></i>
+                            <p>Duplicate Reviews</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dashboard/production-readiness/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-shield-halved"></i>
+                            <p>Production Readiness</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/dashboard/reports/financial/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-coins"></i>
+                            <p>Financial Forecast</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/notifications/enquiries/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-comments"></i>
+                            <p>Messages & Enquiries</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/workforce/import/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-file-import"></i>
+                            <p>Bulk Import</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/records/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-table-list"></i>
+                            <p>Workforce Records</p>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/documents/search/"
+                           class="nav-link active">
+                            <i class="nav-icon fas fa-folder-open"></i>
+                            <p>Document Repository</p>
+                        </a>
+                    </li>
+                    
+                    
+                    
+                    <li class="nav-item">
+                        <a href="/ocr/import/"
+                           class="nav-link ">
+                            <i class="nav-icon fas fa-file-pdf"></i>
+                            <p>PDF Document Import</p>
+                        </a>
+                    </li>
+                    
+                    
+                    
+                </ul>
+            </nav>
+        </div>
+    </aside>
+    
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Document Repository</h1>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+                
+                <div class="page-toolbar">
+                    <button type="button" class="btn btn-outline-secondary page-back-button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/dashboard/main/'">
+                        <i class="fas fa-arrow-left mr-1"></i> Back
+                    </button>
+                    <div class="page-toolbar-spacer"></div>
+                    
+                    <a href="/accounts/profile/" class="btn btn-outline-primary">
+                        <i class="fas fa-user-circle mr-1"></i> My Profile
+                    </a>
+                    
+                </div>
+                
+                
+                
+<div class="row">
+    <div class="col-12">
+        <div class="card card-outline card-primary">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div>
+                    <h3 class="card-title mb-0">OpenKM-Style Document Repository</h3>
+                    <small class="text-muted">Search official evidence, OCR text, metadata, versions, and repository records.</small>
+                </div>
+                
+                <a href="/documents/upload/" class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-upload mr-1"></i> Upload Document
+                </a>
+                
+            </div>
+            <div class="card-body">
+                
+                    <form method="get" class="mb-4">
+                        <div class="form-row">
+                            <div class="form-group col-md-5">
+                                <label>Search</label>
+                                <input type="text" name="q" value="" class="form-control" placeholder="Search title, metadata, file name, receipt no, registration no, or OCR text">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label>Scope</label>
+                                <select name="scope" class="form-control">
+                                    <option value="">All visible scopes</option>
+                                    
+                                        <option value="general" >General</option>
+                                    
+                                        <option value="nursing" >Nursing</option>
+                                    
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="">All statuses</option>
+                                    <option value="draft" >Draft</option>
+                                    <option value="active" >Active</option>
+                                    <option value="archived" >Archived</option>
+                                    <option value="superseded" >Superseded</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-block">Search</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-light border">
+                        <strong>Visible scope:</strong> General, Nursing.
+                        <strong>Total results:</strong> 0.
+                        <strong>Duplicate file groups:</strong> 0.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Scope</th>
+                                    <th>Status</th>
+                                    <th>Folder</th>
+                                    <th>Current File</th>
+                                    <th>Index</th>
+                                    <th>Duplicates</th>
+                                    <th>Updated</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">No repository documents matched your search.</td>
+                                    </tr>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+            </div>
+        </section>
+    </div>
+
+<footer class="main-footer text-sm ndoh-official-footer">
+        <strong>National Department of Health</strong> Regulatory Bodies Online Workforce System
+        <span class="mx-2 text-muted">|</span>
+        <span>AOPI Building Centre, Waigani Drive, Tower One</span>
+        <span class="mx-2 text-muted">|</span>
+        <a href="tel:+6753013634">(+675) 301 3634</a>
+        <span class="mx-2 text-muted">|</span>
+        <a href="mailto:health_ministry@health.gov.pg">health_ministry@health.gov.pg</a>
+        <div class="float-right d-none d-lg-inline">
+            <a href="https://www.health.gov.pg/index.html" target="_blank" rel="noopener">Official NDOH website</a>
+        </div>
+    </footer>
+</div>
+
+<div class="helpdesk-widget staff-ai-widget" id="helpdesk-widget" aria-hidden="true" data-assistant-mode="staff" data-assistant-endpoint="/dashboard/staff-ai/chat/">
+    <div class="helpdesk-header">
+        <div>
+            <h5><i class="fas fa-brain mr-1"></i> AI Staff Assistant</h5>
+            <small>Role-aware operational support</small>
+        </div>
+        <button type="button" class="helpdesk-close" id="helpdesk-close" aria-label="Close staff assistant">&times;</button>
+    </div>
+    <div class="helpdesk-chat-panel" id="helpdesk-widget-messages">
+        <div class="helpdesk-message assistant">
+            <strong>How can I help?</strong>
+            <p>Ask about applications, pending reviews, missing data, imports, duplicate records, reports, financial scope, or what action to take next.</p>
+        </div>
+    </div>
+    <form class="helpdesk-form" id="helpdesk-widget-form">
+        <div class="input-group">
+            <input type="text" class="form-control" id="helpdesk-widget-question" placeholder="Ask a staff operations question..." autocomplete="off">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </form>
+    <div class="helpdesk-suggestions">
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="What should I review first today?">Review priorities</button>
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="Do we have missing data to clear?">Missing data</button>
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="Which report should I generate for management?">Reports</button>
+        <a href="/dashboard/staff-ai/" class="helpdesk-suggestion">Open full assistant page</a>
+    </div>
+</div>
+<button type="button" class="helpdesk-launcher" id="helpdesk-launcher" data-draggable-assistant="1">
+    <i class="fas fa-brain mr-1"></i> AI Staff Assistant
+</button>
+
+<div class="app-loading-overlay" id="app-loading-overlay" aria-hidden="true">
+    <div class="app-loading-card">
+        <h4 id="app-loading-title">Processing request</h4>
+        <p id="app-loading-text">Please wait while the platform prepares your import or export.</p>
+        <div class="app-loading-progress">
+            <div class="app-loading-progress-bar"></div>
+        </div>
+        <div class="app-loading-meta" id="app-loading-meta">The progress bar shows active processing while files are being copied, aligned, or generated.</div>
+        <div class="app-loading-actions" id="app-loading-actions">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="app-loading-back">
+                <i class="fas fa-arrow-left mr-1"></i> Back
+            </button>
+            <button type="button" class="btn btn-success btn-sm" id="app-loading-close">
+                <i class="fas fa-check mr-1"></i> Continue
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div aria-live="polite" aria-atomic="true" style="position: fixed; top: 90px; right: 18px; z-index: 1155;">
+    
+    <div class="toast staff-alert-toast" data-staff-toast data-delay="8000" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="mr-auto">Applications awaiting approval</strong>
+            <small>Warning</small>
+            <button type="button" class="btn-close btn-close-white ml-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            <div class="mb-2">21 pending application(s) need registrar review.</div>
+            <a href="/notifications/communications/" class="btn btn-sm btn-outline-primary">Open approvals</a>
+        </div>
+    </div>
+    
+    <div class="toast staff-alert-toast" data-staff-toast data-delay="8000" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="mr-auto">Operational access requests</strong>
+            <small>Danger</small>
+            <button type="button" class="btn-close btn-close-white ml-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            <div class="mb-2">1 reviewer access request(s) need approval or rejection.</div>
+            <a href="/notifications/communications/" class="btn btn-sm btn-outline-primary">Review access</a>
+        </div>
+    </div>
+    
+</div>
+
+
+<script src="/static/vendor/jquery/jquery.min.js"></script>
+<script>window.jQuery || window.ndohLoadScript(window.ndohAssets.jqueryJs, function(){ return !!window.jQuery; }, 'ndoh-jquery-cdn');</script>
+<script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
+<script src="/static/vendor/adminlte/js/adminlte.min.js"></script>
+<script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
+<script src="/static/vendor/datatables/js/dataTables.min.js"></script>
+<script>if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) { window.ndohLoadScript(window.ndohAssets.datatablesJs, function(){ return !!(window.jQuery && jQuery.fn && jQuery.fn.DataTable); }, 'ndoh-datatables-cdn-js'); }</script>
+<script src="/static/vendor/datatables/js/dataTables.bootstrap5.min.js"></script>
+<script src="/static/vendor/axios/axios.min.js"></script>
+<script>window.axios || window.ndohLoadScript(window.ndohAssets.axiosJs, function(){ return !!window.axios; }, 'ndoh-axios-cdn-js');</script>
+<script src="/static/vendor/chartjs/chart.umd.min.js"></script>
+<script>window.Chart || window.ndohLoadScript(window.ndohAssets.chartJs, function(){ return !!window.Chart; }, 'ndoh-chart-cdn-js');</script>
+<script>
+window.showAppLoading = function (title, text, meta) {
+    const overlay = document.getElementById('app-loading-overlay');
+    if (!overlay) {
+        return;
+    }
+    if (window.ndohSuccessTimer) {
+        window.clearTimeout(window.ndohSuccessTimer);
+        window.ndohSuccessTimer = null;
+    }
+    const titleNode = document.getElementById('app-loading-title');
+    const textNode = document.getElementById('app-loading-text');
+    const metaNode = document.getElementById('app-loading-meta');
+    if (titleNode && title) {
+        titleNode.textContent = title;
+    }
+    if (textNode && text) {
+        textNode.textContent = text;
+    }
+    if (metaNode && meta) {
+        metaNode.textContent = meta;
+    }
+    overlay.classList.remove('is-success');
+    overlay.classList.add('is-visible');
+    overlay.setAttribute('aria-hidden', 'false');
+};
+
+window.showAppSuccess = function (title, text, meta, redirectUrl, delay) {
+    const overlay = document.getElementById('app-loading-overlay');
+    if (!overlay) {
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+        }
+        return;
+    }
+    const titleNode = document.getElementById('app-loading-title');
+    const textNode = document.getElementById('app-loading-text');
+    const metaNode = document.getElementById('app-loading-meta');
+    if (titleNode) {
+        titleNode.textContent = title || 'Successful';
+    }
+    if (textNode) {
+        textNode.textContent = text || 'The request completed successfully.';
+    }
+    if (metaNode) {
+        metaNode.textContent = meta || 'Redirecting you back to the dashboard.';
+    }
+    overlay.classList.add('is-visible', 'is-success');
+    overlay.setAttribute('aria-hidden', 'false');
+    if (redirectUrl) {
+        window.ndohSuccessTimer = window.setTimeout(function () {
+            window.location.href = redirectUrl;
+        }, delay || 1400);
+    } else {
+        window.ndohSuccessTimer = window.setTimeout(function () {
+            window.hideAppLoading();
+        }, delay || 5000);
+    }
+};
+
+window.hideAppLoading = function () {
+    const overlay = document.getElementById('app-loading-overlay');
+    if (!overlay) {
+        return;
+    }
+    if (window.ndohSuccessTimer) {
+        window.clearTimeout(window.ndohSuccessTimer);
+        window.ndohSuccessTimer = null;
+    }
+    overlay.classList.remove('is-visible', 'is-success');
+    overlay.setAttribute('aria-hidden', 'true');
+};
+
+window.ndohEscapeHtml = function (value) {
+    return String(value || '').replace(/[&<>"']/g, function (character) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[character];
+    });
+};
+
+window.ndohGetCsrfToken = function () {
+    const cookieMatch = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    if (cookieMatch && cookieMatch[1]) {
+        return decodeURIComponent(cookieMatch[1]);
+    }
+    const templateToken = 'DnAQLxeysyt2NCqcuKodyQV3JIfmA4ik4zP7MugwyOg7Ce4h5CgaCsVLA5vCvGpm';
+    return templateToken && templateToken !== 'NOTPROVIDED' ? templateToken : '';
+};
+
+window.ndohAskHelpdesk = function (question, endpoint) {
+    return fetch(endpoint || "/notifications/helpdesk/api/", {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.ndohGetCsrfToken()
+        },
+        body: JSON.stringify({ question: question })
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error('Helpdesk request failed.');
+        }
+        return response.json();
+    });
+};
+
+window.ndohAppendHelpdeskMessage = function (container, message, type) {
+    const node = document.createElement('div');
+    node.className = 'helpdesk-message ' + (type || 'assistant');
+    node.innerHTML = '<p>' + window.ndohEscapeHtml(message) + '</p>';
+    container.appendChild(node);
+    container.scrollTop = container.scrollHeight;
+};
+
+window.ndohAppendHelpdeskAnswer = function (container, data) {
+    const bullets = (data.bullets || []).map(function (item) {
+        return '<li>' + window.ndohEscapeHtml(item) + '</li>';
+    }).join('');
+    const links = (data.links || []).map(function (link) {
+        return '<a href="' + window.ndohEscapeHtml(link.url) + '">' + window.ndohEscapeHtml(link.label) + '</a>';
+    }).join('');
+    const suggestions = (data.suggestions || []).length
+        ? '<div class="small text-muted mt-2">Related: ' + data.suggestions.map(window.ndohEscapeHtml).join(', ') + '</div>'
+        : '';
+    const node = document.createElement('div');
+    node.className = 'helpdesk-message assistant';
+    node.innerHTML = '<strong>' + window.ndohEscapeHtml(data.title || 'Helpdesk') + '</strong>'
+        + '<p>' + window.ndohEscapeHtml(data.answer || 'Please create an enquiry for more help.') + '</p>'
+        + (bullets ? '<ul class="mb-2">' + bullets + '</ul>' : '')
+        + (links ? '<div class="helpdesk-links">' + links + '</div>' : '')
+        + suggestions;
+    container.appendChild(node);
+    container.scrollTop = container.scrollHeight;
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    const helpdeskWidget = document.getElementById('helpdesk-widget');
+    const helpdeskLauncher = document.getElementById('helpdesk-launcher');
+    const helpdeskClose = document.getElementById('helpdesk-close');
+    const helpdeskForm = document.getElementById('helpdesk-widget-form');
+    const helpdeskInput = document.getElementById('helpdesk-widget-question');
+    const helpdeskMessages = document.getElementById('helpdesk-widget-messages');
+    const loadingClose = document.getElementById('app-loading-close');
+    const loadingBack = document.getElementById('app-loading-back');
+
+    if (loadingClose) {
+        loadingClose.addEventListener('click', function () {
+            window.hideAppLoading();
+        });
+    }
+
+    if (loadingBack) {
+        loadingBack.addEventListener('click', function () {
+            window.hideAppLoading();
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+            window.location.href = "/dashboard/main/";
+        });
+    }
+
+    function submitHelpdeskQuestion(question) {
+        if (!question || !helpdeskMessages) {
+            return;
+        }
+        window.ndohAppendHelpdeskMessage(helpdeskMessages, question, 'user');
+        const waitingNode = document.createElement('div');
+        waitingNode.className = 'helpdesk-message assistant';
+        waitingNode.innerHTML = '<p>Preparing an answer...</p>';
+        helpdeskMessages.appendChild(waitingNode);
+        helpdeskMessages.scrollTop = helpdeskMessages.scrollHeight;
+        const assistantEndpoint = helpdeskWidget ? helpdeskWidget.getAttribute('data-assistant-endpoint') : '';
+        window.ndohAskHelpdesk(question, assistantEndpoint).then(function (data) {
+            waitingNode.remove();
+            window.ndohAppendHelpdeskAnswer(helpdeskMessages, data);
+        }).catch(function () {
+            waitingNode.remove();
+            window.ndohAppendHelpdeskMessage(helpdeskMessages, 'Sorry, I could not answer that right now. Please create an enquiry for the registrar.', 'assistant');
+        });
+    }
+
+    if (helpdeskWidget && helpdeskLauncher) {
+        helpdeskLauncher.addEventListener('click', function (event) {
+            event.preventDefault();
+            helpdeskWidget.classList.toggle('is-open');
+            helpdeskWidget.setAttribute('aria-hidden', helpdeskWidget.classList.contains('is-open') ? 'false' : 'true');
+            if (helpdeskWidget.classList.contains('is-open') && helpdeskInput) {
+                helpdeskInput.focus();
+            }
+        });
+    }
+
+    if (helpdeskClose && helpdeskWidget) {
+        helpdeskClose.addEventListener('click', function () {
+            helpdeskWidget.classList.remove('is-open');
+            helpdeskWidget.setAttribute('aria-hidden', 'true');
+        });
+    }
+
+    if (helpdeskForm && helpdeskInput) {
+        helpdeskForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const question = helpdeskInput.value.trim();
+            if (!question) return;
+            helpdeskInput.value = '';
+            submitHelpdeskQuestion(question);
+        });
+    }
+
+    document.querySelectorAll('[data-helpdesk-question]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const question = button.getAttribute('data-helpdesk-question');
+            if (helpdeskWidget) {
+                helpdeskWidget.classList.add('is-open');
+                helpdeskWidget.setAttribute('aria-hidden', 'false');
+            }
+            submitHelpdeskQuestion(question);
+        });
+    });
+
+    if (helpdeskLauncher && helpdeskLauncher.getAttribute('data-draggable-assistant') === '1') {
+        const savedPosition = localStorage.getItem('ndohAssistantPosition');
+        let dragged = false;
+        let pointerActive = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function applyAssistantPosition(left, top) {
+            const rect = helpdeskLauncher.getBoundingClientRect();
+            const maxLeft = window.innerWidth - rect.width - 8;
+            const maxTop = window.innerHeight - rect.height - 8;
+            const nextLeft = clamp(left, 8, Math.max(8, maxLeft));
+            const nextTop = clamp(top, 8, Math.max(8, maxTop));
+            helpdeskLauncher.style.left = nextLeft + 'px';
+            helpdeskLauncher.style.top = nextTop + 'px';
+            helpdeskLauncher.style.right = 'auto';
+            helpdeskLauncher.style.bottom = 'auto';
+            if (helpdeskWidget) {
+                helpdeskWidget.style.right = 'auto';
+                helpdeskWidget.style.left = clamp(nextLeft, 8, Math.max(8, window.innerWidth - helpdeskWidget.offsetWidth - 8)) + 'px';
+                helpdeskWidget.style.bottom = 'auto';
+                helpdeskWidget.style.top = clamp(nextTop - helpdeskWidget.offsetHeight - 12, 8, Math.max(8, window.innerHeight - helpdeskWidget.offsetHeight - 8)) + 'px';
+            }
+        }
+
+        if (savedPosition) {
+            try {
+                const position = JSON.parse(savedPosition);
+                if (Number.isFinite(position.left) && Number.isFinite(position.top)) {
+                    applyAssistantPosition(position.left, position.top);
+                }
+            } catch (error) {
+                localStorage.removeItem('ndohAssistantPosition');
+            }
+        }
+
+        helpdeskLauncher.addEventListener('pointerdown', function (event) {
+            pointerActive = true;
+            dragged = false;
+            const rect = helpdeskLauncher.getBoundingClientRect();
+            offsetX = event.clientX - rect.left;
+            offsetY = event.clientY - rect.top;
+            helpdeskLauncher.setPointerCapture(event.pointerId);
+        });
+
+        helpdeskLauncher.addEventListener('pointermove', function (event) {
+            if (!pointerActive) {
+                return;
+            }
+            dragged = true;
+            applyAssistantPosition(event.clientX - offsetX, event.clientY - offsetY);
+        });
+
+        helpdeskLauncher.addEventListener('pointerup', function (event) {
+            if (!pointerActive) {
+                return;
+            }
+            pointerActive = false;
+            const rect = helpdeskLauncher.getBoundingClientRect();
+            localStorage.setItem('ndohAssistantPosition', JSON.stringify({ left: rect.left, top: rect.top }));
+            window.setTimeout(function () {
+                dragged = false;
+            }, 0);
+        });
+
+        helpdeskLauncher.addEventListener('click', function (event) {
+            if (dragged) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+
+        window.addEventListener('resize', function () {
+            const rect = helpdeskLauncher.getBoundingClientRect();
+            applyAssistantPosition(rect.left, rect.top);
+        });
+    }
+
+    document.querySelectorAll('[data-toggle]').forEach(function (element) {
+        if (!element.hasAttribute('data-bs-toggle')) {
+            element.setAttribute('data-bs-toggle', element.getAttribute('data-toggle'));
+        }
+        if (element.hasAttribute('data-target') && !element.hasAttribute('data-bs-target')) {
+            element.setAttribute('data-bs-target', element.getAttribute('data-target'));
+        }
+    });
+
+    document.querySelectorAll('[data-dismiss]').forEach(function (element) {
+        if (!element.hasAttribute('data-bs-dismiss')) {
+            element.setAttribute('data-bs-dismiss', element.getAttribute('data-dismiss'));
+        }
+    });
+
+    function initializeDataTables(attempt) {
+        attempt = attempt || 1;
+        if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) {
+            if (attempt < 12) {
+                window.setTimeout(function () {
+                    initializeDataTables(attempt + 1);
+                }, 250);
+            }
+            return;
+        }
+
+        jQuery('.datatable').each(function () {
+            const $table = jQuery(this);
+            if ($table.attr('data-ndoh-datatables-ready') === '1') {
+                return;
+            }
+            const headerCount = $table.find('thead th').length;
+            const hasInvalidBodyRow = $table.find('tbody tr').toArray().some(function (row) {
+                const $row = jQuery(row);
+                const bodyCellCount = $row.children('th, td').length;
+                const hasColspan = $row.children('[colspan]').length > 0;
+                return hasColspan || (bodyCellCount > 0 && bodyCellCount !== headerCount);
+            });
+
+            if (headerCount === 0 || hasInvalidBodyRow) {
+                return;
+            }
+
+            $table.DataTable({
+                pageLength: 25,
+                order: [],
+                responsive: true,
+                autoWidth: false
+            });
+            $table.attr('data-ndoh-datatables-ready', '1');
+        });
+    }
+
+    initializeDataTables();
+
+    document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            const label = form.getAttribute('data-loading-text') || 'Submitting data to the registry.';
+            const meta = form.getAttribute('data-loading-meta') || 'The status bar will remain active while files or records are being processed.';
+            window.showAppLoading('Working on your request', label, meta);
+        });
+    });
+
+    document.querySelectorAll('[data-progress-link]').forEach(function (element) {
+        element.addEventListener('click', function (event) {
+            const label = element.getAttribute('data-progress-text') || 'Preparing your file export.';
+            const redirectUrl = element.getAttribute('data-success-redirect') || (window.location.pathname + window.location.search);
+
+            if (element.hasAttribute('data-download-link')) {
+                event.preventDefault();
+                const href = element.getAttribute('href');
+                if (!href) {
+                    return;
+                }
+                window.showAppLoading('Preparing file', label, 'Please wait while the report is generated.');
+                fetch(href, { credentials: 'same-origin' })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('The export could not be prepared.');
+                        }
+                        const disposition = response.headers.get('Content-Disposition') || '';
+                        let filename = element.getAttribute('download') || 'ndoh-export';
+                        const filenameMatch = disposition.match(/filename="?([^"]+)"?/i);
+                        if (filenameMatch && filenameMatch[1]) {
+                            filename = filenameMatch[1];
+                        }
+                        return response.blob().then(function (blob) {
+                            return { blob: blob, filename: filename };
+                        });
+                    })
+                    .then(function (file) {
+                        const objectUrl = URL.createObjectURL(file.blob);
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = objectUrl;
+                        downloadLink.download = file.filename;
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        downloadLink.remove();
+                        window.setTimeout(function () {
+                            URL.revokeObjectURL(objectUrl);
+                        }, 1500);
+                        window.showAppSuccess('Export successful', 'Your report file has been generated and downloaded.', 'Redirecting you back to your dashboard.', redirectUrl, 1600);
+                    })
+                    .catch(function (error) {
+                        window.hideAppLoading();
+                        alert('Export failed: ' + error.message);
+                    });
+                return;
+            }
+
+            window.showAppLoading('Preparing file', label, 'The export window will open once the file is ready.');
+            if (element.target === '_blank') {
+                window.setTimeout(function () {
+                    window.showAppSuccess('Opened successfully', 'The file or guide was opened in a new window.', 'You can continue working on this page.', null, 0);
+                }, 900);
+            }
+        });
+    });
+
+    const logoutUrl = "/accounts/logout/";
+    const sessionTimeoutMs = 15 * 60 * 1000;
+    let timer;
+
+    function resetTimer() {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            window.location.href = logoutUrl;
+        }, sessionTimeoutMs);
+    }
+
+    if (document.body && !document.body.classList.contains('login-page')) {
+        ['click', 'keydown', 'mousemove', 'scroll', 'touchstart'].forEach(function (eventName) {
+            document.addEventListener(eventName, resetTimer, { passive: true });
+        });
+        resetTimer();
+    }
+
+    document.querySelectorAll('[data-staff-toast]').forEach(function (element) {
+        if (window.bootstrap && window.bootstrap.Toast) {
+            const toast = new window.bootstrap.Toast(element, { delay: 8000 });
+            toast.show();
+        }
+    });
+});
+</script>
+
+</body>
+</html>

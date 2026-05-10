@@ -1,0 +1,297 @@
+<div class="card card-outline card-success mt-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Nursing Council Regulatory Intelligence</h3>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">
+            This section aligns the January 2026 ministerial workforce brief and situational analysis with the live registry database.
+            It shows the statutory mandate, reference report tables, live database comparisons, and the current state of digital regulatory readiness.
+        </p>
+
+        <div class="row mb-3">
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-uppercase text-muted">Generated</div>
+                    <div class="h5 mb-0">{{ alignment.generated_on }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-uppercase text-muted">Latest Nursing Source File</div>
+                    <div class="font-weight-bold">{{ alignment.platform_alignment.latest_source_name }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-uppercase text-muted">Latest Completed Import</div>
+                    <div class="font-weight-bold">{{ alignment.platform_alignment.latest_completed }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-uppercase text-muted">Document Audit Events</div>
+                    <div class="h5 mb-0">{{ alignment.platform_alignment.document_audits }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="border rounded p-3 h-100">
+                    <h4 class="h5">{{ alignment.statutory_context.title }}</h4>
+                    <p class="text-muted">{{ alignment.statutory_context.summary }}</p>
+                    <div class="font-weight-bold mb-2">Core mandate</div>
+                    <ul class="mb-3">
+                        {% for item in alignment.statutory_context.mandate_points %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="font-weight-bold mb-2">Outside direct Council mandate</div>
+                    <ul class="mb-0">
+                        {% for item in alignment.statutory_context.out_of_scope_points %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="border rounded p-3 h-100">
+                    <h4 class="h5">Live Registry Snapshot</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-3">
+                            <thead>
+                            <tr>
+                                <th>Registry Category</th>
+                                <th>Current Count</th>
+                                <th>Active Count</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in alignment.live_snapshot_rows %}
+                                <tr>
+                                    <td>{{ row.0 }}</td>
+                                    <td>{{ row.1 }}</td>
+                                    <td>{{ row.2 }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if alignment.latest_batch_row %}
+                        <div class="small text-muted mb-2">Latest imported source snapshot</div>
+                        <ul class="mb-2">
+                            <li><strong>File:</strong> {{ alignment.latest_batch_row.source_file_name }}</li>
+                            <li><strong>Source kind:</strong> {{ alignment.latest_batch_row.source_kind }}</li>
+                            <li><strong>Completed:</strong> {{ alignment.latest_batch_row.completed_at }}</li>
+                            <li><strong>Processed rows:</strong> {{ alignment.latest_batch_row.processed_rows }} / {{ alignment.latest_batch_row.total_rows }}</li>
+                        </ul>
+                    {% endif %}
+                    <div class="alert alert-light mb-0">
+                        {{ alignment.statutory_context.alignment_note }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h4 class="h5">Document-To-Database Comparison Summary</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                    <thead class="thead-light">
+                    <tr>
+                        {% for header in alignment.comparison_summary_headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in alignment.comparison_summary_rows %}
+                        <tr>
+                            {% for value in row %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="font-weight-bold mb-2">Strengths</div>
+                    <ul class="mb-0">
+                        {% for item in alignment.swot.strengths %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="font-weight-bold mb-2">Weaknesses</div>
+                    <ul class="mb-0">
+                        {% for item in alignment.swot.weaknesses %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="font-weight-bold mb-2">Opportunities</div>
+                    <ul class="mb-0">
+                        {% for item in alignment.swot.opportunities %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="font-weight-bold mb-2">Threats</div>
+                    <ul class="mb-0">
+                        {% for item in alignment.swot.threats %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h4 class="h5">Situational Analysis Gap Alignment</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                    <thead class="thead-light">
+                    <tr>
+                        {% for header in alignment.gap_analysis_headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in alignment.gap_analysis_rows %}
+                        <tr>
+                            {% for value in row %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h4 class="h5">Situational Analysis Risk Alignment</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                    <thead class="thead-light">
+                    <tr>
+                        {% for header in alignment.risk_headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in alignment.risk_rows %}
+                        <tr>
+                            {% for value in row %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h4 class="h5">Regulatory Strengthening Roadmap Alignment</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                    <thead class="thead-light">
+                    <tr>
+                        {% for header in alignment.roadmap_headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in alignment.roadmap_rows %}
+                        <tr>
+                            {% for value in row %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% for table in alignment.reference_tables %}
+            <div class="card card-outline card-secondary mb-4">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">{{ table.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ table.description }}</p>
+                    <div class="alert alert-light">{{ table.source_note }}</div>
+
+                    <div class="mb-3">
+                        <div class="font-weight-bold mb-2">Source Report Table</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-bordered">
+                                <thead class="thead-light">
+                                <tr>
+                                    {% for header in table.source_headers %}
+                                        <th>{{ header }}</th>
+                                    {% endfor %}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in table.source_rows %}
+                                    <tr>
+                                        {% for value in row %}
+                                            <td>{{ value }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="font-weight-bold mb-2">Live Database Comparison</div>
+                        <div class="small text-muted mb-2">{{ table.comparison_note }}</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="thead-light">
+                                <tr>
+                                    {% for header in table.comparison_headers %}
+                                        <th>{{ header }}</th>
+                                    {% endfor %}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in table.comparison_rows %}
+                                    <tr>
+                                        {% for value in row %}
+                                            <td>{{ value }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

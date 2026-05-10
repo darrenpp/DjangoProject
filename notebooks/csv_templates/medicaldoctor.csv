@@ -1,0 +1,2 @@
+national_id,first_name,last_name,date_of_birth,gender,primary_phone,email,registration_number,license_number,license_expiry_date,cadre,is_active
+MD001,Peter,Kila,1985-02-10,M,67570000001,peter.kila@example.com,MED12345,LIC12345,2028-12-31,Medical Doctor / Specialist,True

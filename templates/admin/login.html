@@ -1,0 +1,97 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Sign In - PNG Regulatory Bodies: The Medical Board &amp; Nursing Council{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/ndoh-admin.css' %}">
+<style>
+    body.login {
+        background:
+            radial-gradient(circle at top left, rgba(47, 95, 83, 0.12), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.10), transparent 26%),
+            linear-gradient(180deg, #f7f7f4 0%, #edf1ee 100%);
+    }
+    .login #container {
+        background: transparent;
+    }
+    .login #content {
+        background: transparent;
+    }
+    .login #content-main {
+        float: none;
+        margin: 48px auto 0;
+        max-width: 440px;
+    }
+    .login-form-shell {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid #d7dfdb;
+        border-radius: 26px;
+        padding: 34px;
+        box-shadow: 0 24px 60px rgba(14, 32, 49, .10);
+    }
+    .login-form-shell h1 {
+        margin-top: 0;
+        color: #0f172a;
+        font-weight: 800;
+    }
+    .admin-login-logo {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 18px;
+    }
+    .admin-login-logo img {
+        max-height: 84px;
+    }
+    .submit-row input {
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-form-shell">
+    <div class="admin-login-logo">
+        <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest">
+    </div>
+    <h1>PNG Regulatory Bodies The Medical Board &amp; Nursing Council</h1>
+    <h2 style="font-size: 1.05rem; margin: 0 0 12px; color: #475569; font-weight: 600;">Secure government access for registrars and authorised system users.</h2>
+    {% if form.errors and not form.non_field_errors %}
+    <p class="errornote">
+        {% if form.errors.items|length == 1 %}Please correct the error below.{% else %}Please correct the errors below.{% endif %}
+    </p>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    {% for error in form.non_field_errors %}
+    <p class="errornote">{{ error }}</p>
+    {% endfor %}
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form">
+        {% csrf_token %}
+        <div class="form-row">
+            {{ form.username.errors }}
+            {{ form.username.label_tag }}
+            {{ form.username }}
+        </div>
+        <div class="form-row">
+            {{ form.password.errors }}
+            {{ form.password.label_tag }}
+            {{ form.password }}
+            <input type="hidden" name="next" value="{{ next }}">
+        </div>
+        {% url 'admin_password_reset' as password_reset_url %}
+        {% if password_reset_url %}
+        <div class="password-reset-link" style="margin: 12px 0;">
+            <a href="{{ password_reset_url }}">Forgotten your password or username?</a>
+        </div>
+        {% endif %}
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Log in' %}">
+        </div>
+    </form>
+</div>
+{% endblock %}

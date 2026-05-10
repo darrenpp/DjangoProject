@@ -1,0 +1,50 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="module">
+    <h2>Import Nursing Records</h2>
+    <p>Upload a CSV or Excel file with nursing records. Use columns such as <code>registration_no</code>, <code>first_name</code>, <code>last_name</code>, <code>email</code>, and <code>primary_phone</code>.</p>
+
+    <form method="post" enctype="multipart/form-data" id="admin-import-form">
+        {% csrf_token %}
+        <div class="form-row">
+            {{ form.file.errors }}
+            {{ form.file }}
+        </div>
+        <div style="margin-top: 16px;">
+            <button type="submit" class="button default">Import</button>
+            <a href="{% url 'admin:workforce_nursingprofessional_changelist' %}" class="button">Back</a>
+        </div>
+    </form>
+    <div id="admin-import-progress" style="display:none; margin-top:16px;">
+        <strong>Import in progress</strong>
+        <p style="margin:8px 0 10px;">Please wait while the file is copied and processed into the registry.</p>
+        <div style="height:10px; border-radius:999px; background:#dbeafe; overflow:hidden;">
+            <div style="width:35%; height:100%; background:linear-gradient(90deg, #0f766e, #2563eb); animation: admin-import-slide 1.2s ease-in-out infinite;"></div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('admin-import-form');
+    const progress = document.getElementById('admin-import-progress');
+    if (!form || !progress) {
+        return;
+    }
+    form.addEventListener('submit', function () {
+        progress.style.display = 'block';
+    });
+});
+</script>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+@keyframes admin-import-slide {
+    0% { transform: translateX(-110%); }
+    100% { transform: translateX(320%); }
+}
+</style>
+{% endblock %}

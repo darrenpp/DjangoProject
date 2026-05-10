@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ flow_title|default:"Medical Board Forms" }} - NDOH Registry{% endblock %}
+{% block title_label %}{{ flow_title|default:"Medical Board Forms" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    body.public-body .content-wrapper {
+        background:
+            radial-gradient(circle at 12% 10%, rgba(22, 163, 74, 0.13), transparent 30%),
+            radial-gradient(circle at 92% 18%, rgba(217, 119, 6, 0.16), transparent 24%),
+            linear-gradient(135deg, #f8f6ef 0%, #eef7f2 52%, #f7efe4 100%);
+    }
+    .medical-form-shell {
+        --mb-ink: #21372f;
+        --mb-green: #176b52;
+        --mb-amber: #c56b1d;
+        --mb-paper: rgba(255, 252, 246, 0.92);
+        color: var(--mb-ink);
+    }
+    .medical-form-hero {
+        border-radius: 26px;
+        padding: 28px;
+        background:
+            linear-gradient(135deg, rgba(23, 107, 82, 0.95), rgba(33, 55, 47, 0.95)),
+            repeating-linear-gradient(45deg, rgba(255,255,255,.08), rgba(255,255,255,.08) 1px, transparent 1px, transparent 9px);
+        color: #fff;
+        box-shadow: 0 24px 70px rgba(33, 55, 47, 0.22);
+    }
+    .medical-form-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 108px;
+        height: 108px;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.95);
+        box-shadow: 0 14px 34px rgba(33, 55, 47, 0.12);
+    }
+    .medical-form-logo img {
+        max-height: 76px;
+    }
+    .medical-form-card {
+        border: 0;
+        border-radius: 22px;
+        background: var(--mb-paper);
+        box-shadow: 0 18px 46px rgba(33, 55, 47, 0.13);
+    }
+    .medical-form-card .card-header {
+        border-bottom: 1px solid rgba(33, 55, 47, 0.12);
+    }
+    .medical-form-section {
+        border: 1px solid rgba(23, 107, 82, 0.16);
+        border-radius: 18px;
+        padding: 18px;
+        margin-bottom: 18px;
+        background: rgba(255,255,255,0.72);
+    }
+    .medical-form-section h5 {
+        color: var(--mb-green);
+        font-weight: 800;
+    }
+    .medical-board-form-link {
+        display: block;
+        height: 100%;
+        border: 1px solid rgba(23, 107, 82, 0.18);
+        border-radius: 18px;
+        padding: 16px;
+        background: #fffdf8;
+        color: var(--mb-ink);
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .medical-board-form-link:hover {
+        color: var(--mb-ink);
+        transform: translateY(-3px);
+        border-color: rgba(197, 107, 29, 0.42);
+        box-shadow: 0 16px 34px rgba(33, 55, 47, 0.12);
+        text-decoration: none;
+    }
+    .medical-board-form-link strong {
+        color: var(--mb-amber);
+        letter-spacing: .04em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="medical-form-shell">
+    <div class="text-center mb-4">
+        <div class="medical-form-logo">
+            <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest">
+        </div>
+    </div>
+    <div class="medical-form-hero mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <p class="text-uppercase mb-2" style="letter-spacing:.18em; opacity:.78;">Medical Board of Papua New Guinea</p>
+                <h2 class="mb-2">{{ flow_title|default:"Medical Board Forms" }}</h2>
+                <p class="mb-0">{{ flow_help|default:"Complete practitioner, facility, accreditation, and training facility forms for Medical Board review." }}</p>
+            </div>
+            <div class="col-lg-4 text-lg-right mt-3 mt-lg-0">
+                <a href="{% url 'medical_board_portal' %}" class="btn btn-light">
+                    <i class="fas fa-clinic-medical mr-1"></i> Medical Board Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-9 col-lg-10">
+            <div class="card medical-form-card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">{{ flow_title|default:"Submit Medical Board Application" }}</h3>
+                </div>
+                <div class="card-body">
+                    {% if form %}
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                            {% endif %}
+
+                            {% if form.section_layout %}
+                                {% for section in form.section_layout %}
+                                    <div class="medical-form-section">
+                                        <h5 class="mb-3">{{ section.title }}</h5>
+                                        <div class="form-row">
+                                            {% for field in section.fields %}
+                                                <div class="form-group {% if field.widget_type == 'textarea' or field.widget_type == 'file' or field.widget_type == 'checkboxselectmultiple' or field.widget_type == 'radioselect' %}col-md-12{% else %}col-md-6{% endif %}">
+                                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                    {{ field }}
+                                                    {% if field.help_text %}
+                                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                                    {% endif %}
+                                                    {% if field.errors %}
+                                                        <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="form-row">
+                                    {% for field in form %}
+                                        <div class="form-group col-md-6">
+                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                            {{ field }}
+                                            {% if field.errors %}
+                                                <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-paper-plane mr-1"></i> Submit to Medical Board
+                            </button>
+                        </form>
+                    {% else %}
+                        {% for pathway, forms_list in form_guide.items %}
+                            <h5 class="text-uppercase text-muted mt-2 mb-3">{{ pathway|title }}</h5>
+                            <div class="row mb-4">
+                                {% for code, title in forms_list %}
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{% url 'medical_board_form_register' code %}" class="medical-board-form-link">
+                                            <strong>{{ code }}</strong>
+                                            <span class="d-block mt-1">{{ title }}</span>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-10 mt-4 mt-xl-0">
+            <div class="card medical-form-card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Medical Board Guidance</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">This portal is separated from Nursing Council workflows, but all approved records still land in the same central NDOH database.</p>
+                    <hr>
+                    <p class="mb-2"><strong>Use these forms for:</strong></p>
+                    <p class="text-muted mb-1">Doctors, specialists, CHWs, private facilities, accreditation reviews, and training college facility assessments.</p>
+                    <a href="{% url 'medical_board_register' %}" class="btn btn-outline-success btn-sm mt-3">
+                        View All Medical Board Forms
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

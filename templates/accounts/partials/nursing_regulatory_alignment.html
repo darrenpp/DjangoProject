@@ -1,0 +1,65 @@
+<div class="card card-outline card-success mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0">Nursing Council Regulatory Intelligence</h3>
+        <a href="{% url 'nursing_regulatory_alignment' %}" class="btn btn-outline-success btn-sm">Open Full Live Statistics</a>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">
+            This is the Nursing Council-only live regulatory statistics summary. The detailed ministerial tables, statutory context,
+            situational analysis alignment, and database comparisons now open on a dedicated page so the registrar profile loads faster.
+        </p>
+
+        <div class="border rounded p-3 mb-3">
+            <h4 class="h5 mb-2">{{ alignment.statutory_context.title }}</h4>
+            <p class="text-muted mb-0">{{ alignment.statutory_context.summary }}</p>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-uppercase text-muted">Generated</div>
+                    <div class="h5 mb-0">{{ alignment.generated_on }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-uppercase text-muted">Live Registry Total</div>
+                    <div class="h5 mb-0">{{ alignment.live_registry_total }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-uppercase text-muted">Latest Source File</div>
+                    <div class="small font-weight-bold">{{ alignment.platform_alignment.latest_source_name }}</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-uppercase text-muted">Latest Completed Import</div>
+                    <div class="small font-weight-bold">{{ alignment.platform_alignment.latest_completed }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead>
+                <tr>
+                    <th>Registry Category</th>
+                    <th>Current Count</th>
+                    <th>Active Count</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in alignment.live_snapshot_rows %}
+                    <tr>
+                        <td>{{ row.0 }}</td>
+                        <td>{{ row.1 }}</td>
+                        <td>{{ row.2 }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

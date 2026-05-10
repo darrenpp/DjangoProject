@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register - PNG Regulatory Bodies The Medical Board &amp; Nursing Council</title>
+  <script>
+    window.ndohAssets = {
+      bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
+      bootstrapJs: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
+      fontawesomeCss: "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css",
+      adminlteCss: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/css/adminlte.min.css",
+      adminlteJs: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/js/adminlte.min.js"
+    };
+    window.ndohLoadCss = function (href, id) {
+      if (id && document.getElementById(id)) return;
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      if (id) link.id = id;
+      document.head.appendChild(link);
+    };
+    window.ndohLoadScript = function (src, test, id) {
+      if (test && test()) return;
+      if (id && document.getElementById(id)) return;
+      const script = document.createElement('script');
+      script.src = src;
+      if (id) script.id = id;
+      document.body.appendChild(script);
+    };
+  </script>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.bootstrapCss, 'ndoh-bootstrap-cdn')">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.fontawesomeCss, 'ndoh-fontawesome-cdn')">
+  <link rel="stylesheet" href="{% static 'vendor/adminlte/css/adminlte.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.adminlteCss, 'ndoh-adminlte-cdn')">
+  <style>
+    body.auth-page {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(47, 95, 83, 0.10), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.10), transparent 26%),
+        linear-gradient(180deg, #f7f7f4 0%, #edf1ee 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+    }
+    .auth-shell {
+      width: 100%;
+      max-width: 1040px;
+    }
+    .auth-panel {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+    .auth-brand, .auth-card {
+      background: rgba(255,255,255,.95);
+      border: 1px solid #d7dfdb;
+      border-radius: 28px;
+      box-shadow: 0 24px 60px rgba(14, 32, 49, .10);
+      overflow: hidden;
+    }
+    .auth-brand {
+      padding: 40px;
+      color: #15293d;
+    }
+    .auth-brand h1 {
+      color: #15293d;
+      font-size: 2.4rem;
+      margin-bottom: 12px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    h1, h2, h3 { color: #0f172a; font-weight: 800; }
+    .btn-primary, .btn-success, .btn-info, .btn-danger { color: #fff !important; font-weight: 700; }
+    .btn-primary {
+      background: linear-gradient(135deg, #18324a 0%, #2f5f53 100%);
+      border-color: #2f5f53;
+      border-radius: 14px;
+      min-height: 46px;
+    }
+    .auth-card .card-body {
+      padding: 36px;
+    }
+    .auth-brand-logo {
+      width: 92px;
+      height: 92px;
+      object-fit: contain;
+      margin-bottom: 18px;
+    }
+    .form-control,
+    .form-select {
+      min-height: 46px;
+      border-radius: 14px;
+      border-color: #d2dcd8;
+    }
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #2f5f53;
+      box-shadow: 0 0 0 .2rem rgba(47, 95, 83, .12);
+    }
+    .form-control-file {
+      display: block;
+      width: 100%;
+      padding: .75rem 1rem;
+      border: 1px solid #d2dcd8;
+      border-radius: 14px;
+      background: #fff;
+    }
+    .field-note {
+      font-size: .82rem;
+      color: #64748b;
+    }
+    @media (max-width: 991px) {
+      .auth-panel { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="auth-page">
+<div class="auth-shell">
+  <div class="auth-panel">
+    <div class="auth-brand">
+      <div class="mb-4">
+        <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest" class="auth-brand-logo">
+      </div>
+      <h1>PNG Regulatory Bodies The Medical Board &amp; Nursing Council</h1>
+      <p class="text-muted">Create a professional account for graduands, nurses, doctors, CHWs, or nurse aides.</p>
+      <ul class="mt-4 text-muted">
+        <li>Role-based dashboard access</li>
+        <li>Professional registration and licence tracking</li>
+        <li>Document, profile, and identification uploads</li>
+      </ul>
+    </div>
+    <div class="auth-card">
+      <div class="card-body">
+        <h3 class="mb-3">Register</h3>
+        <p class="text-muted">Register using your professional number. Staff accounts use a separate login page.</p>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible">
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" required>
+            {% if form.first_name.errors %}<small class="text-danger">{{ form.first_name.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:'' }}" required>
+            {% if form.last_name.errors %}<small class="text-danger">{{ form.last_name.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" class="form-control" value="{{ form.username.value|default:'' }}" required>
+            {% if form.username.errors %}<small class="text-danger">{{ form.username.errors|join:", " }}</small>{% endif %}
+            <div class="field-note">Use your portal username or professional number.</div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" value="{{ form.email.value|default:'' }}">
+            {% if form.email.errors %}<small class="text-danger">{{ form.email.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" name="phone" class="form-control {% if form.phone.errors %}is-invalid{% endif %}" value="{{ form.phone.value|default:'' }}">
+            {% if form.phone.errors %}<small class="text-danger">{{ form.phone.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Employee Details</label>
+            <textarea name="employee_details" class="form-control" rows="3">{{ form.employee_details.value|default:'' }}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Applicant Type</label>
+            <select name="applicant_type" class="form-control" required>
+              <option value="national" {% if form.applicant_type.value == 'national' %}selected{% endif %}>National</option>
+              <option value="overseas" {% if form.applicant_type.value == 'overseas' %}selected{% endif %}>Overseas</option>
+            </select>
+            {% if form.applicant_type.errors %}<small class="text-danger">{{ form.applicant_type.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select name="role" class="form-control" required>
+              <option value="">Select Role</option>
+              <option value="graduand" {% if form.role.value == 'graduand' or form.role.value == 'student' %}selected{% endif %}>Graduand</option>
+              <option value="nurse" {% if form.role.value == 'nurse' %}selected{% endif %}>Nurse</option>
+              <option value="doctor" {% if form.role.value == 'doctor' %}selected{% endif %}>Doctor</option>
+              <option value="chw" {% if form.role.value == 'chw' %}selected{% endif %}>Community Health Worker</option>
+              <option value="nurse_aide" {% if form.role.value == 'nurse_aide' %}selected{% endif %}>Nurse Aide</option>
+            </select>
+            {% if form.role.errors %}<small class="text-danger">{{ form.role.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>License Number</label>
+            <input type="text" name="license_number" class="form-control {% if form.license_number.errors %}is-invalid{% endif %}" value="{{ form.license_number.value|default:'' }}">
+            {% if form.license_number.errors %}<small class="text-danger">{{ form.license_number.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Registration Number</label>
+            <input type="text" name="registration_number" class="form-control {% if form.registration_number.errors %}is-invalid{% endif %}" value="{{ form.registration_number.value|default:'' }}">
+            {% if form.registration_number.errors %}<small class="text-danger">{{ form.registration_number.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Profile Picture</label>
+            <input type="file" name="profile_image" accept="image/*" class="form-control-file">
+            {% if form.profile_image.errors %}<small class="text-danger">{{ form.profile_image.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Passport Photo</label>
+            <input type="file" name="passport_photo" accept="image/*" class="form-control-file">
+            {% if form.passport_photo.errors %}<small class="text-danger">{{ form.passport_photo.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Valid ID</label>
+            <input type="file" name="id_document_image" accept="image/*" class="form-control-file">
+            {% if form.id_document_image.errors %}<small class="text-danger">{{ form.id_document_image.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password1" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" required>
+            {% if form.password1.errors %}<small class="text-danger">{{ form.password1.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Confirm Password</label>
+            <input type="password" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" required>
+            {% if form.password2.errors %}<small class="text-danger">{{ form.password2.errors|join:", " }}</small>{% endif %}
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Register</button>
+        </form>
+
+        <div class="text-center mt-3">
+          <a href="{% url 'login' %}">I already have an account</a>
+        </div>
+        <div class="text-center mt-2">
+          <a href="{% url 'staff_login' %}">Staff login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
+<script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
+<script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
+</body>
+</html>

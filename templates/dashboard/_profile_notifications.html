@@ -1,0 +1,28 @@
+{% if missing_data_reviews %}
+<div class="alert alert-warning">
+    <h5 class="mb-2"><i class="fas fa-triangle-exclamation mr-1"></i> Profile Under Review</h5>
+    <p class="mb-2">Your registry profile is missing important information. Please update these details or contact the registry office.</p>
+    {% for review in missing_data_reviews %}
+        <div class="mb-1">
+            <strong>Missing:</strong> {{ review.missing_fields|join:", " }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if profile_notifications %}
+<div class="card mb-3">
+    <div class="card-header bg-light"><strong>Notifications</strong></div>
+    <div class="card-body">
+        {% for notification in profile_notifications %}
+            <div class="border-bottom pb-2 mb-2">
+                <strong>{{ notification.subject }}</strong>
+                <div class="text-muted small">{{ notification.created_at|date:"d M Y H:i" }}</div>
+                <div>{{ notification.message|linebreaksbr }}</div>
+            </div>
+        {% empty %}
+            <div class="text-muted">No notifications.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Nursing Council Workflow Tools{% endblock %}
+{% block title_label %}Nursing Council Workflow Tools{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card card-primary card-outline mb-4">
+        <div class="card-header">
+            <h3 class="card-title mb-0">Employer Verification, Public Register, and Deceased Workflow</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-0">
+                These tools support Nursing Council-only workflows. Employer verification returns safe public registration information only, while deceased notifications require registrar approval before the practitioner is removed from active workforce counts.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-info text-white"><strong>Employer Verification Request</strong></div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="employer_verify">
+                        <label>Employer Name</label>
+                        <input type="text" name="employer_name" class="form-control mb-2" required>
+                        <label>Facility / Workplace</label>
+                        <input type="text" name="facility_name" class="form-control mb-2">
+                        <label>Registration Number</label>
+                        <input type="text" name="registration_number" class="form-control mb-2">
+                        <label>Practitioner Number</label>
+                        <input type="text" name="practitioner_number" class="form-control mb-2">
+                        <label>Comments</label>
+                        <textarea name="comments" class="form-control mb-3" rows="3"></textarea>
+                        <button class="btn btn-info">Create Safe Verification</button>
+                    </form>
+                    {% if employer_result %}
+                        <hr>
+                        <h5>Safe Result</h5>
+                        <pre class="bg-light p-3 rounded">{{ employer_result.safe_result_json }}</pre>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white"><strong>Deceased Practitioner Notification</strong></div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="deceased_notice">
+                        <label>Name at Report</label>
+                        <input type="text" name="name_at_report" class="form-control mb-2" required>
+                        <label>Date of Death</label>
+                        <input type="date" name="date_of_death" class="form-control mb-2" required>
+                        <label>Registration Number</label>
+                        <input type="text" name="registration_number" class="form-control mb-2">
+                        <label>Practitioner Number</label>
+                        <input type="text" name="practitioner_number" class="form-control mb-2">
+                        <label>Workforce Category</label>
+                        <input type="text" name="workforce_category" class="form-control mb-2" placeholder="Registered Nurse, Midwife, Nurse Aide">
+                        <label>Facility / Ward</label>
+                        <input type="text" name="facility_name" class="form-control mb-2">
+                        <label>Comments</label>
+                        <textarea name="comments" class="form-control mb-3" rows="3"></textarea>
+                        <button class="btn btn-danger">Record Notification</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header"><strong>Recent Employer Verification Requests</strong></div>
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead><tr><th>Employer</th><th>Status</th><th>Safe Result</th><th>Date</th></tr></thead>
+                        <tbody>
+                        {% for request_row in recent_employer_requests %}
+                            <tr>
+                                <td>{{ request_row.employer_name }}</td>
+                                <td>{{ request_row.status|title }}</td>
+                                <td>{{ request_row.safe_result_json.full_name|default:"Pending match" }}</td>
+                                <td>{{ request_row.created_at|date:"d M Y H:i" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No employer verification requests yet.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header"><strong>Recent Deceased Notifications</strong></div>
+                <div class="card-body table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead><tr><th>Name</th><th>Date of Death</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                        {% for notification in recent_deceased_notifications %}
+                            <tr>
+                                <td>{{ notification.name_at_report }}</td>
+                                <td>{{ notification.date_of_death|date:"d M Y" }}</td>
+                                <td>{{ notification.verification_status|title }}</td>
+                                <td>
+                                    {% if notification.verification_status != "approved" %}
+                                        <form method="post" action="{% url 'approve_deceased_notification' notification.pk %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-sm btn-danger">Approve Removal</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="text-muted">Approved</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No deceased notifications yet.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

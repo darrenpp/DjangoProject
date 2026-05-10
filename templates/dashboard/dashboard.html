@@ -1,0 +1,520 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - The National Department Of Health Regulatory Bodies Nursing Council &amp; The Medical Board Online Workforce System{% endblock %}
+{% block title_label %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Welcome to the Papua New Guinea Nursing Council &amp; The Medical Board Online Workforce System</h1>
+    <p class="lead text-muted">National Department of Health - Regulatory Bodies Workforce Overview</p>
+
+    <div class="row g-4">
+        {% if dashboard_scope != 'nursing' %}
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Medical Doctors</h5>
+                    <h3 class="card-text">{{ medical_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Nursing Professionals</h5>
+                    <h3 class="card-text">{{ nursing_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Midwives</h5>
+                    <h3 class="card-text">{{ midwife_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Allied Health Professionals</h5>
+                    <h3 class="card-text">{{ allied_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        {% if dashboard_scope != 'nursing' %}
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-danger h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Community Health Workers</h5>
+                    <h3 class="card-text">{{ chw_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Nurse Aides</h5>
+                    <h3 class="card-text">{{ nurse_aide_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-secondary h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Graduands</h5>
+                    <h3 class="card-text">{{ graduand_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-dark h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Facilities</h5>
+                    <h3 class="card-text">{{ facility_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-white bg-light text-dark h-100">
+                <div class="card-body">
+                    <h5 class="card-title">PNG Nursing Schools</h5>
+                    <h3 class="card-text">{{ institution_count|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-light border">
+                <strong>Reference count note:</strong> the institution and facility figures shown here are now separated into clean operational counts and raw imported reference counts. This helps distinguish true PNG nursing schools from legacy, overseas, CHW, and duplicate import entries.
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Training Institution Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr><th>Recognised PNG nursing schools</th><td>{{ reference_breakdown.png_nursing_school_count }}</td></tr>
+                            <tr><th>Government nursing schools</th><td>{{ reference_breakdown.government_nursing_school_count }}</td></tr>
+                            <tr><th>Non-government nursing schools</th><td>{{ reference_breakdown.non_government_nursing_school_count }}</td></tr>
+                            <tr><th>Ownership review still needed</th><td>{{ reference_breakdown.review_nursing_school_count }}</td></tr>
+                            <tr><th>Raw nursing-school aliases matched</th><td>{{ reference_breakdown.mapped_nursing_reference_count }}</td></tr>
+                            <tr><th>CHW training references</th><td>{{ reference_breakdown.chw_training_reference_count }}</td></tr>
+                            <tr><th>Overseas institution references</th><td>{{ reference_breakdown.overseas_institution_reference_count }}</td></tr>
+                            <tr><th>Local nursing-like names needing cleansing</th><td>{{ reference_breakdown.unmapped_local_nursing_reference_count }}</td></tr>
+                            <tr><th>Other legacy or unclear entries</th><td>{{ reference_breakdown.legacy_institution_reference_count }}</td></tr>
+                            <tr><th>Raw institution rows in the reference table</th><td>{{ reference_breakdown.raw_institution_total }}</td></tr>
+                        </tbody>
+                    </table>
+                    {% if reference_breakdown.unmapped_local_examples %}
+                    <p class="small text-muted mb-0">
+                        Examples needing cleanup:
+                        {{ reference_breakdown.unmapped_local_examples|join:", " }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Facility / Workplace Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr><th>Master facility table records</th><td>{{ reference_breakdown.facility_master_count }}</td></tr>
+                            <tr><th>Cleaned workplace references from imports</th><td>{{ reference_breakdown.facility_grouped_reference_count }}</td></tr>
+                            <tr><th>Raw distinct workplace addresses from imports</th><td>{{ reference_breakdown.facility_raw_reference_count }}</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="small text-muted mb-0">
+                        The current facility figure is being derived from imported workplace addresses because the formal facility master register is not yet populated.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Workforce Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="workforceChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card card-outline card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Reference Tables</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="referenceTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="cadres-tab" data-bs-toggle="pill" href="#cadres" role="tab">Cadres</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="facilities-tab" data-bs-toggle="pill" href="#facilities" role="tab">Facilities</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="institutions-tab" data-bs-toggle="pill" href="#institutions" role="tab">Training Institutions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="documents-tab" data-bs-toggle="pill" href="#documents" role="tab">Document Types</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="locations-tab" data-bs-toggle="pill" href="#locations" role="tab">Locations</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content pt-3">
+                        <div class="tab-pane fade show active" id="cadres" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in cadres %}
+                                        <tr>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.get_category_display }}</td>
+                                            <td>{{ item.description|default:"-" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="text-center text-muted">No cadres found.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="facilities" role="tabpanel">
+                            {% if not facilities and facility_reference_rows %}
+                            <div class="alert alert-info">
+                                The formal Facility reference table is not populated yet, so this view is showing facilities/workplaces detected from imported N-DATA licence rows.
+                            </div>
+                            {% endif %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Code</th>
+                                            <th>Type / Categories</th>
+                                            <th>Workers</th>
+                                            <th>Location / Source</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in facilities %}
+                                        <tr>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.code|default:"-" }}</td>
+                                            <td>{{ item.type }}</td>
+                                            <td>{{ item.get_ownership_display }}</td>
+                                            <td>{{ item.location|default:"-" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                            {% for item in facility_reference_rows %}
+                                            <tr>
+                                                <td>{{ item.facility_name }}</td>
+                                                <td>Imported</td>
+                                                <td>
+                                                    {% for category in item.categories|slice:":3" %}
+                                                        <span class="badge bg-primary me-1">{{ category.name }}: {{ category.count }}</span>
+                                                    {% empty %}
+                                                        -
+                                                    {% endfor %}
+                                                </td>
+                                                <td>{{ item.total }}</td>
+                                                <td>N-DATA workplace address</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr><td colspan="5" class="text-center text-muted">No facilities found.</td></tr>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="institutions" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Active</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in institutions %}
+                                        <tr>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.type|default:"-" }}</td>
+                                            <td>{{ item.is_active|yesno:"Yes,No" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="text-center text-muted">No training institutions found.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="documents" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Required</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in document_types %}
+                                        <tr>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.is_required|yesno:"Yes,No" }}</td>
+                                            <td>{{ item.description|default:"-" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="text-center text-muted">No document types found.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="locations" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>Province</th>
+                                            <th>District</th>
+                                            <th>Ward</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in locations %}
+                                        <tr>
+                                            <td>{{ item.province }}</td>
+                                            <td>{{ item.district }}</td>
+                                            <td>{{ item.ward|default:"-" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="text-center text-muted">No locations found.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recent Activity & Key Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Pending Duplicates</span>
+                                    <strong class="text-danger">{{ duplicate_count|default:0 }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Qualifications Recorded</span>
+                                    <strong>{{ qualification_count|default:0 }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>CPD Records</span>
+                                    <strong>{{ cpd_count|default:0 }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Disciplinary Actions</span>
+                                    <strong class="text-warning">{{ disciplinary_count|default:0 }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Active Registrations</span>
+                                    <strong>{{ registration_count|default:0 }}</strong>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Pending Applications</span>
+                                    <strong class="text-primary">{{ application_count|default:0 }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Current Postings</span>
+                                    <strong>{{ posting_count|default:0 }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>PNG Nursing Schools</span>
+                                    <strong>{{ institution_count|default:0 }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Document Types</span>
+                                    <strong>{{ document_type_count|default:0 }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Total Documents</span>
+                                    <strong>{{ document_count|default:0 }}</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {% if recent_sync %}
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <strong>Latest Sync:</strong> {{ recent_sync.source_system }} -
+                        {{ recent_sync.timestamp|date:"d M Y H:i" }}
+                        ({{ recent_sync.records_processed }} records)
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'export_monthly_analytics_excel' %}" class="btn btn-success me-2" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Building the Excel analytics workbook with tables and charts.">
+            Export Monthly Analytics Excel
+        </a>
+        <a href="{% url 'export_monthly_analytics_pdf' %}" class="btn btn-primary me-2" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Building the professional monthly analytics PDF report.">
+            Export Monthly Analytics PDF
+        </a>
+        <a href="{% url 'import_data' %}" class="btn btn-outline-secondary">
+            Import Data
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.bootstrap) {
+        const hash = window.location.hash;
+        const tabLink = hash ? document.querySelector('#referenceTabs a[href="' + hash + '"]') : null;
+        if (tabLink) {
+            window.bootstrap.Tab.getOrCreateInstance(tabLink).show();
+        }
+        document.querySelectorAll('#referenceTabs a[data-bs-toggle="pill"]').forEach(function (tab) {
+            tab.addEventListener('shown.bs.tab', function (event) {
+                history.replaceState(null, '', event.target.getAttribute('href'));
+            });
+        });
+    }
+
+    if (typeof Chart === 'undefined') {
+        return;
+    }
+
+    const chartEl = document.getElementById('workforceChart');
+    if (!chartEl) {
+        return;
+    }
+
+    const ctx = chartEl.getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            {% if dashboard_scope == 'nursing' %}
+            labels: [
+                'Nursing Professionals',
+                'Midwives',
+                'Nurse Aides',
+                'Graduands'
+            ],
+            datasets: [{
+                label: 'Workforce Count',
+                data: [
+                    {{ nursing_count|default:0 }},
+                    {{ midwife_count|default:0 }},
+                    {{ nurse_aide_count|default:0 }},
+                    {{ graduand_count|default:0 }}
+                ],
+                backgroundColor: ['#198754', '#0dcaf0', '#0f766e', '#6c757d'],
+            {% else %}
+            labels: [
+                'Medical Doctors',
+                'Nursing Professionals',
+                'Midwives',
+                'Allied Health',
+                'CHWs',
+                'Nurse Aides',
+                'Graduands'
+            ],
+            datasets: [{
+                label: 'Workforce Count',
+                data: [
+                    {{ medical_count|default:0 }},
+                    {{ nursing_count|default:0 }},
+                    {{ midwife_count|default:0 }},
+                    {{ allied_count|default:0 }},
+                    {{ chw_count|default:0 }},
+                    {{ nurse_aide_count|default:0 }},
+                    {{ graduand_count|default:0 }}
+                ],
+                backgroundColor: ['#0d6efd', '#198754', '#0dcaf0', '#ffc107', '#dc3545', '#0f766e', '#6c757d'],
+            {% endif %}
+                borderColor: '#ffffff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#e9ecef'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: '#e9ecef'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

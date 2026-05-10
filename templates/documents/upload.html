@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Repository Document{% endblock %}
+{% block title_label %}Upload Repository Document{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-9">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Capture Official Evidence</h3>
+                <small class="text-muted">Upload scanned paper records, receipts, application evidence, qualifications, or official source files into the correct scoped repository.</small>
+            </div>
+            <form method="post" enctype="multipart/form-data" data-loading-text="Uploading repository document" data-loading-meta="The document will be stored with metadata, version history, and audit trace.">
+                {% csrf_token %}
+                <div class="card-body">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors|join:", " }}</div>
+                    {% endif %}
+
+                    <div class="form-row">
+                        <div class="form-group col-md-8">
+                            <label for="{{ form.title.id_for_label }}">Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}<small class="text-danger">{{ form.title.errors|join:", " }}</small>{% endif %}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="{{ form.office_scope.id_for_label }}">Repository Scope</label>
+                            {{ form.office_scope }}
+                            {% if form.office_scope.errors %}<small class="text-danger">{{ form.office_scope.errors|join:", " }}</small>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.folder.id_for_label }}">Folder</label>
+                            {{ form.folder }}
+                            {% if form.folder.errors %}<small class="text-danger">{{ form.folder.errors|join:", " }}</small>{% endif %}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="{{ form.document_type.id_for_label }}">Document Type</label>
+                            {{ form.document_type }}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="{{ form.status.id_for_label }}">Status</label>
+                            {{ form.status }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.related_model.id_for_label }}">Link To Record Type</label>
+                            {{ form.related_model }}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="{{ form.related_object_id.id_for_label }}">Linked Record ID</label>
+                            {{ form.related_object_id }}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="{{ form.retention_years.id_for_label }}">Retention Years</label>
+                            {{ form.retention_years }}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.file.id_for_label }}">Initial File</label>
+                            {{ form.file }}
+                            {% if form.file.errors %}<small class="text-danger d-block">{{ form.file.errors|join:", " }}</small>{% endif %}
+                        </div>
+                        <div class="form-group col-md-6 pt-4">
+                            <div class="custom-control custom-checkbox">
+                                {{ form.is_record }}
+                                <label class="custom-control-label" for="{{ form.is_record.id_for_label }}">Mark as official managed record</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.version_notes.id_for_label }}">Version Notes</label>
+                        {{ form.version_notes }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.metadata_text.id_for_label }}">Metadata</label>
+                        {{ form.metadata_text }}
+                        <small class="form-text text-muted">{{ form.metadata_text.help_text }}</small>
+                        {% if form.metadata_text.errors %}<small class="text-danger">{{ form.metadata_text.errors|join:", " }}</small>{% endif %}
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <a href="{% url 'repository_search' %}" class="btn btn-outline-secondary">Back to Repository</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i> Save Repository Document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card card-outline card-info">
+            <div class="card-header"><h3 class="card-title mb-0">Capture Rules</h3></div>
+            <div class="card-body small">
+                <p><strong>Use the correct scope.</strong> Nursing Council and Medical Board evidence must not be mixed.</p>
+                <p><strong>Add metadata.</strong> Receipt number, registration number, source file, sheet, and row make later audits easier.</p>
+                <p><strong>Use versions.</strong> Upload corrections as new versions rather than silently replacing evidence.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

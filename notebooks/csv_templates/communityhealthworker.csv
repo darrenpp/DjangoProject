@@ -1,0 +1,2 @@
+national_id,first_name,last_name,date_of_birth,gender,primary_phone,email,community_id,training_level,is_active
+CHW001,Tom,Kaia,1995-11-10,M,67570000003,tom.kaia@example.com,COM001,Level 2,True

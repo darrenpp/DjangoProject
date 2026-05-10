@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load record_tags %}
+
+{% block title %}{% if is_create %}Add{% else %}Edit{% endif %} {{ model_label }}{% endblock %}
+{% block title_label %}{% if is_create %}Create{% else %}Update{% endif %} {{ model_label }}{% endblock %}
+
+{% block content %}
+<div class="card table-card">
+    <div class="card-header">
+        <h3 class="card-title mb-0">{% if is_create %}New{% else %}Edit{% endif %} Record</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-row">
+                {% for field in form %}
+                    <div class="form-group col-md-6">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a href="{% url 'record_list' model_slug %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

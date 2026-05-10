@@ -1,0 +1,38 @@
+{% if missing_data_review_count %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-outline card-warning">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Records Missing Important Information</h3>
+                <span class="badge badge-warning">{{ missing_data_review_count }} under review</span>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-striped table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Registration No</th>
+                            <th>Missing Fields</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for review in missing_data_reviews %}
+                        <tr>
+                            <td>{{ review.full_name|default:"-" }}</td>
+                            <td>{{ review.professional_type }}</td>
+                            <td>{{ review.registration_no|default:"-" }}</td>
+                            <td>{{ review.missing_fields|join:", " }}</td>
+                            <td>{{ review.severity|title }}</td>
+                            <td>{{ review.get_status_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

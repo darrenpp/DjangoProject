@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Profile - PNG Regulatory Bodies The Medical Board &amp; Nursing Council{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card card-primary card-outline">
+            <div class="card-body text-center">
+                {% if user.profile_image %}
+                    <img class="img-fluid rounded-circle mb-3" src="{{ user.profile_image.url }}" alt="Profile picture" style="width: 156px; height: 156px; object-fit: cover;">
+                {% else %}
+                    <img class="img-fluid rounded-circle mb-3" src="{% static 'img/avatar.png' %}" alt="Profile picture" style="width: 156px; height: 156px; object-fit: cover;">
+                {% endif %}
+
+                <h3 class="profile-username text-center">{{ user.get_full_name|default:user.username }}</h3>
+                <p class="text-muted mb-3">{{ user.get_role_display|default:'User' }}</p>
+
+                <ul class="list-group list-group-unbordered mb-0 text-left">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>License Number</strong>
+                        <span>{{ user.license_number|default:'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Registration Number</strong>
+                        <span>{{ user.registration_number|default:'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Department</strong>
+                        <span>{{ user.department|default:'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Status</strong>
+                        <span>{% if user.is_active %}Active{% else %}Inactive{% endif %}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Member Since</strong>
+                        <span>{{ user.date_joined|date:"M Y" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        {% if staff_ai_context %}
+            {% include 'accounts/partials/staff_ai_controls.html' with ai=staff_ai_context %}
+        {% endif %}
+
+        <div class="card card-outline card-info">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Profile Overview</h3>
+            </div>
+            <div class="card-body">
+                {% if profile_access %}
+                    <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="text-muted small text-uppercase">Signed-in Role</div>
+                            <h4 class="mb-1">{{ profile_access.role_title }} - {{ profile_access.domain }}</h4>
+                        </div>
+                        {% if profile_access.can_manage_operations %}
+                            <span class="badge badge-success mt-1">Full Operational Access</span>
+                        {% else %}
+                            <span class="badge badge-warning mt-1">Limited Role-Based Access</span>
+                        {% endif %}
+                    </div>
+
+                    <p class="text-muted mb-4">{{ profile_access.summary }}</p>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded h-100 p-3 bg-light">
+                                <h5 class="mb-3"><i class="fas fa-check-circle text-success mr-1"></i>What this user can access</h5>
+                                <ul class="mb-0 pl-3">
+                                    {% for item in profile_access.can_access %}
+                                        <li class="mb-2">{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded h-100 p-3 bg-light">
+                                <h5 class="mb-3"><i class="fas fa-lock text-warning mr-1"></i>What is locked</h5>
+                                <ul class="mb-0 pl-3">
+                                    {% for item in profile_access.cannot_access %}
+                                        <li class="mb-2">{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if profile_access.can_request_full_access and not profile_access.can_manage_operations %}
+                        <div class="alert alert-warning">
+                            <strong>Full portal functions are locked until approved.</strong>
+                            Reviewer accounts can support review work, but full Nursing Council or Medical Board operations require approval from the responsible Registrar and System Admin. Use the request button below if this user needs elevated operational access.
+                        </div>
+                        <form method="post" action="{% url 'request_full_access' %}" class="d-inline-block mr-2 mb-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-user-shield mr-1"></i> Request Registrar/System Admin Approval
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted mb-3">This profile is protected by role-based access. Contact the Registrar or System Admin if your dashboard does not match your assigned office duties.</p>
+                {% endif %}
+                <a href="{% url 'user_profile' %}?settings=1" class="btn btn-primary mb-2">
+                    <i class="fas fa-cog mr-1"></i> Open Profile Settings
+                </a>
+            </div>
+        </div>
+
+        {% if request.user.role == 'admin' or request.user.role == 'registrar' %}
+        <div class="card card-outline card-warning mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Inbox, Chat & Review Queue</h3>
+                <a href="{% url 'staff_communications' %}" class="btn btn-outline-warning btn-sm">Open Communications Hub</a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small text-uppercase">Pending Applications</div>
+                            <div class="h3 mb-0">{{ staff_summary.pending_application_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small text-uppercase">Inbox Conversations</div>
+                            <div class="h3 mb-0">{{ staff_summary.open_thread_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small text-uppercase">Documents To Review</div>
+                            <div class="h3 mb-0">{{ staff_summary.document_review_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small text-uppercase">Access Requests</div>
+                            <div class="h3 mb-0">{{ staff_summary.pending_access_request_count }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h5 class="mb-3">Latest Inbox Items</h5>
+                        {% for thread in staff_summary.open_threads %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <strong>{{ thread.subject }}</strong>
+                                <div class="small text-muted">{{ thread.get_office_display }} · {{ thread.updated_at|date:"d M Y H:i" }}</div>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">No open conversations right now.</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5 class="mb-3">Applications Awaiting Review</h5>
+                        {% for application in staff_summary.pending_applications %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <strong>{{ application.form_code }}</strong>
+                                <div class="small text-muted">{{ application.form_title|default:"Application review" }} · {{ application.submitted_date|date:"d M Y" }}</div>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">No pending applications in your current scope.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if nursing_regulatory_alignment %}
+            {% include 'accounts/partials/nursing_regulatory_alignment.html' with alignment=nursing_regulatory_alignment %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="profileSettingsModal" tabindex="-1" aria-labelledby="profileSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="profileSettingsModalLabel">Profile Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Username</label>
+                            <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Role</label>
+                            <input type="text" class="form-control" value="{{ user.get_role_display }}" readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.email.id_for_label }}">Email</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.phone.id_for_label }}">Phone</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.department.id_for_label }}">Department</label>
+                            {{ form.department }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ form.profile_image.id_for_label }}">Profile Picture</label>
+                            {{ form.profile_image }}
+                        </div>
+                        <div class="form-group col-md-12">
+                            <label for="{{ form.employee_details.id_for_label }}">Employee Details</label>
+                            {{ form.employee_details }}
+                        </div>
+                    </div>
+                    {% for field in form %}
+                        {% if field.errors %}
+                            <div class="text-danger small mb-2">{{ field.label }}: {{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% if show_settings_modal %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modalNode = document.getElementById('profileSettingsModal');
+    if (modalNode && window.bootstrap && window.bootstrap.Modal) {
+        new window.bootstrap.Modal(modalNode).show();
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

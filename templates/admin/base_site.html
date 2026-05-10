@@ -1,0 +1,102 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ site_title|default:"The National Department Of Health Regulatory Bodies Nursing Council & The Medical Board Online Workforce System" }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/ndoh-admin.css' %}">
+<style>
+    :root {
+        --ndoh-navy: #0f172a;
+        --ndoh-green: #0f766e;
+        --ndoh-gold: #b45309;
+        --ndoh-cream: #f8fafc;
+    }
+    #header {
+        background: linear-gradient(135deg, var(--ndoh-navy), var(--ndoh-green));
+        color: #fff;
+    }
+    #header a:link, #header a:visited {
+        color: #fff;
+    }
+    body {
+        background: linear-gradient(180deg, #f7f8f6 0%, #edf1ee 100%);
+    }
+    #branding h1 {
+        align-items: center;
+        display: inline-flex;
+        gap: 12px;
+        font-weight: 800;
+        letter-spacing: .02em;
+    }
+    .admin-brand-logo {
+        background: rgba(255,255,255,.95);
+        border-radius: 12px;
+        height: 48px;
+        object-fit: contain;
+        padding: 5px;
+        width: 58px;
+    }
+    .module h2, .module caption, .inline-group h2 {
+        background: var(--ndoh-green);
+        color: #fff;
+    }
+    #content {
+        background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+    }
+    .breadcrumbs {
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    body, input, select, textarea, button {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    h1, h2, h3, h4 {
+        color: var(--ndoh-navy);
+        letter-spacing: 0;
+        font-weight: 800;
+    }
+    .module h2, .module caption, .inline-group h2,
+    .admin-hero h1,
+    #header h1,
+    #header h1 a {
+        color: #fff !important;
+    }
+    .button,
+    input[type="submit"],
+    input[type="button"],
+    .submit-row input,
+    .object-tools a {
+        font-weight: 700 !important;
+        text-shadow: 0 1px 1px rgba(0,0,0,.18);
+    }
+    .module, .module caption, .inline-group, .app-auth, .app-accounts, .app-workforce {
+        border-radius: 10px;
+    }
+    .object-tools a.addlink {
+        background: var(--ndoh-green);
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 12px;
+    }
+    .submit-row input.default {
+        background: var(--ndoh-green);
+        border-color: var(--ndoh-green);
+    }
+    #changelist-filter h2, .module h2, .module caption, .inline-group h2 {
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest" class="admin-brand-logo">
+        <span>The National Department Of Health Regulatory Bodies Nursing Council &amp; The Medical Board Online Workforce System</span>
+    </a>
+</h1>
+{% endblock %}

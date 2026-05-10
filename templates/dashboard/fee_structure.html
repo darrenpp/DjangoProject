@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Fee Structure & Guidelines{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h4>PAPUA NEW GUINEA NURSING COUNCIL</h4>
+                        <h5>APPROVED REGISTRATION & LICENSING FEES</h5>
+                        <small class="text-light">Date: 12th January 2026</small>
+                    </div>
+                <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-lg-8">
+                                <div class="alert alert-light border">
+                                    <h5 class="mb-2"><i class="fas fa-map-signs mr-2 text-primary"></i>License Pathways Master Guide</h5>
+                                    <p class="mb-2">Use this guide image to understand the registration flow before submitting forms, payments, or supporting documents.</p>
+                                    <a href="{% static 'img/license_pathways_master_guide.png' %}" target="_blank" class="btn btn-outline-primary btn-sm" data-progress-link data-progress-text="Opening the licensing pathways guide.">
+                                        View Full Guide
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 text-center">
+                                <a href="{% static 'img/license_pathways_master_guide.png' %}" target="_blank" data-progress-link data-progress-text="Opening the licensing pathways guide image.">
+                                    <img src="{% static 'img/license_pathways_master_guide.png' %}" alt="License Pathways Master Guide" class="img-fluid rounded border shadow-sm">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>Legal Authority:</strong> <h5><i class="icon fas fa-info"></i> Important Notice</h5> Medical Registration Act 1980, Part III Nurses and Nurse
+                            Aides, Division 3 –
+                            Registration of Nurses, Section 36 (2) (iii). Application for Registration, the fees
+                            prescribed by the Council.
+                        </div>
+
+
+                    <!-- Nursing Council Overseas Fees -->
+                    <div class="row">
+                        <!-- Overseas Applicants -->
+                        <div class="col-lg-6">
+                            <h5 class="text-primary mb-3">Category A: OVERSEAS APPLICANTS</h5>
+                            <table class="table table-bordered" style="background-color: #e3f2fd;">
+                                <thead class="table-primary">
+                                <tr>
+                                    <th>Fee Type</th>
+                                    <th class="text-end">Amount (Kina)</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Temporary (5 weeks – 9 months)</td>
+                                    <td class="text-end">K50.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Provisional and Full</td>
+                                    <td class="text-end">K500.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Renewal</td>
+                                    <td class="text-end">K250.00</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- National Applicants -->
+                        <div class="col-lg-6">
+                            <h5 class="text-success mb-3">Category B: NATIONAL</h5>
+                            <table class="table table-bordered" style="background-color: #e8f5e9;">
+                                <thead class="table-success">
+                                <tr>
+                                    <th>Fee Type</th>
+                                    <th class="text-end">Amount (Kina)</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Provisional (New Graduates)</td>
+                                    <td class="text-end">K30.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Full Registration</td>
+                                    <td class="text-end">K50.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Renewals for Nurses</td>
+                                    <td class="text-end">K70.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Renewals for Nurse Aides</td>
+                                    <td class="text-end">K15.00</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Nursing Council National Fees -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-user-nurse mr-2"></i>
+                                        Category: C Nursing Council Other Fees
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped table-hover datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Fee (PGK)</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>Duplicate (Lost) Certificate/License</td>
+                                            <td>K30.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Late Registration</td>
+                                            <td>K100.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Good Standing Letters</td>
+                                            <td>K40.00</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medical Board Fees -->
+                        <div class="col-md-6">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-user-md mr-2"></i>
+                                        Medical Board Fees
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped table-hover datatable">
+                                        <thead>
+                                        <tr>
+                                            <th> All Medical/Dental Practitioners Fee -Service (note:All Fees apply to Nationals/Overseas Applicants)</th>
+                                            <th>Fee (PGK)</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>Full Registration.</td>
+                                            <td>K20.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Annual Renewal Fee</td>
+                                            <td>K10.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Specialist Qualification</td>
+                                            <td>K30.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Temporary</td>
+                                            <td>K10.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Duplicate Certificate</td>
+                                            <td>K5.00 (CommunityHealth Workers)</td>
+                                            <td>K10.00 (Medical Doctors)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Disciplinary Charge</td>
+                                            <td>K2000.00</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHW Fees -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-graduation-cap mr-2"></i>
+                                        Graduand Registration Fees
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped table-hover datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Fee (PGK)</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>Graduand Registration</td>
+                                            <td>50.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Annual Graduand Renewal</td>
+                                            <td>25.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Transcript Verification</td>
+                                            <td>20.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Duplicate ID Card</td>
+                                            <td>15.00</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Community Health Worker Fees -->
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-users mr-2"></i>
+                                        Community Health Worker Fees
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped table-hover datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Fee (PGK)</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>Initial Registration</td>
+                                            <td>75.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Annual Renewal</td>
+                                            <td>50.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Training Certificate</td>
+                                            <td>25.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Duplicate Certificate</td>
+                                            <td>30.00</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">
+                                        <i class="fas fa-credit-card mr-2"></i>
+                                        Payment Methods & Guidelines
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Accepted Payment Methods</h5>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-money-bill-wave text-success mr-2"></i>
+                                                    Cash payments at designated offices
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-university text-primary mr-2"></i>
+                                                    Bank transfers to designated accounts
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-mobile-alt text-info mr-2"></i>
+                                                    Mobile money transfers (available soon)
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-credit-card text-warning mr-2"></i>
+                                                    Credit/Debit cards (selected locations)
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5>Payment Guidelines</h5>
+                                            <div class="alert alert-warning">
+                                                <strong>Important:</strong> All payments must be made in Papua New
+                                                Guinean Kina (PGK).
+                                                Receipts must be kept for all transactions.
+                                            </div>
+                                            <div class="alert alert-info">
+                                                <strong>Refunds:</strong> Fees are non-refundable once services have
+                                                been processed.
+                                                Contact the relevant council/board for refund inquiries.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-secondary text-white">
+                                    <h4 class="card-title mb-0">
+                                        <i class="fas fa-address-book mr-2"></i>
+                                        Contact Information
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <i class="fas fa-user-nurse fa-3x text-primary mb-2"></i>
+                                                <h6>Nursing Council</h6>
+                                                <p class="small">Port Moresby<br>Phone: +675 301 2345<br>Email:
+                                                    nursing@ndoh.gov.pg</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <i class="fas fa-user-md fa-3x text-danger mb-2"></i>
+                                                <h6>Medical Board</h6>
+                                                <p class="small">Port Moresby<br>Phone: +675 323 2629<br>Email:
+                                                    medical_board@health.gov.pg</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <i class="fas fa-graduation-cap fa-3x text-info mb-2"></i>
+                                                <h6>Graduand Services</h6>
+                                                <p class="small">All Provinces<br>Phone: +675 301 2347<br>Email:
+                                                    graduands@ndoh.gov.pg</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <i class="fas fa-users fa-3x text-success mb-2"></i>
+                                                <h6>CHW Services</h6>
+                                                <p class="small">All Provinces<br>Phone: +675 301 2348<br>Email:
+                                                    chw@ndoh.gov.pg</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .table th {
+            font-weight: 600;
+            font-size: 0.875rem;
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .list-group-item {
+            border: none;
+            padding: 0.75rem 0;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .text-center h6 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .text-center p {
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+    </style>
+{% endblock %}
