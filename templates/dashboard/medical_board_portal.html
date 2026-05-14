@@ -148,6 +148,9 @@
                 <button class="btn btn-warning" onclick="executeCommand('import_medical_board_workbook')">
                     <i class="fas fa-file-import mr-1"></i> Import CHW Workbook
                 </button>
+                <button class="btn btn-outline-light ml-2" onclick="executeCommand('import_medical_board_legacy_workbooks')">
+                    <i class="fas fa-file-excel mr-1"></i> Import Legacy Registers
+                </button>
             </div>
         </div>
     </div>
@@ -180,8 +183,8 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card mb-metric">
                 <div class="card-body d-flex justify-content-between align-items-start">
-                    <div><span>Pending Reviews</span><h3>{{ pending_applications|default:0 }}</h3></div>
-                    <i class="fas fa-clipboard-check"></i>
+                    <div><span>Allied Health</span><h3>{{ medical_allied_count|default:0 }}</h3></div>
+                    <i class="fas fa-user-nurse"></i>
                 </div>
             </div>
         </div>
@@ -228,6 +231,8 @@
 
     {% include "dashboard/_missing_data_reviews_table.html" %}
 
+    {% include "dashboard/_registrar_worker_origin_table.html" %}
+
     <div class="row">
         <div class="col-lg-8 mb-4">
             <div class="card mb-panel h-100">
@@ -258,12 +263,12 @@
                             </a>
                         </div>
                         <div class="col-md-4 mb-2">
-                            <a href="{% url 'export_monthly_analytics_excel' %}" class="btn btn-outline-success btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the Excel analytics workbook with monthly tables and charts.">
+                            <a href="{% url 'export_monthly_analytics_excel' %}?office=medical" class="btn btn-outline-success btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the Medical Board monthly analytics workbook with tables and charts.">
                                 <i class="fas fa-chart-column mr-1"></i> Monthly Excel
                             </a>
                         </div>
                         <div class="col-md-4 mb-2">
-                            <a href="{% url 'export_monthly_analytics_pdf' %}" class="btn btn-outline-danger btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the professional monthly analytics PDF report.">
+                            <a href="{% url 'export_monthly_analytics_pdf' %}?office=medical" class="btn btn-outline-danger btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the Medical Board monthly analytics PDF report.">
                                 <i class="fas fa-file-pdf mr-1"></i> Monthly PDF
                             </a>
                         </div>
@@ -451,7 +456,7 @@
                             <tr>
                                 <td>{{ record.record_year|default:"-" }}</td>
                                 <td>{{ record.full_name }}</td>
-                                <td>{% if record.target_model == 'communityhealthworker' %}CHW{% elif record.target_model == 'medicaldoctor' %}Doctor{% else %}{{ record.target_model }}{% endif %}</td>
+                                <td>{% if record.target_model == 'communityhealthworker' %}CHW{% elif record.target_model == 'medicaldoctor' %}Doctor{% elif record.target_model == 'other' %}Allied Health / Other{% else %}{{ record.target_model }}{% endif %}</td>
                                 <td>{{ record.registration_no|default:"-" }}</td>
                                 <td>{{ record.practitioner_number|default:"-" }}</td>
                                 <td>{{ record.get_record_type_display }}</td>

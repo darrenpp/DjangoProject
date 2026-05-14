@@ -19,13 +19,21 @@ OUTPUT_ISSUES = Path("notebooks") / "full_registrations_quality_issues.csv"
 OUTPUT_SUMMARY = Path("notebooks") / "full_registrations_summary.txt"
 
 FOREIGN_KEYWORDS = [
+    "america",
+    "american",
     "philippines",
+    "philippine",
+    "philipine",
     "india",
     "italy",
     "fiji",
     "china",
     "australia",
+    "auckland",
     "new zealand",
+    "new zealnd",
+    "new zeland",
+    "nz",
     "uk",
     "united kingdom",
     "usa",

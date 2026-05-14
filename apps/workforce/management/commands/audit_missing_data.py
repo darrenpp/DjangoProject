@@ -65,7 +65,9 @@ class Command(BaseCommand):
                 "Import-row audit"
                 f"{batch_label}: {import_result['reviewed']} reviewed, "
                 f"{import_result['created']} created, "
-                f"{import_result['updated']} updated."
+                f"{import_result['updated']} updated, "
+                f"{import_result['resolved']} resolved, "
+                f"{import_result['open_reviews']} open."
             ))
 
         if options["notify_expiring"]:

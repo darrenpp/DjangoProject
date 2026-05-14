@@ -1,9 +1,12 @@
 from collections import defaultdict
-import re
 
 from django.core.cache import cache
 
 from apps.workforce.models import Facility, PracticingLicenseRecord, TrainingInstitution
+from apps.workforce.services.institution_classification import (
+    classify_training_institution,
+    normalize_institution_text,
+)
 
 
 PNG_NURSING_SCHOOL_RULES = (
@@ -142,12 +145,11 @@ LOCAL_NURSING_HINTS = (
     " SON",
     " CON",
 )
-INSTITUTION_BREAKDOWN_CACHE_KEY = "dashboard_reference_breakdown_v1"
+INSTITUTION_BREAKDOWN_CACHE_KEY = "dashboard_reference_breakdown_v3"
 
 
 def _normalize_text(value):
-    normalized = re.sub(r"[^A-Z0-9 ]+", " ", str(value or "").upper())
-    return re.sub(r"\s+", " ", normalized).strip()
+    return normalize_institution_text(value)
 
 
 def _clean_facility_name(value):
@@ -199,6 +201,7 @@ def build_reference_breakdown():
     raw_institution_total = len(institution_rows)
 
     school_matches = defaultdict(list)
+    national_rows = []
     unmapped_local_rows = []
     overseas_rows = []
     chw_rows = []
@@ -213,20 +216,22 @@ def build_reference_breakdown():
             legacy_rows.append(name)
             continue
 
-        matched_school = _match_png_nursing_school(normalized_name)
-        if matched_school:
-            school_matches[matched_school["name"]].append(name)
+        if classify_training_institution(name, institution_type) == "Overseas Institution":
+            overseas_rows.append(name)
             continue
 
         if "CHW" in normalized_type or _matches_any(normalized_name, CHW_KEYWORDS):
             chw_rows.append(name)
             continue
 
-        if _matches_any(normalized_name, OVERSEAS_KEYWORDS):
-            overseas_rows.append(name)
+        matched_school = _match_png_nursing_school(normalized_name)
+        if matched_school:
+            school_matches[matched_school["name"]].append(name)
+            national_rows.append(name)
             continue
 
-        if _matches_any(normalized_name, LOCAL_NURSING_HINTS):
+        if "NATIONAL" in normalized_type or _matches_any(normalized_name, LOCAL_NURSING_HINTS):
+            national_rows.append(name)
             unmapped_local_rows.append(name)
             continue
 
@@ -248,6 +253,7 @@ def build_reference_breakdown():
         _clean_facility_name(value)
         for value in PracticingLicenseRecord.objects.exclude(workplace_address__isnull=True)
         .exclude(workplace_address="")
+        .order_by()
         .values_list("workplace_address", flat=True)
         .distinct()
         if value
@@ -261,11 +267,13 @@ def build_reference_breakdown():
         "non_government_nursing_school_count": sum(1 for row in nursing_school_rows if row["ownership"] == "non_government"),
         "review_nursing_school_count": sum(1 for row in nursing_school_rows if row["ownership"] == "needs_review"),
         "mapped_nursing_reference_count": sum(len(rows) for rows in school_matches.values()),
+        "national_institution_reference_count": len(national_rows),
         "chw_training_reference_count": len(chw_rows),
         "overseas_institution_reference_count": len(overseas_rows),
         "unmapped_local_nursing_reference_count": len(unmapped_local_rows),
         "legacy_institution_reference_count": len(legacy_rows),
         "nursing_school_rows": nursing_school_rows,
+        "national_examples": national_rows[:12],
         "unmapped_local_examples": unmapped_local_rows[:12],
         "overseas_examples": overseas_rows[:12],
         "legacy_examples": legacy_rows[:12],
@@ -273,6 +281,7 @@ def build_reference_breakdown():
         "facility_grouped_reference_count": len(grouped_facility_names),
         "facility_raw_reference_count": PracticingLicenseRecord.objects.exclude(workplace_address__isnull=True)
         .exclude(workplace_address="")
+        .order_by()
         .values("workplace_address")
         .distinct()
         .count(),

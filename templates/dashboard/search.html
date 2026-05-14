@@ -58,7 +58,13 @@
                             </td>
                             <td>{{ item.type }}</td>
                             <td>{{ item.registration }}</td>
-                            <td><a href="{% url item.url item.pk %}" class="btn btn-sm btn-primary">Open</a></td>
+                            <td>
+                                {% if item.model_slug %}
+                                    <a href="{% url item.url item.model_slug item.pk %}" class="btn btn-sm btn-primary">Open</a>
+                                {% else %}
+                                    <a href="{% url item.url item.pk %}" class="btn btn-sm btn-primary">Open</a>
+                                {% endif %}
+                            </td>
                         </tr>
                     {% empty %}
                         <tr><td colspan="4" class="text-muted text-center">No professional records found.</td></tr>

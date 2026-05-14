@@ -14,6 +14,7 @@ from apps.workforce.models import (
     Qualification,
     TrainingInstitution,
 )
+from apps.workforce.services.institution_classification import classify_training_institution
 from apps.workforce.services.data_quality import audit_professional_profiles
 from notebooks.cleanse_full_registrations import (
     DEFAULT_SHEET,
@@ -107,9 +108,14 @@ class Command(BaseCommand):
                 institution = None
                 institution_name = (row.get("institution_name") or "").strip()
                 if institution_name and institution_name.upper() not in {"TBA", "N/A", "NA"}:
-                    institution, _ = TrainingInstitution.objects.get_or_create(
-                        name=institution_name[:255]
+                    institution_type = classify_training_institution(institution_name)
+                    institution, created = TrainingInstitution.objects.get_or_create(
+                        name=institution_name[:255],
+                        defaults={"type": institution_type},
                     )
+                    if not created and institution.type != institution_type:
+                        institution.type = institution_type
+                        institution.save(update_fields=["type"])
 
                 issued_date = row.get("issued_date")
                 if pd.isna(issued_date):

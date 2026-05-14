@@ -19,9 +19,11 @@
                     </div>
                 </div>
             </form>
-            <a href="{% url 'record_create' model_slug %}" class="btn btn-sm btn-success">
-                <i class="fas fa-plus mr-1"></i>Add New
-            </a>
+            {% if can_create_records %}
+                <a href="{% url 'record_create' model_slug %}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus mr-1"></i>Add New
+                </a>
+            {% endif %}
         </div>
     </div>
     <div class="card-body">
@@ -72,13 +74,11 @@
                             </td>
                         {% endif %}
                         <td class="text-right">
-                            {% if is_professional_model %}
-                                <a href="{% url 'professional_detail' row.pk %}" class="btn btn-info btn-sm">View</a>
-                            {% else %}
-                                <a href="{% url 'record_detail' model_slug row.pk %}" class="btn btn-info btn-sm">View</a>
-                            {% endif %}
+                            <a href="{% url 'record_detail' model_slug row.pk %}" class="btn btn-info btn-sm">View</a>
                             <a href="{% url 'record_update' model_slug row.pk %}" class="btn btn-primary btn-sm">Edit</a>
+                            {% if can_delete_records %}
                             <a href="{% url 'record_delete' model_slug row.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

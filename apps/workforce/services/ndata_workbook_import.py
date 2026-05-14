@@ -27,25 +27,13 @@ from apps.workforce.models import (
     TrainingInstitution,
     WorkforceSnapshot,
 )
+from apps.workforce.services.institution_classification import (
+    applicant_type_for_institution,
+    classify_training_institution,
+)
 
 
 DEFAULT_WORKBOOK = Path(r"d:\2026 Current N-DATA Statistics & Tracking - SECTIONS (Autosaved).xlsx")
-
-FOREIGN_KEYWORDS = [
-    "australia",
-    "philippines",
-    "ireland",
-    "university of manchester",
-    "south australia",
-    "queensland",
-    "england",
-    "india",
-    "deakin",
-    "curtin",
-]
-
-PNG_HINTS = ["png", "papua new guinea"]
-
 
 def normalize_text(value):
     if value is None or pd.isna(value):
@@ -225,12 +213,8 @@ def parse_decimal(value):
 
 
 def infer_applicant_type(*values):
-    combined = " ".join(normalize_text(value).lower() for value in values if normalize_text(value))
-    if any(keyword in combined for keyword in FOREIGN_KEYWORDS):
-        return "overseas"
-    if any(keyword in combined for keyword in PNG_HINTS):
-        return "national"
-    return "national"
+    combined = " ".join(normalize_text(value) for value in values if normalize_text(value))
+    return applicant_type_for_institution(combined)
 
 
 def infer_target_model(category="", qualification="", registration_no=""):
@@ -265,7 +249,14 @@ def safe_institution(name):
     clean = normalize_text(name)
     if not clean or clean.upper() in {"TBA", "N/A", "NA"}:
         return None
-    institution, _ = TrainingInstitution.objects.get_or_create(name=clean[:255])
+    institution_type = classify_training_institution(clean)
+    institution, created = TrainingInstitution.objects.get_or_create(
+        name=clean[:255],
+        defaults={"type": institution_type},
+    )
+    if not created and institution.type != institution_type:
+        institution.type = institution_type
+        institution.save(update_fields=["type"])
     return institution
 
 

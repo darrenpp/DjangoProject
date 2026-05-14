@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 # ====================== CONFIG ======================
-input_file = Path("../C:Users/timhi/PycharmProjects/PNG_NursingCouncil&TheMedicalBoardOnlineRegistrationPlatform/notebooksDATA_school_full_license2024_2025.xlsx")  # Change if path is different
+input_file = Path(__file__).resolve().parent / "DATA_school_full_license2024_2025.xlsx"
 output_dir = Path(".")
 output_dir.mkdir(exist_ok=True)
 

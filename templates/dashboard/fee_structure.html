@@ -1,17 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Fee Structure & Guidelines{% endblock %}
+{% block title_label %}{% if fee_scope == 'medical' %}Medical Board Fee Structure{% elif fee_scope == 'nursing' %}Nursing Council Fee Structure{% else %}Fee Structure & Guidelines{% endif %}{% endblock %}
 
 {% block content %}
     <div class="row">
         <div class="col-12">
             <div class="card shadow">
-                    <div class="card-header bg-primary text-white text-center py-3">
-                        <h4>PAPUA NEW GUINEA NURSING COUNCIL</h4>
+                    <div class="card-header {% if fee_scope == 'medical' %}bg-danger{% else %}bg-primary{% endif %} text-white text-center py-3">
+                        <h4>{% if fee_scope == 'medical' %}PAPUA NEW GUINEA MEDICAL BOARD{% else %}PAPUA NEW GUINEA NURSING COUNCIL{% endif %}</h4>
                         <h5>APPROVED REGISTRATION & LICENSING FEES</h5>
                         <small class="text-light">Date: 12th January 2026</small>
                     </div>
                 <div class="card-body">
+                        {% if fee_scope != 'medical' %}
                         <div class="row mb-4">
                             <div class="col-lg-8">
                                 <div class="alert alert-light border">
@@ -28,15 +30,21 @@
                                 </a>
                             </div>
                         </div>
+                        {% endif %}
                         <div class="alert alert-info">
+                            {% if fee_scope == 'medical' %}
+                            <strong>Legal Authority:</strong> Medical Registration Act 1980 and Medical Board fee schedules for Medical Doctors, Dental Practitioners, specialists, and Community Health Workers.
+                            {% else %}
                             <strong>Legal Authority:</strong> <h5><i class="icon fas fa-info"></i> Important Notice</h5> Medical Registration Act 1980, Part III Nurses and Nurse
                             Aides, Division 3 –
                             Registration of Nurses, Section 36 (2) (iii). Application for Registration, the fees
                             prescribed by the Council.
+                            {% endif %}
                         </div>
 
 
                     <!-- Nursing Council Overseas Fees -->
+                    {% if fee_scope != 'medical' %}
                     <div class="row">
                         <!-- Overseas Applicants -->
                         <div class="col-lg-6">
@@ -96,9 +104,11 @@
                             </table>
                         </div>
                     </div>
+                    {% endif %}
 
                     <!-- Nursing Council National Fees -->
                     <div class="row mb-4">
+                        {% if fee_scope != 'medical' %}
                         <div class="col-md-6">
                             <div class="card border-primary">
                                 <div class="card-header bg-primary text-white">
@@ -133,9 +143,11 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
 
                         <!-- Medical Board Fees -->
-                        <div class="col-md-6">
+                        {% if fee_scope != 'nursing' %}
+                        <div class="{% if fee_scope == 'medical' %}col-md-12{% else %}col-md-6{% endif %}">
                             <div class="card border-danger">
                                 <div class="card-header bg-danger text-white">
                                     <h5 class="card-title mb-0">
@@ -182,10 +194,12 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
 
                     <!-- CHW Fees -->
                     <div class="row mb-4">
+                        {% if fee_scope != 'medical' %}
                         <div class="col-md-6">
                             <div class="card border-info">
                                 <div class="card-header bg-info text-white">
@@ -224,9 +238,11 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
 
                         <!-- Community Health Worker Fees -->
-                        <div class="col-md-6">
+                        {% if fee_scope != 'nursing' %}
+                        <div class="{% if fee_scope == 'medical' %}col-md-12{% else %}col-md-6{% endif %}">
                             <div class="card border-success">
                                 <div class="card-header bg-success text-white">
                                     <h5 class="card-title mb-0">
@@ -264,6 +280,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
 
                     <!-- Payment Methods -->
@@ -322,7 +339,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
-                                <div class="card-header bg-secondary text-white">
+                                <div class="card-header contact-card-header">
                                     <h4 class="card-title mb-0">
                                         <i class="fas fa-address-book mr-2"></i>
                                         Contact Information
@@ -330,6 +347,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
+                                        {% if fee_scope != 'medical' %}
                                         <div class="col-md-3">
                                             <div class="text-center">
                                                 <i class="fas fa-user-nurse fa-3x text-primary mb-2"></i>
@@ -338,6 +356,8 @@
                                                     nursing@ndoh.gov.pg</p>
                                             </div>
                                         </div>
+                                        {% endif %}
+                                        {% if fee_scope != 'nursing' %}
                                         <div class="col-md-3">
                                             <div class="text-center">
                                                 <i class="fas fa-user-md fa-3x text-danger mb-2"></i>
@@ -346,6 +366,8 @@
                                                     medical_board@health.gov.pg</p>
                                             </div>
                                         </div>
+                                        {% endif %}
+                                        {% if fee_scope != 'medical' %}
                                         <div class="col-md-3">
                                             <div class="text-center">
                                                 <i class="fas fa-graduation-cap fa-3x text-info mb-2"></i>
@@ -354,6 +376,8 @@
                                                     graduands@ndoh.gov.pg</p>
                                             </div>
                                         </div>
+                                        {% endif %}
+                                        {% if fee_scope != 'nursing' %}
                                         <div class="col-md-3">
                                             <div class="text-center">
                                                 <i class="fas fa-users fa-3x text-success mb-2"></i>
@@ -362,6 +386,7 @@
                                                     chw@ndoh.gov.pg</p>
                                             </div>
                                         </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

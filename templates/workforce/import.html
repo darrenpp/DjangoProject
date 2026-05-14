@@ -8,10 +8,16 @@
     <div class="col-lg-7">
         <div class="card card-outline card-primary">
             <div class="card-header">
-                <h3 class="card-title mb-0">N-DATA Workbook Import</h3>
+                <h3 class="card-title mb-0">{% if import_scope == 'medical' %}Medical Board CHW Workbook Import{% else %}N-DATA Workbook Import{% endif %}</h3>
             </div>
             <div class="card-body">
-                <p class="text-muted">Import the full N-DATA workbook so every sheet is aligned, compared by year/date, and loaded into the normalized registry tables.</p>
+                <p class="text-muted">
+                    {% if import_scope == 'medical' %}
+                        Import Medical Board CHW registration, practising licence, and training institution workbook sheets into the Medical Board registry.
+                    {% else %}
+                        Import the full N-DATA workbook so every sheet is aligned, compared by year/date, and loaded into the normalized registry tables.
+                    {% endif %}
+                </p>
                 <div class="alert {% if default_workbook_exists %}alert-info{% else %}alert-warning{% endif %}">
                     <div><strong>Default workbook:</strong> {{ default_workbook }}</div>
                     <div class="small mt-1">
@@ -22,9 +28,9 @@
                         {% endif %}
                     </div>
                 </div>
-                <form method="post" data-loading-text="Starting the N-DATA workbook import and aligning all workbook sheets." data-loading-meta="The status bar stays active while records, snapshots, and statistics tables are created.">
+                <form method="post" data-loading-text="{% if import_scope == 'medical' %}Starting the Medical Board CHW workbook import.{% else %}Starting the N-DATA workbook import and aligning all workbook sheets.{% endif %}" data-loading-meta="The status bar stays active while records, snapshots, and statistics tables are created.">
                     {% csrf_token %}
-                    <input type="hidden" name="import_mode" value="ndata_default">
+                    <input type="hidden" name="import_mode" value="default_workbook">
                     <button type="submit" class="btn btn-primary" {% if not default_workbook_exists %}disabled{% endif %}>
                         <i class="fas fa-database mr-1"></i> Import Default Workbook
                     </button>
@@ -39,7 +45,13 @@
                         {% if form.file.errors %}
                             <div class="invalid-feedback d-block">{{ form.file.errors|join:", " }}</div>
                         {% endif %}
-                        <small class="form-text text-muted">Excel workbooks run through the multi-sheet importer. CSV files still use the quick nursing import.</small>
+                        <small class="form-text text-muted">
+                            {% if import_scope == 'medical' %}
+                                Excel workbooks run through the Medical Board CHW importer. CSV files still use the quick nursing import.
+                            {% else %}
+                                Excel workbooks run through the multi-sheet importer. CSV files still use the quick nursing import.
+                            {% endif %}
+                        </small>
                     </div>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-file-import mr-1"></i> Start Import

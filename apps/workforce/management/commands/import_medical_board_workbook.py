@@ -16,10 +16,19 @@ class Command(BaseCommand):
             default=str(DEFAULT_MEDICAL_BOARD_WORKBOOK),
             help="Path to the Medical Board workbook.",
         )
+        parser.add_argument(
+            "--audit-profiles",
+            action="store_true",
+            help="Run the full registry missing-profile audit after import. This is intentionally off by default for large workbooks.",
+        )
 
     def handle(self, *args, **options):
         batch = MedicalBoardWorkbookImporter(workbook_path=options["file"]).import_workbook()
-        profile_audit = audit_professional_profiles(send_notifications=True)
+        profile_audit = (
+            audit_professional_profiles(send_notifications=False)
+            if options["audit_profiles"]
+            else {"skipped": True, "reason": "Use --audit-profiles to run the full registry profile audit."}
+        )
         import_audit = audit_imported_license_rows(batch=batch)
         summary = batch.summary or {}
         self.stdout.write(self.style.SUCCESS(

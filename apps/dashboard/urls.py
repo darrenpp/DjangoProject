@@ -6,8 +6,9 @@ from .views import (
     export_workforce_flow_pdf,
     generate_csv_report,
     generate_registered_nurses_pdf, admin_dashboard, registrar_dashboard,
+    registrar_individual_records, data_quality_reviews_table,
     nurse_dashboard, nurse_aide_dashboard, chw_dashboard, doctor_dashboard, student_dashboard, main_dashboard,
-    nursing_council_portal, medical_board_portal, submit_receipt,
+    nursing_council_portal, nursing_frequent_records, medical_board_portal, submit_receipt,
     viewer_dashboard,
     execute_management_command, fee_structure, dashboard_search,
     export_monthly_analytics_excel,
@@ -24,6 +25,7 @@ from .views import (
     staff_ai_chat,
     duplicate_review_workflow,
     duplicate_review_update,
+    platform_standards_alignment,
     production_readiness_dashboard,
     production_readiness_missing_review_update,
 )
@@ -48,12 +50,14 @@ urlpatterns = [
     path('staff-ai/', staff_ai_assistant, name='staff_ai_assistant'),
     path('duplicate-reviews/', duplicate_review_workflow, name='duplicate_review_workflow'),
     path('duplicate-reviews/<int:review_id>/update/', duplicate_review_update, name='duplicate_review_update'),
+    path('standards-alignment/', platform_standards_alignment, name='platform_standards_alignment'),
     path('production-readiness/', production_readiness_dashboard, name='production_readiness_dashboard'),
     path('production-readiness/missing-review/<int:review_id>/update/', production_readiness_missing_review_update, name='production_readiness_missing_review_update'),
     path('staff-ai/chat/', staff_ai_chat, name='staff_ai_chat'),
 
 # Portal-specific dashboards
     path('nursing-council/', nursing_council_portal, name='nursing_council_portal'),
+    path('nursing-council/frequent-records/', nursing_frequent_records, name='nursing_frequent_records'),
     path('medical-board/', medical_board_portal, name='medical_board_portal'),
     path('graduand-portal/', student_dashboard, name='graduand_portal'),
     path('medical-staff/', chw_dashboard, name='medical_staff_portal'),
@@ -61,6 +65,8 @@ urlpatterns = [
 # Clean short URLs for dashboards
     path('admin/', admin_dashboard, name='admin_dashboard'),
     path('registrar/', registrar_dashboard, name='registrar_dashboard'),
+    path('individual-records/', registrar_individual_records, name='registrar_individual_records'),
+    path('data-quality/reviews/table/', data_quality_reviews_table, name='data_quality_reviews_table'),
     path('professional/', professional_dashboard, name='professional_dashboard'),
     path('nurse/', nurse_dashboard, name='nurse_dashboard'),
     path('nurse-aide/', nurse_aide_dashboard, name='nurse_aide_dashboard'),

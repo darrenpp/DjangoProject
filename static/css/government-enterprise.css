@@ -68,6 +68,73 @@ body {
     box-shadow: 10px 0 28px rgba(15, 35, 54, 0.16);
 }
 
+@media (min-width: 992px) {
+    body.app-shell {
+        --ndoh-fixed-sidebar-width: var(--lte-sidebar-width, 250px);
+    }
+
+    body.app-shell .app-wrapper {
+        display: grid;
+        grid-template-columns: var(--ndoh-fixed-sidebar-width) minmax(0, 1fr);
+        transition: grid-template-columns 180ms ease;
+    }
+
+    body.app-shell .main-header,
+    body.app-shell .content-wrapper,
+    body.app-shell .main-footer {
+        grid-column: 2;
+        margin-left: 0 !important;
+        width: auto !important;
+    }
+
+    body.app-shell .app-sidebar,
+    body.app-shell .main-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: var(--ndoh-fixed-sidebar-width) !important;
+        min-width: var(--ndoh-fixed-sidebar-width) !important;
+        max-width: var(--ndoh-fixed-sidebar-width) !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        z-index: 1038;
+        transition: transform 180ms ease;
+    }
+
+    body.app-shell .main-sidebar .sidebar {
+        height: calc(100vh - 66px) !important;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    body.app-shell.sidebar-collapse .app-wrapper,
+    body.app-shell.ndoh-sidebar-collapsed .app-wrapper {
+        grid-template-columns: 0 minmax(0, 1fr);
+    }
+
+    body.app-shell.sidebar-collapse .app-sidebar,
+    body.app-shell.sidebar-collapse .main-sidebar,
+    body.app-shell.ndoh-sidebar-collapsed .app-sidebar,
+    body.app-shell.ndoh-sidebar-collapsed .main-sidebar {
+        box-shadow: none !important;
+        pointer-events: none;
+        transform: translateX(calc(-1 * var(--ndoh-fixed-sidebar-width))) !important;
+    }
+
+    body.app-shell.sidebar-collapse .main-header,
+    body.app-shell.sidebar-collapse .content-wrapper,
+    body.app-shell.sidebar-collapse .main-footer,
+    body.app-shell.ndoh-sidebar-collapsed .main-header,
+    body.app-shell.ndoh-sidebar-collapsed .content-wrapper,
+    body.app-shell.ndoh-sidebar-collapsed .main-footer {
+        grid-column: 2;
+        margin-left: 0 !important;
+        max-width: 100vw;
+        width: 100% !important;
+    }
+}
+
 .brand-link {
     background: rgba(255,255,255,0.04) !important;
     border-bottom: 1px solid rgba(255,255,255,0.09) !important;
@@ -150,6 +217,23 @@ h1, h2, h3 {
 
 .card-header.bg-warning {
     background: linear-gradient(90deg, #8a5a10 0%, var(--gov-gold) 100%) !important;
+}
+
+.contact-card-header {
+    background: #e8f4f2 !important;
+    border-left: 6px solid var(--gov-teal) !important;
+    color: var(--gov-ink) !important;
+}
+
+.contact-card-header *,
+.contact-card-header .card-title {
+    color: var(--gov-ink) !important;
+    text-shadow: none !important;
+}
+
+.contact-card-header ::selection {
+    background: rgba(15, 118, 110, 0.18);
+    color: var(--gov-ink);
 }
 
 .card-header h1,
@@ -921,6 +1005,96 @@ textarea {
     cursor: grabbing;
 }
 
+.page-anchor-top {
+    display: block;
+    height: 0;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    width: 0;
+}
+
+.page-section-navigator {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--gov-line);
+    border-radius: 999px;
+    bottom: 18px;
+    box-shadow: 0 16px 34px rgba(15, 35, 54, 0.18);
+    display: flex;
+    gap: 6px;
+    left: 18px;
+    padding: 6px;
+    position: fixed;
+    z-index: 4100;
+}
+
+.page-section-navigator.is-hidden {
+    display: none;
+}
+
+.page-section-nav-button {
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--gov-ink);
+    display: inline-flex;
+    font-size: .82rem;
+    font-weight: 900;
+    gap: 6px;
+    justify-content: center;
+    min-height: 36px;
+    min-width: 42px;
+    padding: 8px 10px;
+    text-decoration: none;
+}
+
+.page-section-nav-button:hover,
+.page-section-nav-button:focus {
+    background: #e8f4f2;
+    border-color: var(--gov-green);
+    color: var(--gov-green);
+    outline: none;
+    text-decoration: none;
+}
+
+.page-section-nav-button:disabled,
+.page-section-nav-button[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: .45;
+}
+
+@media (min-width: 992px) {
+    body.app-shell .page-section-navigator {
+        left: calc(var(--ndoh-fixed-sidebar-width, 250px) + 18px);
+    }
+
+    body.app-shell.sidebar-collapse .page-section-navigator,
+    body.app-shell.ndoh-sidebar-collapsed .page-section-navigator {
+        left: 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-section-navigator {
+        bottom: 12px;
+        gap: 4px;
+        left: 12px;
+        padding: 5px;
+    }
+
+    .page-section-nav-button {
+        min-height: 34px;
+        min-width: 36px;
+        padding: 7px 8px;
+    }
+
+    .page-section-nav-text {
+        display: none;
+    }
+}
+
 .helpdesk-widget {
     max-width: calc(100vw - 1rem);
     max-height: calc(100vh - 1rem);
@@ -1479,5 +1653,292 @@ body.app-shell .staff-alert-toast .toast-header * {
 body.app-shell .staff-alert-toast .toast-header ::selection {
     background: #dbeafe !important;
     color: #071827 !important;
+    text-shadow: none !important;
+}
+
+.platform-standards-bar {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid var(--gov-line);
+    border-left: 6px solid var(--gov-green);
+    border-radius: 10px;
+    box-shadow: var(--gov-shadow-soft);
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin: 0 0 16px;
+    padding: 14px 16px;
+}
+
+.platform-standards-title {
+    color: var(--gov-ink);
+    font-size: .94rem;
+    font-weight: 900;
+}
+
+.platform-standards-subtitle {
+    color: var(--gov-muted);
+    font-size: .84rem;
+    line-height: 1.35;
+    margin-top: 2px;
+}
+
+.platform-standards-badges,
+.standards-hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.platform-standard-badge {
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid var(--gov-line);
+    border-radius: 999px;
+    color: var(--gov-ink);
+    display: inline-flex;
+    font-size: .78rem;
+    font-weight: 900;
+    gap: 6px;
+    line-height: 1;
+    padding: 8px 10px;
+    white-space: nowrap;
+}
+
+.platform-standard-badge.badge-primary {
+    border-color: #bfd3e3;
+    color: var(--gov-blue);
+}
+
+.platform-standard-badge.badge-success {
+    border-color: #b9d8ce;
+    color: var(--gov-green);
+}
+
+.platform-standard-badge.badge-info {
+    border-color: #b9d6e6;
+    color: #0e7490;
+}
+
+.platform-standard-badge.badge-warning {
+    border-color: #e5d1a9;
+    color: #8a5a10;
+}
+
+.platform-standard-badge.badge-danger {
+    border-color: #e4b7b7;
+    color: var(--gov-red);
+}
+
+.platform-standards-page {
+    color: var(--gov-ink);
+}
+
+.standards-hero,
+.standards-section {
+    background: #ffffff;
+    border: 1px solid var(--gov-line);
+    border-radius: 10px;
+    box-shadow: var(--gov-shadow-soft);
+    margin-bottom: 18px;
+}
+
+.standards-hero {
+    align-items: flex-start;
+    display: flex;
+    gap: 24px;
+    justify-content: space-between;
+    padding: 24px;
+}
+
+.standards-kicker {
+    color: var(--gov-green);
+    font-size: .78rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.standards-hero h2 {
+    color: var(--gov-ink);
+    font-size: 1.6rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.standards-hero p {
+    color: var(--gov-ink-soft);
+    max-width: 860px;
+}
+
+.standards-section {
+    padding: 20px;
+}
+
+.section-heading {
+    align-items: flex-start;
+    display: flex;
+    gap: 18px;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.section-heading h3 {
+    color: var(--gov-ink);
+    font-size: 1.16rem;
+    font-weight: 900;
+    margin: 0;
+}
+
+.section-heading p {
+    color: var(--gov-muted);
+    margin: 0;
+    max-width: 720px;
+}
+
+.standards-metric-grid,
+.standards-blueprint-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.standards-metric,
+.standards-blueprint {
+    background: #f8fafc;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.standards-metric span,
+.standards-metric small {
+    color: var(--gov-muted);
+    display: block;
+}
+
+.standards-metric strong {
+    color: var(--gov-ink);
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 900;
+    margin: 4px 0;
+}
+
+.standards-blueprint h4 {
+    color: var(--gov-green);
+    font-size: 1rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.standards-blueprint p {
+    color: var(--gov-ink-soft);
+    margin-bottom: 8px;
+}
+
+.nursing-portal {
+    background: transparent !important;
+    min-height: auto !important;
+}
+
+.nursing-portal .card {
+    border-radius: 10px !important;
+    transition: none !important;
+}
+
+.nursing-portal .card:hover {
+    box-shadow: var(--gov-shadow-soft) !important;
+    transform: none !important;
+}
+
+.nursing-portal .btn-primary,
+.nursing-portal .small-box.bg-primary,
+.nursing-portal .small-box.bg-info,
+.nursing-portal .small-box.bg-success {
+    background: linear-gradient(135deg, var(--gov-blue), var(--gov-green)) !important;
+}
+
+.nursing-portal .table thead th {
+    background: #e8f1ef !important;
+    color: var(--gov-ink) !important;
+}
+
+@media (max-width: 992px) {
+    .platform-standards-bar,
+    .standards-hero,
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .platform-standards-badges {
+        justify-content: flex-start;
+    }
+}
+
+/*
+ * Platform-wide header contrast guard.
+ * Keep this as the last rule set. Several dashboard pages mix Bootstrap
+ * background helpers with generic heading styles; this explicitly locks dark
+ * section headers to light text and warning/light headers to dark text.
+ */
+body.app-shell .content-wrapper .card > .card-header.bg-primary,
+body.app-shell .content-wrapper .card > .card-header.bg-success,
+body.app-shell .content-wrapper .card > .card-header.bg-info,
+body.app-shell .content-wrapper .card > .card-header.bg-dark,
+body.app-shell .content-wrapper .card > .card-header.bg-secondary,
+body.app-shell .content-wrapper .card > .card-header.bg-danger,
+body.app-shell .content-wrapper .modal-header.bg-primary,
+body.app-shell .content-wrapper .modal-header.bg-success,
+body.app-shell .content-wrapper .modal-header.bg-info,
+body.app-shell .content-wrapper .modal-header.bg-dark,
+body.app-shell .content-wrapper .modal-header.bg-secondary,
+body.app-shell .content-wrapper .modal-header.bg-danger {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+body.app-shell .content-wrapper .card > .card-header.bg-primary :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .card > .card-header.bg-success :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .card > .card-header.bg-info :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .card > .card-header.bg-dark :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .card > .card-header.bg-secondary :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .card > .card-header.bg-danger :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-primary :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-success :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-info :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-dark :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-secondary :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-danger :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.36) !important;
+}
+
+body.app-shell .content-wrapper .card > .card-header.bg-warning,
+body.app-shell .content-wrapper .modal-header.bg-warning,
+body.app-shell .content-wrapper .card > .card-header.bg-light,
+body.app-shell .content-wrapper .modal-header.bg-light,
+body.app-shell .content-wrapper .card > .card-header.bg-white,
+body.app-shell .content-wrapper .modal-header.bg-white,
+body.app-shell .content-wrapper .contact-card-header {
+    color: #071827 !important;
+    -webkit-text-fill-color: #071827 !important;
+    text-shadow: none !important;
+}
+
+body.app-shell .content-wrapper .card > .card-header.bg-warning :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-warning :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .card > .card-header.bg-light :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-light :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .card > .card-header.bg-white :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .modal-header.bg-white :where(.modal-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.app-shell .content-wrapper .contact-card-header :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge) {
+    color: #071827 !important;
+    -webkit-text-fill-color: #071827 !important;
+    opacity: 1 !important;
     text-shadow: none !important;
 }

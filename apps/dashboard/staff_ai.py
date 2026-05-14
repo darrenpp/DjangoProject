@@ -1,4 +1,5 @@
 from collections import Counter
+from datetime import date
 from difflib import SequenceMatcher
 
 from django.contrib.contenttypes.models import ContentType
@@ -216,10 +217,30 @@ def _missing_review_queryset(scope):
     queryset = MissingDataReview.objects.exclude(status="resolved").order_by("-missing_count", "full_name")
     if scope == "all":
         return queryset
-    return queryset.filter(
-        Q(professional_type__icontains=scope.title())
-        | Q(professional_type__icontains="Nursing Professional" if scope == "nursing" else "Medical")
-    )
+    if scope == "medical":
+        practicing_content_type = ContentType.objects.get_for_model(PracticingLicenseRecord)
+        practicing_record_ids = PracticingLicenseRecord.objects.filter(
+            batch__source_kind="medical_board_workbook",
+            target_model__in=["medicaldoctor", "communityhealthworker", "other"],
+            record_year__isnull=False,
+            record_year__lte=date.today().year,
+        ).values("id")
+        return queryset.filter(
+            Q(content_type__model__in=MEDICAL_BOARD_PROFESSIONAL_MODELS)
+            | Q(professional_type__in=["Medical Doctor", "Community Health Worker"])
+            | Q(content_type=practicing_content_type, object_id__in=Subquery(practicing_record_ids))
+        )
+    if scope == "nursing":
+        practicing_content_type = ContentType.objects.get_for_model(PracticingLicenseRecord)
+        practicing_record_ids = PracticingLicenseRecord.objects.filter(
+            target_model__in=["nursingprofessional", "midwife", "nurseaide", "healthstudent"],
+        ).exclude(batch__source_kind="medical_board_workbook").values("id")
+        return queryset.filter(
+            Q(content_type__model__in=NURSING_COUNCIL_PROFESSIONAL_MODELS)
+            | Q(professional_type__in=["Nursing Professional", "Midwife", "Nurse Aide", "Graduand"])
+            | Q(content_type=practicing_content_type, object_id__in=Subquery(practicing_record_ids))
+        )
+    return queryset.none()
 
 
 def _duplicate_review_queryset(scope):

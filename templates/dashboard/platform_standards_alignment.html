@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Standards and Compliance - NDOH Regulatory Bodies System{% endblock %}
+{% block title_label %}Standards and Compliance{% endblock %}
+
+{% block content %}
+<div class="platform-standards-page">
+    <section class="standards-hero">
+        <div>
+            <p class="standards-kicker">Government health workforce registry</p>
+            <h2>{{ standard_summary.title }}</h2>
+            <p>{{ standard_summary.subtitle }}</p>
+            <p class="mb-0"><strong>Policy anchor:</strong> {{ standard_summary.policy_anchor }}</p>
+        </div>
+        <div class="standards-hero-badges">
+            {% for badge in standard_badges %}
+            <span class="platform-standard-badge badge-{{ badge.tone }}">
+                <i class="fas {{ badge.icon }}"></i>
+                {{ badge.label }}
+            </span>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="standards-section">
+        <div class="section-heading">
+            <h3>Live Governance Metrics</h3>
+            <p>These indicators show whether the platform has the basic evidence base needed for official NHWA-style reporting.</p>
+        </div>
+        <div class="standards-metric-grid">
+            {% for metric in live_standard_metrics %}
+            <div class="standards-metric">
+                <span>{{ metric.label }}</span>
+                <strong>{{ metric.value }}</strong>
+                <small>{{ metric.meta }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="standards-section">
+        <div class="section-heading">
+            <h3>NHWA Alignment Map</h3>
+            <p>NHWA is the primary model because it is built for health workforce stock, distribution, education, inflows, outflows, migration, and data quality.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th>Standard Expectation</th>
+                        <th>Current Platform Alignment</th>
+                        <th>Registrar Priority</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in nhwa_alignment_rows %}
+                    <tr>
+                        <th>{{ row.domain }}</th>
+                        <td>{{ row.standard }}</td>
+                        <td>{{ row.platform }}</td>
+                        <td>{{ row.priority }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="standards-section">
+        <div class="section-heading">
+            <h3>Data Standards</h3>
+            <p>These fields keep local registration data ready for national reporting and future integration.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Data Area</th>
+                        <th>Standard Meaning</th>
+                        <th>Platform Fields</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data_standard_rows %}
+                    <tr>
+                        <th>{{ row.field }}</th>
+                        <td>{{ row.standard }}</td>
+                        <td>{{ row.system_field }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="standards-section">
+        <div class="section-heading">
+            <h3>Interoperability Blueprint</h3>
+            <p>The platform should use NHWA for registry structure, DHIS2/HMIS for aggregate reporting, and FHIR concepts for exchange with other health systems.</p>
+        </div>
+        <div class="standards-blueprint-grid">
+            {% for row in interoperability_rows %}
+            <article class="standards-blueprint">
+                <h4>{{ row.model }}</h4>
+                <p><strong>{{ row.role }}</strong></p>
+                <p>{{ row.implementation }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="standards-section">
+        <div class="section-heading">
+            <h3>Reference Sources</h3>
+            <p>These external standards guide the wording and platform structure.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Use in this platform</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for source in standard_sources %}
+                    <tr>
+                        <td><a href="{{ source.url }}" target="_blank" rel="noopener">{{ source.name }}</a></td>
+                        <td>{{ source.use }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

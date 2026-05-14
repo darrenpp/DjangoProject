@@ -6,6 +6,7 @@ from apps.workforce.models import (
     Cadre, TrainingInstitution, NursingProfessional,
     Application, Qualification
 )
+from apps.workforce.services.institution_classification import classify_training_institution
 
 
 class Command(BaseCommand):
@@ -54,9 +55,14 @@ class Command(BaseCommand):
                     institution_name = str(row.get('INSTITUTION ATTENDED', '')).strip()
                     institution = None
                     if institution_name:
-                        institution, _ = TrainingInstitution.objects.get_or_create(
-                            name=institution_name[:200]
+                        institution_type = classify_training_institution(institution_name)
+                        institution, inst_created = TrainingInstitution.objects.get_or_create(
+                            name=institution_name[:200],
+                            defaults={'type': institution_type},
                         )
+                        if not inst_created and institution.type != institution_type:
+                            institution.type = institution_type
+                            institution.save(update_fields=['type'])
 
                     # Create or update Nursing Professional
                     professional, created = NursingProfessional.objects.update_or_create(

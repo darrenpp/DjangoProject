@@ -112,6 +112,7 @@
   <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}">
 </head>
 <body class="auth-page">
+{% include 'includes/page_section_navigation.html' %}
 <div class="auth-shell">
   <div class="auth-card">
     <div class="card-body">
@@ -188,5 +189,6 @@
 <script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
 <script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
 <script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
+<script src="{% static 'js/page-section-navigation.js' %}?v=20260515-section-nav-1"></script>
 </body>
 </html>

@@ -2,12 +2,12 @@
 {% load record_tags %}   <!-- ← Corrected here -->
 
 {% block title %}Records Hub{% endblock %}
-{% block title_label %}All Records Hub{% endblock %}
+{% block title_label %}{{ records_hub_title|default:"All Records Hub" }}{% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title mb-0">All Models</h3>
+        <h3 class="card-title mb-0">{{ records_hub_title|default:"All Records Hub" }}</h3>
         {% if request.user.role == 'admin' and request.user.is_superuser %}
         <a href="{% url 'population_guide' %}" class="btn btn-sm btn-light">Population Guide</a>
         {% endif %}
@@ -28,7 +28,9 @@
                     <td>{{ item.count }}</td>
                     <td class="text-right">
                         <a href="{% url 'record_list' item.slug %}" class="btn btn-sm btn-primary">Open</a>
+                        {% if can_create_records %}
                         <a href="{% url 'record_create' item.slug %}" class="btn btn-sm btn-success">Add</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

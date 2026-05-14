@@ -24,6 +24,7 @@ from apps.workforce.models import (
     TrainingInstitution,
     WorkforceSnapshot,
 )
+from apps.workforce.services.institution_classification import classify_training_institution
 
 
 class Command(BaseCommand):
@@ -195,7 +196,14 @@ class Command(BaseCommand):
         for _, row in df.iterrows():
             institution = None
             if row.get("institution"):
-                institution, _ = TrainingInstitution.objects.get_or_create(name=row.get("institution"))
+                institution_type = classify_training_institution(row.get("institution"))
+                institution, created = TrainingInstitution.objects.get_or_create(
+                    name=row.get("institution"),
+                    defaults={"type": institution_type},
+                )
+                if not created and institution.type != institution_type:
+                    institution.type = institution_type
+                    institution.save(update_fields=["type"])
             HealthStudent.objects.update_or_create(
                 registration_no=row.get("registration_no") or row.get("national_id"),
                 defaults={

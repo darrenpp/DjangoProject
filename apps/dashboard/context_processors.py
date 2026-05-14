@@ -9,6 +9,7 @@ from .access import (
     is_staff_dashboard_user,
 )
 from apps.documents.access import can_access_document_repository
+from .platform_standards import PLATFORM_STANDARD_BADGES, PLATFORM_STANDARDS_SUMMARY
 
 
 OFFICIAL_NDOH_CONTACT = {
@@ -49,4 +50,6 @@ def portal_access(request):
         'can_access_document_repository': can_access_document_repository(user),
         'official_ndoh_contact': OFFICIAL_NDOH_CONTACT,
         'official_nursing_council_references': OFFICIAL_NURSING_COUNCIL_REFERENCES,
+        'platform_standard_badges': PLATFORM_STANDARD_BADGES,
+        'platform_standards_summary': PLATFORM_STANDARDS_SUMMARY,
     }

@@ -42,7 +42,7 @@ from apps.workforce.models import (
 
 
 NURSING_TARGETS = ["nursingprofessional", "midwife", "nurseaide", "healthstudent"]
-MEDICAL_TARGETS = ["medicaldoctor", "communityhealthworker"]
+MEDICAL_TARGETS = ["medicaldoctor", "communityhealthworker", "other"]
 NURSING_FORMS = ["G1", "G2", "G3", "G4", "G5", "G6", "G7", "NC1", "NC2", "NC3", "NC4", "NC5", "NC6", "NC7", "NC8", "NC9", "NC10", "NC11"]
 MEDICAL_FORMS = ["MD1", "MD2", "CHW1", "MBSP", "MBRN", "MBAC", "MBPF", "MBTC"]
 GOV_NAVY = "12324A"

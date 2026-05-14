@@ -1,0 +1,20 @@
+<div class="platform-standards-bar" role="region" aria-label="Government health workforce registry standards">
+    <div>
+        <div class="platform-standards-title">
+            <i class="fas fa-landmark mr-1"></i>
+            {{ platform_standards_summary.title }}
+        </div>
+        <div class="platform-standards-subtitle">{{ platform_standards_summary.subtitle }}</div>
+    </div>
+    <div class="platform-standards-badges">
+        {% for badge in platform_standard_badges %}
+        <span class="platform-standard-badge badge-{{ badge.tone }}">
+            <i class="fas {{ badge.icon }}"></i>
+            {{ badge.label }}
+        </span>
+        {% endfor %}
+    </div>
+    <a href="{% url 'platform_standards_alignment' %}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-list-check mr-1"></i> Standards
+    </a>
+</div>

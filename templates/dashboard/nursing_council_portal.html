@@ -144,6 +144,43 @@
     .nursing-portal .operation-guide-card p + p {
         margin-top: 8px;
     }
+    .nursing-portal [id] {
+        scroll-margin-top: 110px;
+    }
+    .nursing-shortcuts-card {
+        border-left: 6px solid #1f7a5a !important;
+    }
+    .nursing-shortcuts-card .card-body {
+        padding: 16px;
+    }
+    .nursing-shortcut-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .nursing-shortcut-link {
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #d8e1e8;
+        border-radius: 8px;
+        color: #102033;
+        display: flex;
+        font-weight: 800;
+        gap: 10px;
+        min-height: 44px;
+        padding: 10px 12px;
+        text-decoration: none;
+    }
+    .nursing-shortcut-link:hover {
+        background: #e8f4f2;
+        border-color: #1f7a5a;
+        color: #0f4f3d;
+        text-decoration: none;
+    }
+    .nursing-shortcut-link i {
+        color: #1f7a5a;
+        width: 18px;
+    }
 </style>
 {% endblock %}
 
@@ -168,8 +205,42 @@
         </div>
     </div>
 
+    <div class="row mb-4" id="nursing-dashboard-shortcuts">
+        <div class="col-12">
+            <div class="card nursing-shortcuts-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0"><i class="fas fa-location-arrow mr-2"></i>Dashboard Shortcuts</h3>
+                    <span class="badge badge-light border text-dark">Jump to section</span>
+                </div>
+                <div class="card-body">
+                    <div class="nursing-shortcut-grid">
+                        <a class="nursing-shortcut-link" href="#nursing-summary"><i class="fas fa-gauge-high"></i> Key Totals</a>
+                        <a class="nursing-shortcut-link" href="#institution-facility-breakdown"><i class="fas fa-hospital"></i> Facilities & Institutions</a>
+                        <a class="nursing-shortcut-link" href="#registrar-worker-origin-table"><i class="fas fa-plane-arrival"></i> National / Overseas Workers</a>
+                        <a class="nursing-shortcut-link" href="#nursing-operations"><i class="fas fa-cogs"></i> Operations</a>
+                        <a class="nursing-shortcut-link" href="#workflow-pathways"><i class="fas fa-compass"></i> Workflow Guide</a>
+                        {% if missing_data_review_count %}
+                        <a class="nursing-shortcut-link" href="#missing-data-reviews"><i class="fas fa-triangle-exclamation"></i> Data Quality Flags</a>
+                        {% endif %}
+                        <a class="nursing-shortcut-link" href="#atp-current-summary"><i class="fas fa-id-card"></i> Current ATP Summary</a>
+                        {% if atp_current_year %}
+                        <a class="nursing-shortcut-link" href="#frequent-nursing-totals"><i class="fas fa-clipboard-list"></i> Frequently Requested Totals</a>
+                        {% endif %}
+                        <a class="nursing-shortcut-link" href="#atp-charts"><i class="fas fa-chart-line"></i> ATP Charts</a>
+                        <a class="nursing-shortcut-link" href="#atp-workplace-breakdown"><i class="fas fa-building"></i> Workplace Breakdown</a>
+                        <a class="nursing-shortcut-link" href="#current-atp-records"><i class="fas fa-table"></i> Current ATP Records</a>
+                        <a class="nursing-shortcut-link" href="#workforce-flow"><i class="fas fa-route"></i> Workforce Flow</a>
+                        <a class="nursing-shortcut-link" href="#provisional-licence-tracking"><i class="fas fa-calendar-check"></i> Provisional Tracking</a>
+                        <a class="nursing-shortcut-link" href="#recent-nursing-applications"><i class="fas fa-list"></i> Recent Applications</a>
+                        <a class="nursing-shortcut-link" href="#nursing-statistics"><i class="fas fa-map-marked-alt"></i> Statistics & Provinces</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Key Metrics -->
-    <div class="row">
+    <div class="row" id="nursing-summary">
         <div class="col-lg-3 col-6">
             <div class="small-box bg-primary">
                 <div class="inner">
@@ -216,7 +287,7 @@
         </div>
     </div>
 
-    <div class="row mt-4">
+    <div class="row mt-4" id="institution-facility-breakdown">
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-light">
@@ -224,7 +295,7 @@
                 </div>
                 <div class="card-body">
                     <div class="alert alert-light border mb-4">
-                        The training institution count now shows recognised PNG nursing schools only. The detailed breakdown below explains how raw imported institution and workplace references are being separated for Nursing Council reporting.
+                        The training institution count shows recognised PNG nursing schools only. Graduands are people moving out of institutions into provisional licence pathways. Allied Health is not inferred from workplace ownership. Workplace address strings from imports are shown only as cleansing references; verified facilities must come from the Facility master register.
                     </div>
                     <div class="row">
                         <div class="col-lg-6 mb-3">
@@ -244,9 +315,9 @@
                         <div class="col-lg-6 mb-3">
                             <table class="table table-sm table-bordered">
                                 <tbody>
-                                    <tr><th>Master facility register rows</th><td>{{ reference_breakdown.facility_master_count }}</td></tr>
-                                    <tr><th>Cleaned workplace references from imported records</th><td>{{ reference_breakdown.facility_grouped_reference_count }}</td></tr>
-                                    <tr><th>Raw distinct workplace addresses from imports</th><td>{{ reference_breakdown.facility_raw_reference_count }}</td></tr>
+                                    <tr><th>Verified facility master records</th><td>{{ reference_breakdown.facility_master_count }}</td></tr>
+                                    <tr><th>Imported workplace references, cleaned names</th><td>{{ reference_breakdown.facility_grouped_reference_count }}</td></tr>
+                                    <tr><th>Raw imported workplace address text values</th><td>{{ reference_breakdown.facility_raw_reference_count }}</td></tr>
                                 </tbody>
                             </table>
                             {% if reference_breakdown.unmapped_local_examples %}
@@ -263,7 +334,9 @@
     </div>
 
     <!-- Nursing Council Actions -->
-    <div class="row mt-4">
+    {% include "dashboard/_registrar_worker_origin_table.html" %}
+
+    <div class="row mt-4" id="nursing-operations">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-primary text-white">
@@ -316,12 +389,12 @@
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{% url 'export_monthly_analytics_excel' %}" class="btn btn-info btn-block mb-3" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing Nursing Council and Medical Board monthly analytics for Excel.">
+                            <a href="{% url 'export_monthly_analytics_excel' %}?office=nursing" class="btn btn-info btn-block mb-3" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing Nursing Council monthly analytics workbook for Excel.">
                                 <i class="fas fa-chart-column"></i><br>Monthly Excel Report
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{% url 'export_monthly_analytics_pdf' %}" class="btn btn-secondary btn-block mb-3" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the professional monthly analytics PDF report.">
+                            <a href="{% url 'export_monthly_analytics_pdf' %}?office=nursing" class="btn btn-secondary btn-block mb-3" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the Nursing Council monthly analytics PDF report.">
                                 <i class="fas fa-file-pdf"></i><br>Monthly PDF Report
                             </a>
                         </div>
@@ -411,7 +484,7 @@
         </div>
     </div>
 
-    <div class="row mt-4">
+    <div class="row mt-4" id="workflow-pathways">
         <div class="col-lg-5 mb-3">
             <div class="card h-100">
                 <div class="card-header bg-dark text-white">
@@ -484,7 +557,7 @@
 
     {% include "dashboard/_missing_data_reviews_table.html" %}
 
-    <div class="row mt-4">
+    <div class="row mt-4" id="atp-current-summary">
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="card analytics-card h-100">
                 <div class="card-body">
@@ -523,7 +596,9 @@
         </div>
     </div>
 
-    <div class="row mt-4">
+    {% include "dashboard/_frequent_nursing_metrics.html" %}
+
+    <div class="row mt-4" id="atp-charts">
         <div class="col-lg-6 mb-3">
             <div class="card chart-panel">
                 <div class="card-header bg-primary text-white">
@@ -556,7 +631,7 @@
         </div>
     </div>
 
-    <div class="row mt-4">
+    <div class="row mt-4" id="atp-year-summary">
         <div class="col-lg-5 mb-3">
             <div class="card h-100">
                 <div class="card-header bg-primary text-white">
@@ -653,7 +728,7 @@
         </div>
     </div>
 
-    <div class="row mt-4">
+    <div class="row mt-4" id="atp-workplace-breakdown">
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-dark text-white">
@@ -694,7 +769,7 @@
         </div>
     </div>
 
-    <div class="row mt-4">
+    <div class="row mt-4" id="current-atp-records">
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-info text-white">
@@ -750,7 +825,7 @@
     </div>
 
     <!-- Full Registration and Licence Analytics -->
-    <div class="row mt-4">
+    <div class="row mt-4" id="licence-registration-summary">
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="card analytics-card h-100">
                 <div class="card-body">
@@ -790,7 +865,7 @@
     </div>
 
     <!-- Workforce Flow -->
-    <div class="row mt-4">
+    <div class="row mt-4" id="workforce-flow">
         <div class="col-md-8">
             <div class="card chart-panel">
                 <div class="card-header bg-primary text-white">
@@ -831,7 +906,7 @@
     </div>
 
     <!-- Full Registration and Licence by Year -->
-    <div class="row mt-4">
+    <div class="row mt-4" id="licence-year-summary">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-info text-white">
@@ -875,7 +950,7 @@
     </div>
 
     <!-- Provisional License Tracking -->
-    <div class="row mt-4">
+    <div class="row mt-4" id="provisional-licence-tracking">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-warning text-dark">
@@ -883,6 +958,11 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted small mb-3">Provisional licences expire 6 months after the issued date. Imported provisional/graduand records are shown here even when expired, so registrar staff can track the full pipeline.</p>
+                    {% if provisional_license_count > provisional_license_display_count %}
+                    <div class="alert alert-light border small">
+                        Showing {{ provisional_license_display_count }} of {{ provisional_license_count }} provisional records. Use exports or search tools for the full dataset.
+                    </div>
+                    {% endif %}
                     <table class="table table-hover {% if current_provisional_licenses %}datatable{% endif %}">
                         <thead>
                             <tr>
@@ -937,7 +1017,7 @@
     </div>
 
     <!-- Recent Nursing Applications -->
-    <div class="row mt-4">
+    <div class="row mt-4" id="recent-nursing-applications">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-success text-white">
@@ -1010,7 +1090,7 @@
     </div>
 
     <!-- Recent Full Licence Records -->
-    <div class="row mt-4">
+    <div class="row mt-4" id="recent-full-licence-records">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-primary text-white">
@@ -1063,7 +1143,7 @@
     </div>
 
     <!-- Nursing Statistics -->
-    <div class="row mt-4">
+    <div class="row mt-4" id="nursing-statistics">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header bg-info text-white">

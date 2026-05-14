@@ -10,7 +10,9 @@
         <h3 class="card-title mb-0">{{ model_label }} #{{ object.pk }}</h3>
         <div>
             <a href="{% url 'record_update' model_slug object.pk %}" class="btn btn-sm btn-primary">Edit</a>
+            {% if can_delete_records %}
             <a href="{% url 'record_delete' model_slug object.pk %}" class="btn btn-sm btn-danger">Delete</a>
+            {% endif %}
             <a href="{% url 'record_list' model_slug %}" class="btn btn-sm btn-light">Back</a>
         </div>
     </div>

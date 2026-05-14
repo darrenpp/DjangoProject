@@ -1,38 +1,166 @@
 {% if missing_data_review_count %}
-<div class="row mt-4">
+<div class="row mt-4" id="missing-data-reviews">
     <div class="col-12">
         <div class="card card-outline card-warning">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">Records Missing Important Information</h3>
+                <h3 class="card-title mb-0">Records Missing Information or Suspected Misinformation</h3>
                 <span class="badge badge-warning">{{ missing_data_review_count }} under review</span>
             </div>
-            <div class="card-body table-responsive">
-                <table class="table table-striped table-hover datatable">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">High severity</div>
+                            <div class="h4 mb-0 text-danger">{{ data_quality_high_count|default:high_priority_missing_data_count|default:0 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Medium severity</div>
+                            <div class="h4 mb-0 text-warning">{{ data_quality_medium_count|default:0 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Imported rows flagged</div>
+                            <div class="h4 mb-0">{{ data_quality_import_review_count|default:0 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Most recent date</div>
+                            <div class="h5 mb-0">
+                                {% if data_quality_latest_source_date %}
+                                    {{ data_quality_latest_source_date|date:"d M Y" }}
+                                {% elif data_quality_recent_review_date %}
+                                    {{ data_quality_recent_review_date|date:"d M Y" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if data_quality_year_rows %}
+                <div class="row mb-3">
+                    <div class="col-lg-7 mb-3 mb-lg-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Source Year</th>
+                                        <th class="text-right">Total</th>
+                                        <th class="text-right">High</th>
+                                        <th class="text-right">Medium</th>
+                                        <th class="text-right">Low</th>
+                                        <th>Recent Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in data_quality_year_rows %}
+                                    <tr>
+                                        <td>{{ row.year }}</td>
+                                        <td class="text-right font-weight-bold">{{ row.total }}</td>
+                                        <td class="text-right text-danger">{{ row.high }}</td>
+                                        <td class="text-right text-warning">{{ row.medium }}</td>
+                                        <td class="text-right text-info">{{ row.low }}</td>
+                                        <td>{% if row.recent_date %}{{ row.recent_date|date:"d M Y" }}{% else %}-{% endif %}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="alert alert-light border mb-0">
+                            <strong>Data quality statistics:</strong>
+                            {{ data_quality_total_count|default:missing_data_review_count }} open records,
+                            {{ data_quality_live_review_count|default:0 }} live register records,
+                            {{ data_quality_import_review_count|default:0 }} imported workbook rows.
+                            Review rows below are sorted by source year and most recent source date.
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="table-responsive">
+                <table class="table table-striped table-hover datatable data-quality-review-datatable"
+                       data-server-side="1"
+                       data-ajax-url="{% url 'data_quality_reviews_table' %}{% if data_quality_review_scope %}?scope={{ data_quality_review_scope }}{% endif %}">
                     <thead>
                         <tr>
+                            <th>Source Year</th>
+                            <th>Recent Date</th>
                             <th>Name</th>
                             <th>Type</th>
                             <th>Registration No</th>
-                            <th>Missing Fields</th>
+                            <th>Flagged Issues</th>
+                            <th>Source</th>
                             <th>Severity</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for review in missing_data_reviews %}
-                        <tr>
-                            <td>{{ review.full_name|default:"-" }}</td>
-                            <td>{{ review.professional_type }}</td>
-                            <td>{{ review.registration_no|default:"-" }}</td>
-                            <td>{{ review.missing_fields|join:", " }}</td>
-                            <td>{{ review.severity|title }}</td>
-                            <td>{{ review.get_status_display }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+                    <tbody></tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+(function initializeDataQualityReviewTable(attempt) {
+    attempt = attempt || 1;
+    if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) {
+        if (attempt < 12) {
+            window.setTimeout(function () {
+                initializeDataQualityReviewTable(attempt + 1);
+            }, 250);
+        }
+        return;
+    }
+
+    jQuery('.data-quality-review-datatable').each(function () {
+        const $table = jQuery(this);
+        if ($table.attr('data-ndoh-datatables-ready') === '1') {
+            return;
+        }
+
+        $table.DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: $table.data('ajax-url'),
+                type: 'GET'
+            },
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            order: [[0, 'desc'], [1, 'desc']],
+            responsive: false,
+            autoWidth: false,
+            scrollX: true,
+            columns: [
+                { data: 'source_year' },
+                { data: 'recent_date' },
+                { data: 'name' },
+                { data: 'type' },
+                { data: 'registration' },
+                { data: 'issues' },
+                { data: 'source' },
+                { data: 'severity', searchable: false },
+                { data: 'status' },
+                { data: 'actions', orderable: false, searchable: false }
+            ],
+            language: {
+                processing: 'Loading data quality records...',
+                search: 'Search flagged records:',
+                lengthMenu: 'Show _MENU_ flagged records',
+                info: 'Showing _START_ to _END_ of _TOTAL_ flagged records'
+            }
+        });
+        $table.attr('data-ndoh-datatables-ready', '1');
+    });
+})();
+</script>
 {% endif %}

@@ -1462,12 +1462,13 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}?v=20260508-contrast-hero-selection-2">
+    <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}?v=20260514-nhwa-standards-1">
 </head>
 <body class="hold-transition layout-fixed sidebar-expand-lg {% if request.user.is_authenticated and '/accounts/login' not in request.path and '/accounts/register' not in request.path and request.path != '/' and request.path != '/home/' and '/register/' not in request.path %}app-shell{% else %}public-body{% endif %}">
+{% include 'includes/page_section_navigation.html' %}
 <div class="app-wrapper">
     {% if request.user.is_authenticated and '/accounts/login' not in request.path and '/accounts/register' not in request.path and request.path != '/' and request.path != '/home/' and '/register/' not in request.path %}
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light border-bottom">
+    <nav class="app-header main-header navbar navbar-expand navbar-white navbar-light border-bottom">
         <ul class="navbar-nav">
             <li class="nav-item">
                 <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button"><i class="fas fa-bars"></i></a>
@@ -1603,6 +1604,15 @@
                             <p>Workforce Flow</p>
                         </a>
                     </li>
+                    {% if can_manage_regulatory_operations %}
+                    <li class="nav-item">
+                        <a href="{% url 'registrar_individual_records' %}"
+                           class="nav-link {% if '/dashboard/registrar/' in request.path %}active{% endif %}">
+                            <i class="nav-icon fas fa-address-book"></i>
+                            <p>Individual Records</p>
+                        </a>
+                    </li>
+                    {% endif %}
                     {% if can_access_nursing_council %}
                     <li class="nav-item">
                         <a href="{% url 'nursing_forms_portal' %}" class="nav-link">
@@ -1634,6 +1644,13 @@
                         </a>
                     </li>
                     {% if can_manage_regulatory_operations or is_data_quality_reviewer %}
+                    <li class="nav-item">
+                        <a href="{% url 'platform_standards_alignment' %}"
+                           class="nav-link {% if '/dashboard/standards-alignment/' in request.path %}active{% endif %}">
+                            <i class="nav-icon fas fa-landmark"></i>
+                            <p>Standards &amp; Compliance</p>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{% url 'duplicate_review_workflow' %}"
                            class="nav-link {% if '/dashboard/duplicate-reviews/' in request.path %}active{% endif %}">
@@ -1726,10 +1743,17 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        {% if can_access_medical_board and not can_access_nursing_council %}
+                        <a href="{% url 'medical_board_register' %}" class="nav-link">
+                            <i class="nav-icon fas fa-notes-medical"></i>
+                            <p>Online Registration</p>
+                        </a>
+                        {% else %}
                         <a href="{% url 'nursing_forms_portal' %}" class="nav-link">
                             <i class="nav-icon fas fa-user-plus"></i>
                             <p>Online Registration</p>
                         </a>
+                        {% endif %}
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'enquiry_inbox' %}"
@@ -1752,7 +1776,7 @@
     </aside>
     {% endif %}
 
-    <div class="content-wrapper">
+    <div class="app-main content-wrapper">
         <section class="content-header">
             <div class="container-fluid">
                 <div class="row mb-2">
@@ -1779,6 +1803,9 @@
                     {% endif %}
                 </div>
                 {% endif %}
+                {% if can_access_staff_dashboards %}
+                    {% include 'dashboard/_platform_standards_bar.html' %}
+                {% endif %}
                 {% if messages %}
                     {% for message in messages %}
                         <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
@@ -1795,7 +1822,7 @@
         </section>
     </div>
 
-<footer class="main-footer text-sm ndoh-official-footer">
+<footer class="app-footer main-footer text-sm ndoh-official-footer">
         <strong>National Department of Health</strong> Regulatory Bodies Online Workforce System
         <span class="mx-2 text-muted">|</span>
         <span>{{ official_ndoh_contact.address_line_1 }}, {{ official_ndoh_contact.address_line_2 }}</span>
@@ -2069,6 +2096,34 @@ document.addEventListener('DOMContentLoaded', function () {
     const helpdeskMessages = document.getElementById('helpdesk-widget-messages');
     const loadingClose = document.getElementById('app-loading-close');
     const loadingBack = document.getElementById('app-loading-back');
+    const sidebarToggle = document.querySelector('[data-lte-toggle="sidebar"]');
+    const appSidebar = document.querySelector('.app-sidebar, .main-sidebar');
+
+    function syncSidebarLayoutState() {
+        if (!document.body.classList.contains('app-shell')) {
+            return;
+        }
+        const collapsed = document.body.classList.contains('sidebar-collapse')
+            || document.body.classList.contains('sidebar-closed')
+            || (appSidebar && appSidebar.classList.contains('collapsed'));
+        document.body.classList.toggle('ndoh-sidebar-collapsed', collapsed);
+    }
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function () {
+            window.setTimeout(syncSidebarLayoutState, 0);
+            window.setTimeout(syncSidebarLayoutState, 220);
+        });
+    }
+
+    if (document.body.classList.contains('app-shell')) {
+        const sidebarObserver = new MutationObserver(syncSidebarLayoutState);
+        sidebarObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        if (appSidebar) {
+            sidebarObserver.observe(appSidebar, { attributes: true, attributeFilter: ['class'] });
+        }
+        syncSidebarLayoutState();
+    }
 
     if (loadingClose) {
         loadingClose.addEventListener('click', function () {
@@ -2292,6 +2347,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         jQuery('.datatable').each(function () {
             const $table = jQuery(this);
+            if ($table.attr('data-server-side') === '1') {
+                return;
+            }
             if ($table.attr('data-ndoh-datatables-ready') === '1') {
                 return;
             }
@@ -2410,6 +2468,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<script src="{% static 'js/page-section-navigation.js' %}?v=20260515-section-nav-1"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

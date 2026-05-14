@@ -54,3 +54,4 @@ notebooks/cleaned_combined_*.csv
 
 # Accidental shell artifacts
 -p/
+.codex_tmp/

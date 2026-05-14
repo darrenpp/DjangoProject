@@ -52,7 +52,7 @@ def _load_or_create_secret_key():
     return secret_key
 
 
-DEBUG = _env_bool('DEBUG', True)
+DEBUG = _env_bool('DJANGO_DEBUG', _env_bool('DEBUG', True))
 RUNNING_TESTS = 'test' in sys.argv
 
 configured_secret_key = (os.environ.get('SECRET_KEY') or '').strip()

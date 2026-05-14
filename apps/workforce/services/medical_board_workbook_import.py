@@ -1,6 +1,7 @@
 from collections import Counter
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+import os
 from pathlib import Path
 import re
 
@@ -20,7 +21,33 @@ from apps.workforce.models import (
 )
 
 
-DEFAULT_MEDICAL_BOARD_WORKBOOK = Path(r"d:\Database Template\Medical Board\CHW 1985-2026 DATABASE CURRENTLY UPDATING.xlsx")
+_DEFAULT_WORKBOOK_CANDIDATES = [
+    Path(os.environ["MEDICAL_BOARD_CHW_WORKBOOK_PATH"])
+    for _ in [0]
+    if os.environ.get("MEDICAL_BOARD_CHW_WORKBOOK_PATH")
+] + [
+    Path(
+        r"c:\Users\darre\OneDrive\Documents\ProjectApps\databasedocuments"
+        r"\medicalboarddata\Current database on Medical Board"
+        r"\CHW 1985-2026 DATABASE CURRENTLY UPDATING"
+        r"\CHW 1985-2026 DATABASE CURRENTLY UPDATING.xlsx"
+    ),
+    Path(r"d:\Database Template\Medical Board\CHW 1985-2026 DATABASE CURRENTLY UPDATING.xlsx"),
+]
+DEFAULT_MEDICAL_BOARD_WORKBOOK = next(
+    (path for path in _DEFAULT_WORKBOOK_CANDIDATES if path.exists()),
+    _DEFAULT_WORKBOOK_CANDIDATES[0],
+)
+
+MEDICAL_BOARD_CHW_MARKER_SHEETS = {
+    "CHW",
+    "ATP DATABASE ONLY",
+    "NOT ON DATABASE",
+    "NOT ON DATABASE CHW",
+    "SCHOOL ADDRESS",
+    "RECIEPT TRACKER",
+    "RECEIPT TRACKER",
+}
 
 PROVINCES = [
     "Autonomous Region of Bougainville",
@@ -71,6 +98,44 @@ def clean_text(value):
     text = str(value).strip()
     text = text.replace("\u25cf", "").replace("\u26ab", "")
     return re.sub(r"\s+", " ", text).strip()
+
+
+def normalize_sheet_name(value):
+    return re.sub(r"\s+", " ", clean_text(value).upper()).strip()
+
+
+def is_chw_register_sheet(sheet_name):
+    return normalize_sheet_name(sheet_name) == "CHW"
+
+
+def is_pending_chw_sheet(sheet_name):
+    normalized = normalize_sheet_name(sheet_name)
+    return normalized == "NOT ON DATABASE" or (
+        "NOT ON DATABASE" in normalized and "CHW" in normalized
+    )
+
+
+def is_school_address_sheet(sheet_name):
+    return normalize_sheet_name(sheet_name) == "SCHOOL ADDRESS"
+
+
+def is_atp_database_sheet(sheet_name):
+    return normalize_sheet_name(sheet_name) == "ATP DATABASE ONLY"
+
+
+def is_medical_board_chw_workbook(workbook_path):
+    path = Path(workbook_path)
+    if not path.exists():
+        return False
+    workbook = load_workbook(path, read_only=True, data_only=True)
+    try:
+        normalized_sheet_names = {normalize_sheet_name(name) for name in workbook.sheetnames}
+        return (
+            "CHW" in normalized_sheet_names
+            and bool(normalized_sheet_names.intersection(MEDICAL_BOARD_CHW_MARKER_SHEETS))
+        )
+    finally:
+        workbook.close()
 
 
 def title_name(value):
@@ -179,6 +244,24 @@ def extract_school_name(qualification):
     return match.group(1).strip().title() if match else ""
 
 
+def extract_amount(value):
+    text = clean_text(value).upper()
+    match = re.search(r"\bK\s*([0-9]+(?:\.[0-9]{1,2})?)", text)
+    return Decimal(match.group(1)) if match else None
+
+
+def atp_year_columns(worksheet):
+    header = next(worksheet.iter_rows(min_row=1, max_row=1, values_only=True), [])
+    columns = []
+    for index, value in enumerate(header):
+        text = clean_text(value)
+        if re.fullmatch(r"(19|20)\d{2}", text):
+            year = int(text)
+            if 1980 <= year <= date.today().year + 1:
+                columns.append((index, year))
+    return columns
+
+
 class MedicalBoardWorkbookImporter:
     def __init__(self, workbook_path=DEFAULT_MEDICAL_BOARD_WORKBOOK, initiated_by=None):
         self.workbook_path = Path(workbook_path)
@@ -204,12 +287,14 @@ class MedicalBoardWorkbookImporter:
             with transaction.atomic():
                 for sheet_name in workbook.sheetnames:
                     worksheet = workbook[sheet_name]
-                    if sheet_name.upper() == "CHW":
+                    if is_chw_register_sheet(sheet_name):
                         self._import_chw_sheet(batch, worksheet)
-                    elif sheet_name.upper() == "NOT ON DATABASE":
+                    elif is_pending_chw_sheet(sheet_name):
                         self._import_pending_chw_sheet(batch, worksheet)
-                    elif sheet_name.upper() == "SCHOOL ADDRESS":
+                    elif is_school_address_sheet(sheet_name):
                         self._import_school_sheet(batch, worksheet)
+                    elif is_atp_database_sheet(sheet_name):
+                        self._import_atp_sheet(batch, worksheet)
                     else:
                         ImportedWorkbookSheet.objects.create(
                             batch=batch,
@@ -234,6 +319,8 @@ class MedicalBoardWorkbookImporter:
             batch.completed_at = timezone.now()
             batch.save(update_fields=["status", "summary", "completed_at"])
             raise
+        finally:
+            workbook.close()
 
     def _record_import(self, batch, sheet, row_number, record, *, pending=False):
         registration_no = normalize_registration(record.get("registry"))
@@ -342,6 +429,82 @@ class MedicalBoardWorkbookImporter:
         sheet.imported_rows = imported
         sheet.skipped_rows = skipped
         sheet.save(update_fields=["imported_rows", "skipped_rows"])
+
+    def _import_atp_sheet(self, batch, worksheet):
+        sheet = ImportedWorkbookSheet.objects.create(
+            batch=batch,
+            sheet_name=worksheet.title,
+            sheet_type="medical_board_chw_practicing_licences",
+            status="processed",
+            raw_rows=max((worksheet.max_row or 1) - 1, 0),
+        )
+        year_columns = atp_year_columns(worksheet)
+        imported = skipped = 0
+        for row_number, row in enumerate(worksheet.iter_rows(min_row=2, values_only=True), start=2):
+            cells = list(row)
+            registry, entry_date, name, arch = (cells + [None] * 4)[:4]
+            source_name = clean_text(name)
+            if not source_name:
+                skipped += 1
+                continue
+
+            full_name = title_name(source_name)
+            first_name, last_name = split_name(source_name)
+            registration_no = normalize_registration(registry)
+            if not registration_no:
+                registration_no = normalize_registration(f"ATP-{row_number}", prefix="CHW")
+            practitioner_number = clean_text(arch)
+            base_issued_date = parse_date(entry_date)
+            row_imported = 0
+
+            for position, (column_index, year) in enumerate(year_columns, start=1):
+                payment_text = clean_text(cells[column_index] if column_index < len(cells) else None)
+                receipt_text = clean_text(cells[column_index + 1] if column_index + 1 < len(cells) else None)
+                if not payment_text and not receipt_text:
+                    continue
+
+                PracticingLicenseRecord.objects.create(
+                    batch=batch,
+                    sheet=sheet,
+                    record_type="practicing_license",
+                    target_model="communityhealthworker",
+                    source_sheet_name=sheet.sheet_name,
+                    source_row=(row_number * 100) + position,
+                    record_year=year,
+                    full_name=full_name,
+                    first_name=first_name,
+                    last_name=last_name,
+                    registration_no=registration_no,
+                    practitioner_number=practitioner_number,
+                    applicant_type="national",
+                    category="Community Health Worker Practising Licence",
+                    issued_date=base_issued_date,
+                    payment_date=parse_date(payment_text),
+                    amount=extract_amount(payment_text),
+                    reference_number=receipt_text or payment_text,
+                    raw_payload={
+                        "registry": clean_text(registry),
+                        "date": clean_text(entry_date),
+                        "arch": practitioner_number,
+                        "year": year,
+                        "payment": payment_text,
+                        "receipt": receipt_text,
+                        "source_row": row_number,
+                    },
+                )
+                imported += 1
+                row_imported += 1
+                self.summary["chw_practicing_licences_imported"] += 1
+                self.summary["processed_rows"] += 1
+                self.summary[f"licence_year_{year}"] += 1
+
+            if not row_imported:
+                skipped += 1
+
+        sheet.imported_rows = imported
+        sheet.skipped_rows = skipped
+        sheet.metadata = {"year_columns": [year for _, year in year_columns]}
+        sheet.save(update_fields=["imported_rows", "skipped_rows", "metadata"])
 
     def _import_pending_chw_sheet(self, batch, worksheet):
         sheet = ImportedWorkbookSheet.objects.create(

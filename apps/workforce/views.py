@@ -63,6 +63,7 @@ from ..dashboard.access import (
     can_manage_regulatory_operations,
     can_access_application_record,
     can_access_professional_record,
+    is_data_quality_reviewer,
     is_medical_board_user,
     is_nursing_council_user,
     is_staff_dashboard_user,
@@ -71,6 +72,12 @@ from ..documents.access import can_view_document
 from ..documents.models import Document
 from ..notifications.views import send_application_status_email
 from .services.ndata_workbook_import import DEFAULT_WORKBOOK, NDataWorkbookImporter
+from .services.medical_board_workbook_import import (
+    DEFAULT_MEDICAL_BOARD_WORKBOOK,
+    MedicalBoardWorkbookImporter,
+    is_medical_board_chw_workbook,
+)
+from .services.medical_board_legacy_import import MedicalBoardLegacyWorkbookImporter
 from .services.nursing_council_workflows import (
     approve_deceased_notification,
     approve_nursing_application,
@@ -118,6 +125,14 @@ def _get_professional_by_pk(pk):
     return None
 
 
+def _can_access_professional_detail(user, professional):
+    if can_access_professional_record(user, professional):
+        return True
+    if not getattr(user, "is_authenticated", False):
+        return False
+    return is_data_quality_reviewer(user)
+
+
 # ====================== IMPORT VIEW ======================
 
 class ImportDataView(LoginRequiredMixin, View):
@@ -128,8 +143,14 @@ class ImportDataView(LoginRequiredMixin, View):
             return redirect("main_dashboard")
         return super().dispatch(request, *args, **kwargs)
 
-    def _recent_batches(self):
-        batches = DataImportBatch.objects.filter(source_kind='ndata_workbook').order_by('-started_at')[:8]
+    def _import_scope(self, user):
+        if is_medical_board_user(user) and not is_nursing_council_user(user):
+            return "medical"
+        return "nursing"
+
+    def _recent_batches(self, user):
+        source_kinds = ["medical_board_workbook"] if self._import_scope(user) == "medical" else ["ndata_workbook", "nursing_license_workbook"]
+        batches = DataImportBatch.objects.filter(source_kind__in=source_kinds).order_by('-started_at')[:8]
         batch_rows = []
         for batch in batches:
             total_steps = batch.total_rows or batch.total_sheets or 0
@@ -142,11 +163,14 @@ class ImportDataView(LoginRequiredMixin, View):
         return batch_rows
 
     def _render(self, request, form):
+        import_scope = self._import_scope(request.user)
+        default_workbook = DEFAULT_MEDICAL_BOARD_WORKBOOK if import_scope == "medical" else DEFAULT_WORKBOOK
         return render(request, self.template_name, {
             "form": form,
-            "recent_batches": self._recent_batches(),
-            "default_workbook": str(DEFAULT_WORKBOOK),
-            "default_workbook_exists": DEFAULT_WORKBOOK.exists(),
+            "recent_batches": self._recent_batches(request.user),
+            "default_workbook": str(default_workbook),
+            "default_workbook_exists": default_workbook.exists(),
+            "import_scope": import_scope,
         })
 
     def get(self, request):
@@ -154,15 +178,23 @@ class ImportDataView(LoginRequiredMixin, View):
 
     def post(self, request):
         import_mode = request.POST.get("import_mode", "generic")
-        if import_mode == "ndata_default":
+        import_scope = self._import_scope(request.user)
+        if import_mode in {"default_workbook", "ndata_default"}:
             try:
-                batch = NDataWorkbookImporter(
-                    workbook_path=DEFAULT_WORKBOOK,
-                    initiated_by=request.user,
-                ).import_workbook()
-                messages.success(request, f'N-DATA workbook imported successfully in batch #{batch.id}.')
+                if import_scope == "medical":
+                    batch = MedicalBoardWorkbookImporter(
+                        workbook_path=DEFAULT_MEDICAL_BOARD_WORKBOOK,
+                        initiated_by=request.user,
+                    ).import_workbook()
+                    messages.success(request, f'Medical Board CHW workbook imported successfully in batch #{batch.id}.')
+                else:
+                    batch = NDataWorkbookImporter(
+                        workbook_path=DEFAULT_WORKBOOK,
+                        initiated_by=request.user,
+                    ).import_workbook()
+                    messages.success(request, f'N-DATA workbook imported successfully in batch #{batch.id}.')
             except Exception as exc:
-                messages.error(request, f'N-DATA workbook import failed: {exc}')
+                messages.error(request, f'Workbook import failed: {exc}')
             return redirect("main_dashboard")
 
         form = ImportForm(request.POST, request.FILES)
@@ -179,11 +211,32 @@ class ImportDataView(LoginRequiredMixin, View):
                     temp_path = temp_file.name
 
                 try:
-                    batch = NDataWorkbookImporter(
-                        workbook_path=temp_path,
-                        initiated_by=request.user,
-                    ).import_workbook()
-                    messages.success(request, f'Workbook imported successfully in batch #{batch.id}.')
+                    is_medical_workbook = is_medical_board_chw_workbook(temp_path)
+                    if import_scope == "medical":
+                        if is_medical_workbook:
+                            batch = MedicalBoardWorkbookImporter(
+                                workbook_path=temp_path,
+                                initiated_by=request.user,
+                            ).import_workbook()
+                            messages.success(request, f'Medical Board CHW workbook imported successfully in batch #{batch.id}.')
+                        else:
+                            batch = MedicalBoardLegacyWorkbookImporter(
+                                workbook_paths=[temp_path],
+                                initiated_by=request.user,
+                            ).import_workbooks()
+                            messages.success(request, f'Medical Board legacy workbook imported successfully in batch #{batch.id}.')
+                    elif is_medical_workbook:
+                        batch = MedicalBoardWorkbookImporter(
+                            workbook_path=temp_path,
+                            initiated_by=request.user,
+                        ).import_workbook()
+                        messages.success(request, f'Medical Board CHW workbook imported successfully in batch #{batch.id}.')
+                    else:
+                        batch = NDataWorkbookImporter(
+                            workbook_path=temp_path,
+                            initiated_by=request.user,
+                        ).import_workbook()
+                        messages.success(request, f'Workbook imported successfully in batch #{batch.id}.')
                     return redirect("main_dashboard")
                 finally:
                     try:
@@ -339,6 +392,14 @@ class PublicRegistrationView(View):
         form_code = kwargs.get("form_code")
         url_name = request.resolver_match.url_name
         is_medical_board = self.is_medical_board_request(form_code, url_name)
+        if request.user.is_authenticated:
+            role = getattr(request.user, "role", "")
+            if role in {"doctor", "chw"} and not is_medical_board:
+                messages.info(request, "Medical Board users should use the Medical Board registration forms.")
+                return redirect("medical_board_register")
+            if role in {"nurse", "nurse_aide", "graduand", "student"} and is_medical_board:
+                messages.info(request, "Nursing Council users should use the Nursing Council registration forms.")
+                return redirect("nursing_forms_portal")
         if request.user.is_authenticated and request.user.role == 'registrar':
             if is_medical_board and not is_medical_board_user(request.user):
                 messages.warning(request, "Medical Board forms are restricted to Medical Board staff and administrators.")
@@ -448,7 +509,7 @@ class ProfessionalDetailView(LoginRequiredMixin, DetailView):
     def get_object(self, **kwargs):
         pk = self.kwargs.get("pk")
         obj = _get_professional_by_pk(pk)
-        if obj and can_access_professional_record(self.request.user, obj):
+        if obj and _can_access_professional_detail(self.request.user, obj):
             return obj
         raise Http404("Professional not found")
 

@@ -13,6 +13,7 @@ from apps.workforce.models import (
     Qualification,
     TrainingInstitution,
 )
+from apps.workforce.services.institution_classification import classify_training_institution
 from notebooks.cleanse_provisional_graduands import (
     DEFAULT_SHEET,
     WORKBOOK_PATH,
@@ -108,9 +109,14 @@ class Command(BaseCommand):
                 institution = None
                 institution_name = (row.get("institution_name") or "").strip()
                 if institution_name:
-                    institution, _ = TrainingInstitution.objects.get_or_create(
-                        name=institution_name[:255]
+                    institution_type = classify_training_institution(institution_name)
+                    institution, created = TrainingInstitution.objects.get_or_create(
+                        name=institution_name[:255],
+                        defaults={"type": institution_type},
                     )
+                    if not created and institution.type != institution_type:
+                        institution.type = institution_type
+                        institution.save(update_fields=["type"])
 
                 profession_track = row.get("profession_track") or "nursing"
                 cadre = midwifery_cadre if profession_track == "midwifery" else nursing_cadre

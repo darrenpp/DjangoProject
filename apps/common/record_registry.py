@@ -21,6 +21,7 @@ from apps.workforce.models import (
     ProfessionalPhoto,
     TrainingInstitution,
     WorkforceSnapshot,
+    PracticingLicenseRecord,
 )
 
 
@@ -32,6 +33,7 @@ MODEL_REGISTRY = {
     "traininginstitution": TrainingInstitution,
     "documenttype": DocumentType,
     "medicaldoctor": MedicalDoctor,
+    "medicalspecialist": MedicalDoctor,
     "nursingprofessional": NursingProfessional,
     "midwife": Midwife,
     "communityhealthworker": CommunityHealthWorker,
@@ -41,6 +43,7 @@ MODEL_REGISTRY = {
     "application": Application,
     "receipt": Receipt,
     "workforcesnapshot": WorkforceSnapshot,
+    "practicinglicenserecord": PracticingLicenseRecord,
     "cpdrecord": CPDRecord,
     "professionaldocument": ProfessionalDocument,
     "professionalphoto": ProfessionalPhoto,

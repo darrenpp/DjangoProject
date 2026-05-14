@@ -21,6 +21,7 @@ from apps.workforce.models import (
     TrainingInstitution,
 )
 from apps.workforce.services.data_quality import audit_imported_license_rows, audit_professional_profiles
+from apps.workforce.services.institution_classification import classify_training_institution
 from notebooks.cleanse_full_registrations import (
     infer_applicant_type,
     infer_pathway,
@@ -374,7 +375,14 @@ class Command(BaseCommand):
         institution_name = row.get("institution_name", "")[:255]
         institution = None
         if institution_name:
-            institution, _ = TrainingInstitution.objects.get_or_create(name=institution_name)
+            institution_type = classify_training_institution(institution_name)
+            institution, created = TrainingInstitution.objects.get_or_create(
+                name=institution_name,
+                defaults={"type": institution_type},
+            )
+            if not created and institution.type != institution_type:
+                institution.type = institution_type
+                institution.save(update_fields=["type"])
         Qualification.objects.update_or_create(
             content_type=content_type,
             object_id=professional.id,

@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -14,6 +15,7 @@ from apps.workforce.models import (
     CommunityHealthWorker,
     DataImportBatch,
     MedicalDoctor,
+    MissingDataReview,
     NursingProfessional,
     PracticingLicenseRecord,
 )
@@ -21,6 +23,7 @@ from apps.workforce.models import (
 
 class StaffCommunicationsTests(TestCase):
     def setUp(self):
+        cache.clear()
         user_model = get_user_model()
         self.registrar = user_model.objects.create_user(
             username="registrar.nursing",
@@ -263,6 +266,38 @@ class StaffCommunicationsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Statutory Context and Mandate of the PNG Nursing Council")
+
+    def test_medical_registrar_profile_counts_medical_board_missing_reviews(self):
+        chw = CommunityHealthWorker.objects.create(
+            first_name="Medical",
+            last_name="CHW",
+            registration_no="CHW-MISSING-1",
+        )
+        MissingDataReview.objects.create(
+            content_type=ContentType.objects.get_for_model(CommunityHealthWorker),
+            object_id=chw.pk,
+            full_name="Medical CHW",
+            registration_no="CHW-MISSING-1",
+            professional_type="Community Health Worker",
+            missing_fields=["Email address", "Phone number"],
+            missing_count=2,
+        )
+        MissingDataReview.objects.create(
+            content_type=ContentType.objects.get_for_model(NursingProfessional),
+            object_id=self.nursing_professional.pk,
+            full_name="Nursing Applicant",
+            registration_no="NC-1001",
+            professional_type="Nursing Professional",
+            missing_fields=["Email address"],
+            missing_count=1,
+        )
+        self.client.force_login(self.medical_registrar)
+
+        response = self.client.get(reverse("user_profile"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["staff_ai_context"]["missing_review_count"], 1)
+        self.assertContains(response, "Missing Data Reviews")
 
     def test_profile_hides_nursing_regulatory_alignment_for_admin(self):
         self.client.force_login(self.admin_user)

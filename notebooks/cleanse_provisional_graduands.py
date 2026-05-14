@@ -17,7 +17,8 @@ VALID_MIN_YEAR = 2009
 VALID_MAX_YEAR = 2026
 
 FOREIGN_KEYWORDS = [
-    "philippines", "india", "italy", "fiji", "china", "australia", "new zealand",
+    "america", "american", "philippines", "philippine", "philipine", "india",
+    "italy", "fiji", "china", "australia", "auckland", "new zealand", "new zealand", "new zeland", "nz",
     "uk", "united kingdom", "usa", "united states", "kenya", "uganda", "japan",
     "malaysia", "singapore", "canada", "indonesia", "thailand",
 ]

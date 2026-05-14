@@ -58,6 +58,7 @@
   <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}">
 </head>
 <body>
+  {% include 'includes/page_section_navigation.html' %}
   <div class="verify-card">
     <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest" class="verify-logo">
     <h1>Security Verification</h1>
@@ -92,5 +93,6 @@
       <a href="{% url 'logout' %}" class="text-muted">Sign out</a>
     </div>
   </div>
+  <script src="{% static 'js/page-section-navigation.js' %}?v=20260515-section-nav-1"></script>
 </body>
 </html>

@@ -216,6 +216,53 @@
             text-decoration: underline;
         }
 
+        .standards-strip {
+            border-top: 1px solid #d9e1dd;
+            padding: 0 30px 30px;
+        }
+
+        .standards-strip-inner {
+            align-items: center;
+            background: #f7faf9;
+            border: 1px solid #d9e1dd;
+            border-left: 6px solid #2f5f53;
+            border-radius: 14px;
+            display: flex;
+            gap: 18px;
+            justify-content: space-between;
+            padding: 18px 20px;
+        }
+
+        .standards-strip h3 {
+            color: #18324a;
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin: 0 0 4px;
+        }
+
+        .standards-strip p {
+            color: #425466;
+            margin: 0;
+        }
+
+        .standards-badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .standards-badge-list span {
+            background: #ffffff;
+            border: 1px solid #cbd8d4;
+            border-radius: 999px;
+            color: #18324a;
+            font-size: .8rem;
+            font-weight: 800;
+            padding: 6px 10px;
+            white-space: nowrap;
+        }
+
         @media (max-width: 768px) {
             .portal-header h1 {
                 font-size: 2rem;
@@ -228,11 +275,21 @@
             .portal-option {
                 margin-bottom: 20px;
             }
+
+            .standards-strip-inner {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .standards-badge-list {
+                justify-content: flex-start;
+            }
         }
     </style>
     <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}">
 </head>
 <body>
+    {% include 'includes/page_section_navigation.html' %}
     <div class="portal-container">
         <div class="container">
             <div class="portal-card">
@@ -292,6 +349,20 @@
                                     Community Health Workers, allied health professionals, and support staff registration.
                                 </div>
                             </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="standards-strip">
+                    <div class="standards-strip-inner">
+                        <div>
+                            <h3><i class="fas fa-landmark mr-2"></i>{{ platform_standards_summary.title }}</h3>
+                            <p>{{ platform_standards_summary.subtitle }}</p>
+                        </div>
+                        <div class="standards-badge-list" aria-label="Platform standards">
+                            {% for badge in platform_standard_badges %}
+                            <span><i class="fas {{ badge.icon }} mr-1"></i>{{ badge.label }}</span>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -360,5 +431,6 @@
     <script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
     <script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
     <script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
+    <script src="{% static 'js/page-section-navigation.js' %}?v=20260515-section-nav-1"></script>
 </body>
 </html>

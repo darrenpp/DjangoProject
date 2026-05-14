@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block title_label %}Current Nursing Records{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-outline card-primary">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="card-title mb-0">{{ page_title }}</h3>
+                    <div class="small text-muted">{{ active_filter_label }}{% if atp_current_year %} - ATP {{ atp_current_year }}{% endif %}</div>
+                </div>
+                <div>
+                    <a href="{% url 'nursing_council_portal' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i> Nursing Portal
+                    </a>
+                    <a href="{% url 'nursing_frequent_records' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-table mr-1"></i> All Current Nurses
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Records in this view</div>
+                            <div class="h3 mb-0">{{ record_total }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Valid</div>
+                            <div class="h3 mb-0 text-success">{{ valid_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Needs review</div>
+                            <div class="h3 mb-0 text-warning">{{ needs_review_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">High risk</div>
+                            <div class="h3 mb-0 text-danger">{{ high_risk_count }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-lg-7 mb-2">
+                        <div class="btn-group flex-wrap" role="group" aria-label="Category filters">
+                            <a class="btn btn-sm {% if not category_filter and not category_review_filter and not facility_group_filter %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'nursing_frequent_records' %}">All</a>
+                            {% for option in category_options %}
+                            <a class="btn btn-sm {% if category_filter == option.label %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{{ option.url }}">{{ option.label }}</a>
+                            {% endfor %}
+                            <a class="btn btn-sm {% if category_review_filter %}btn-warning{% else %}btn-outline-warning{% endif %}" href="{% url 'nursing_frequent_records' %}?category_review=1">Category cleanup</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 mb-2 text-lg-right">
+                        <div class="btn-group flex-wrap" role="group" aria-label="Facility filters">
+                            {% for option in facility_options %}
+                            <a class="btn btn-sm {% if facility_group_filter == option.key %}btn-secondary{% else %}btn-outline-secondary{% endif %}" href="{{ option.url }}">{{ option.label }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover datatable mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Registration</th>
+                                <th>Practitioner No</th>
+                                <th>Category</th>
+                                <th>Category Status</th>
+                                <th>Facility / Workplace</th>
+                                <th>Facility Group</th>
+                                <th>Province</th>
+                                <th>Gender</th>
+                                <th>Nationality</th>
+                                <th>Payment Date</th>
+                                <th>Issued Date</th>
+                                <th>Source</th>
+                                <th>Validity</th>
+                                <th>Issues</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in record_rows %}
+                            <tr>
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.registration_no }}</td>
+                                <td>{{ row.practitioner_number }}</td>
+                                <td>{{ row.category }}</td>
+                                <td>
+                                    <span class="badge {% if row.category_status == 'Standard' %}badge-success{% else %}badge-warning{% endif %}">
+                                        {{ row.category_status }}
+                                    </span>
+                                </td>
+                                <td>{{ row.facility }}</td>
+                                <td>{{ row.facility_group }}</td>
+                                <td>{{ row.province }}</td>
+                                <td>{{ row.gender }}</td>
+                                <td>{{ row.nationality }}</td>
+                                <td>{% if row.payment_date %}{{ row.payment_date|date:"d M Y" }}{% else %}-{% endif %}</td>
+                                <td>{% if row.issued_date %}{{ row.issued_date|date:"d M Y" }}{% else %}-{% endif %}</td>
+                                <td>{{ row.source_sheet }}, row {{ row.source_row }}</td>
+                                <td>
+                                    <span class="badge badge-{{ row.status_class }}">{{ row.status_label }}</span>
+                                </td>
+                                <td>{{ row.issues|join:", "|default:"-" }}</td>
+                                <td class="text-nowrap">
+                                    <a href="{{ row.detail_url }}" class="btn btn-sm btn-info">View</a>
+                                    <a href="{{ row.edit_url }}" class="btn btn-sm btn-primary">Edit</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="16" class="text-center text-muted">No records match this filter.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if atp_batch %}
+            <div class="card-footer small text-muted">
+                Source batch #{{ atp_batch.id }} - {{ atp_batch.source_file_name }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

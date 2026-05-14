@@ -8,6 +8,10 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from apps.workforce.models import Application, Cadre, NursingProfessional, Qualification, TrainingInstitution
+from apps.workforce.services.institution_classification import (
+    applicant_type_for_institution,
+    classify_training_institution,
+)
 
 
 class Command(BaseCommand):
@@ -103,15 +107,23 @@ class Command(BaseCommand):
                     year_value = None
 
                 institution = None
+                applicant_type = applicant_type_for_institution(institution_name)
                 if institution_name:
-                    institution, _ = TrainingInstitution.objects.get_or_create(name=institution_name[:255])
+                    institution_type = classify_training_institution(institution_name)
+                    institution, created = TrainingInstitution.objects.get_or_create(
+                        name=institution_name[:255],
+                        defaults={"type": institution_type},
+                    )
+                    if not created and institution.type != institution_type:
+                        institution.type = institution_type
+                        institution.save(update_fields=["type"])
 
                 professional, created = NursingProfessional.objects.update_or_create(
                     registration_no=registration_no,
                     defaults={
                         "first_name": first_name,
                         "last_name": last_name,
-                        "applicant_type": "national",
+                        "applicant_type": applicant_type,
                         "gender": "Female",
                         "primary_phone": "",
                         "email": "",
