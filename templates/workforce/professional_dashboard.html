@@ -3,6 +3,9 @@
 {% block title_label %}Professional Portal{% endblock %}
 
 {% block content %}
+{% include "dashboard/_record_link_prompt.html" %}
+
+{% if professional %}
 <div class="row">
     <div class="col-lg-4">
         <div class="small-box bg-primary">
@@ -32,6 +35,8 @@
         </div>
     </div>
 </div>
+
+{% include "dashboard/_professional_regulatory_identity.html" %}
 
 <div class="card table-card mt-3">
     <div class="card-header">
@@ -64,4 +69,14 @@
         {% endif %}
     </div>
 </div>
+{% else %}
+<div class="card table-card mt-3">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Professional Record</h3>
+    </div>
+    <div class="card-body">
+        <p class="text-muted mb-0">No professional record is currently available for this account.</p>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

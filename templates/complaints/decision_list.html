@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Regulatory Decision Register{% endblock %}
+{% block title_label %}Regulatory Decision Register{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-success">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">{% if selected_office == "medical" %}Medical Board Regulatory Decision Register{% elif selected_office == "nursing" %}Nursing Council Regulatory Decision Register{% else %}Regulatory Decision Register{% endif %}</h3>
+            <div class="text-muted small">
+                {% if selected_office == "medical" %}
+                    Formal Medical Board decisions for registration, practising certificates, discipline, conditions, appeal rights, and public-register assurance.
+                {% elif selected_office == "nursing" %}
+                    Formal Nursing Council decisions for provisional licence, full licence, ATP renewal, discipline, conditions, appeal rights, and public-register assurance.
+                {% else %}
+                    Auditable register of formal regulatory decisions, rationale, authority, evidence, conditions, and appeal rights.
+                {% endif %}
+            </div>
+        </div>
+        <a href="{% url 'disciplinary_case_list' %}" class="btn btn-outline-danger">Discipline Cases</a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end mb-3">
+            <div class="col-md-3">
+                <label for="office">Office</label>
+                <select id="office" name="office" class="form-control">
+                    {% for value, label in office_options %}
+                    <option value="{{ value }}" {% if selected_office == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="type">Decision type</label>
+                <select id="type" name="type" class="form-control">
+                    <option value="all" {% if selected_type == "all" %}selected{% endif %}>All types</option>
+                    {% for value, label in decision_type_choices %}
+                    <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="q">Search</label>
+                <input id="q" type="search" name="q" value="{{ query }}" class="form-control" placeholder="Decision number, subject, text">
+            </div>
+            <div class="col-md-2"><button type="submit" class="btn btn-primary btn-block">Apply</button></div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>Decision</th><th>Office</th><th>Type</th><th>Status</th><th>Subject</th><th>Conditions</th><th>Decided</th><th></th></tr></thead>
+                <tbody>
+                    {% for decision in decisions %}
+                    <tr>
+                        <td><strong>{{ decision.decision_number }}</strong><div class="small text-muted">{{ decision.title }}</div></td>
+                        <td>{{ decision.get_office_scope_display }}</td>
+                        <td>{{ decision.get_decision_type_display }}</td>
+                        <td><span class="badge bg-success">{{ decision.get_status_display }}</span></td>
+                        <td>{{ decision.subject_name|default:"-" }}</td>
+                        <td>{% if decision.conditions %}<span class="badge bg-warning">Conditions</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                        <td>{{ decision.decided_at|date:"d M Y H:i"|default:"Not final" }}</td>
+                        <td class="text-right"><a href="{% url 'regulatory_decision_detail' decision.decision_uuid %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-muted">No regulatory decisions matched the current filters.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

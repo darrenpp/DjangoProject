@@ -4,16 +4,16 @@ from apps.workforce.models import Cadre, DocumentType, Location, TrainingInstitu
 
 
 CADRES = [
-    "Registered Nurse",
-    "Enrolled Nurse",
-    "Midwife",
-    "Maternal & Child Health Nurse",
-    "Paediatric Nurse",
-    "Mental Health Nurse",
-    "Nurse Aide",
-    "Community Health Worker (CHW)",
-    "Medical Doctor / Specialist",
-    "Allied Health Professional",
+    ("Registered Nurse", "nursing"),
+    ("Enrolled Nurse", "nursing"),
+    ("Midwife", "midwifery"),
+    ("Maternal & Child Health Nurse", "nursing"),
+    ("Paediatric Nurse", "nursing"),
+    ("Mental Health Nurse", "nursing"),
+    ("Nurse Aide", "nursing"),
+    ("Community Health Worker (CHW)", "chw"),
+    ("Medical Doctor / Specialist", "medical"),
+    ("Allied Health Professional", "medical"),
 ]
 
 DOCUMENT_TYPES = [
@@ -72,8 +72,8 @@ class Command(BaseCommand):
     help = "Populate Cadre, Location (22 provinces), TrainingInstitution, and DocumentType reference data."
 
     def handle(self, *args, **options):
-        for name in CADRES:
-            Cadre.objects.get_or_create(name=name)
+        for name, category in CADRES:
+            Cadre.objects.update_or_create(name=name, defaults={"category": category})
 
         for doc_name in DOCUMENT_TYPES:
             DocumentType.objects.get_or_create(name=doc_name)

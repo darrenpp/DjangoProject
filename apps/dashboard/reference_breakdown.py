@@ -145,7 +145,7 @@ LOCAL_NURSING_HINTS = (
     " SON",
     " CON",
 )
-INSTITUTION_BREAKDOWN_CACHE_KEY = "dashboard_reference_breakdown_v3"
+INSTITUTION_BREAKDOWN_CACHE_KEY = "dashboard_reference_breakdown_v4"
 
 
 def _normalize_text(value):
@@ -269,11 +269,13 @@ def build_reference_breakdown():
         "mapped_nursing_reference_count": sum(len(rows) for rows in school_matches.values()),
         "national_institution_reference_count": len(national_rows),
         "chw_training_reference_count": len(chw_rows),
+        "medical_board_chw_training_reference_count": len(chw_rows),
         "overseas_institution_reference_count": len(overseas_rows),
         "unmapped_local_nursing_reference_count": len(unmapped_local_rows),
         "legacy_institution_reference_count": len(legacy_rows),
         "nursing_school_rows": nursing_school_rows,
         "national_examples": national_rows[:12],
+        "medical_board_chw_training_examples": chw_rows[:12],
         "unmapped_local_examples": unmapped_local_rows[:12],
         "overseas_examples": overseas_rows[:12],
         "legacy_examples": legacy_rows[:12],

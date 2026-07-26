@@ -14,6 +14,19 @@ from apps.workforce.services.institution_classification import (
 )
 
 
+def clean_cell(value):
+    if pd.isna(value):
+        return ""
+    return str(value).strip()
+
+
+def limit_text(value, max_length):
+    value = clean_cell(value)
+    if not value:
+        return ""
+    return value[:max_length]
+
+
 class Command(BaseCommand):
     help = "Import provisional nursing license records from the Excel workbook."
 
@@ -77,13 +90,13 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for index, row in df.iterrows():
-                name = str(row.get("Name", "")).strip()
+                name = clean_cell(row.get("Name", ""))
                 if not name:
                     continue
 
                 name_parts = name.split()
-                first_name = name_parts[0]
-                last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+                first_name = limit_text(name_parts[0], 100)
+                last_name = limit_text(" ".join(name_parts[1:]) if len(name_parts) > 1 else "", 100)
 
                 source_id = row.get("ID")
                 try:
@@ -91,15 +104,15 @@ class Command(BaseCommand):
                 except Exception:
                     source_id = index + 1
 
-                provisional_no = str(row.get("Provisional/No", "")).strip()
+                provisional_no = clean_cell(row.get("Provisional/No", ""))
                 registration_no = f"PROV-{source_id}"
 
                 issued = pd.to_datetime(row.get("Issued_Date"), errors="coerce", dayfirst=True)
                 issued_date = issued.date() if not pd.isna(issued) else date.today()
                 expiry_date = issued_date + timedelta(days=180) if issued_date else None
 
-                qualification = str(row.get("Qualification", "")).strip()
-                institution_name = str(row.get("Institution_Attended", "")).strip()
+                qualification = clean_cell(row.get("Qualification", ""))
+                institution_name = clean_cell(row.get("Institution_Attended", ""))
                 year_value = row.get("Year")
                 try:
                     year_value = int(year_value)
@@ -129,7 +142,7 @@ class Command(BaseCommand):
                         "email": "",
                         "date_issued": issued_date,
                         "license_expiry_date": expiry_date,
-                        "qualification_level": qualification,
+                        "qualification_level": limit_text(qualification, 100),
                         "cadre": nurse_cadre,
                         "is_active": True,
                     },

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Register - PNG Regulatory Bodies The Medical Board &amp; Nursing Council</title>
+  <title>{{ signup_page_title|default:signup_title|default:"Register" }}</title>
   <script>
     window.ndohAssets = {
       bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
@@ -36,6 +36,9 @@
   <style>
     body.auth-page {
       min-height: 100vh;
+      position: relative;
+      isolation: isolate;
+      overflow-x: hidden;
       background:
         radial-gradient(circle at top left, rgba(47, 95, 83, 0.10), transparent 28%),
         radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.10), transparent 26%),
@@ -45,9 +48,25 @@
       justify-content: center;
       padding: 32px 20px;
     }
+    body.auth-page::before {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      content: "";
+      background-image:
+        linear-gradient(180deg, rgba(247, 247, 244, 0.82), rgba(237, 241, 238, 0.9)),
+        url("{% static 'img/National_emblem_of_Papua_New_Guinea_(variant).svg.png' %}");
+      background-repeat: no-repeat;
+      background-position: center 34px;
+      background-size: min(860px, 78vw) auto;
+      opacity: 0.22;
+      pointer-events: none;
+    }
     .auth-shell {
       width: 100%;
       max-width: 1040px;
+      position: relative;
+      z-index: 1;
     }
     .auth-panel {
       display: grid;
@@ -63,8 +82,26 @@
       overflow: hidden;
     }
     .auth-brand {
+      position: relative;
+      isolation: isolate;
       padding: 40px;
       color: #15293d;
+    }
+    .auth-brand::before {
+      position: absolute;
+      inset: 18px;
+      z-index: 0;
+      content: "";
+      background-image: url("{% static 'img/National_emblem_of_Papua_New_Guinea_(variant).svg.png' %}");
+      background-repeat: no-repeat;
+      background-position: center bottom 20px;
+      background-size: min(380px, 78%) auto;
+      opacity: 0.09;
+      pointer-events: none;
+    }
+    .auth-brand > * {
+      position: relative;
+      z-index: 1;
     }
     .auth-brand h1 {
       color: #15293d;
@@ -109,17 +146,80 @@
       border-radius: 14px;
       background: #fff;
     }
+    label {
+      color: #172133;
+      font-weight: 800;
+    }
+    .form-control,
+    .form-select,
+    .form-control-file,
+    input,
+    select,
+    textarea {
+      color: #111827;
+      -webkit-text-fill-color: #111827;
+    }
+    .auth-brand .text-muted,
+    .auth-card .text-muted,
+    .auth-brand li {
+      color: #334155 !important;
+      -webkit-text-fill-color: #334155 !important;
+      opacity: 1;
+    }
     .field-note {
       font-size: .82rem;
-      color: #64748b;
+      color: #334155;
+      -webkit-text-fill-color: #334155;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+    .signup-route-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: 1.25rem;
+    }
+    .signup-route-links .btn {
+      border-radius: 10px;
+      font-weight: 800;
+    }
+    body.signup-nursing {
+      background:
+        radial-gradient(circle at top left, rgba(47, 95, 83, 0.14), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.10), transparent 26%),
+        linear-gradient(180deg, #f7fbf8 0%, #edf4f1 100%);
+    }
+    body.signup-nursing .btn-primary {
+      background: #1d5d52;
+      border-color: #1d5d52;
+    }
+    body.signup-nursing .btn-primary:hover,
+    body.signup-nursing .btn-primary:focus {
+      background: #143f39;
+      border-color: #143f39;
+    }
+    body.signup-medical {
+      background:
+        radial-gradient(circle at top left, rgba(24, 50, 74, 0.14), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(153, 27, 27, 0.10), transparent 26%),
+        linear-gradient(180deg, #f8fafc 0%, #edf1f5 100%);
+    }
+    body.signup-medical .btn-primary {
+      background: #18324a;
+      border-color: #18324a;
+    }
+    body.signup-medical .btn-primary:hover,
+    body.signup-medical .btn-primary:focus {
+      background: #102033;
+      border-color: #102033;
     }
     @media (max-width: 991px) {
       .auth-panel { grid-template-columns: 1fr; }
     }
   </style>
-  <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}">
+  <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}?v=20260618-font-contrast-3">
 </head>
-<body class="auth-page">
+<body class="auth-page {% if signup_scope %}signup-{{ signup_scope }}{% else %}signup-general{% endif %}">
 {% include 'includes/page_section_navigation.html' %}
 <div class="auth-shell">
   <div class="auth-panel">
@@ -127,18 +227,24 @@
       <div class="mb-4">
         <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest" class="auth-brand-logo">
       </div>
-      <h1>PNG Regulatory Bodies The Medical Board &amp; Nursing Council</h1>
-      <p class="text-muted">Create a professional account for graduands, nurses, doctors, CHWs, or nurse aides.</p>
+      <h1>{{ signup_brand_title|default:"Applicant Account Registration" }}</h1>
+      <p class="text-muted">{{ signup_intro|default:"Create your account first. The portal will link it to an existing professional record or start the correct registrar-review pathway." }}</p>
       <ul class="mt-4 text-muted">
-        <li>Role-based dashboard access</li>
-        <li>Professional registration and licence tracking</li>
-        <li>Document, profile, and identification uploads</li>
+        {% for item in signup_bullets %}
+        <li>{{ item }}</li>
+        {% endfor %}
       </ul>
+      {% if not signup_scope %}
+      <div class="signup-route-links">
+        <a href="{% url 'public_nursing_account_register' %}" class="btn btn-outline-success btn-sm"><i class="fas fa-user-nurse mr-1"></i>Nursing Council signup</a>
+        <a href="{% url 'public_medical_board_account_register' %}" class="btn btn-outline-danger btn-sm"><i class="fas fa-user-doctor mr-1"></i>Medical Board signup</a>
+      </div>
+      {% endif %}
     </div>
     <div class="auth-card">
       <div class="card-body">
-        <h3 class="mb-3">Register</h3>
-        <p class="text-muted">Register using your professional number. Staff accounts use a separate login page.</p>
+        <h3 class="mb-3">{{ signup_title|default:"Register" }}</h3>
+        <p class="text-muted">{{ signup_help|default:"Register with your legal name and professional number if you already have one. New graduands can create an account first and complete the graduand forms after login." }}</p>
 
         {% if messages %}
           {% for message in messages %}
@@ -158,6 +264,11 @@
             <label>First Name</label>
             <input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" required>
             {% if form.first_name.errors %}<small class="text-danger">{{ form.first_name.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Middle Name</label>
+            <input type="text" name="middle_name" class="form-control" value="{{ form.middle_name.value|default:'' }}">
+            {% if form.middle_name.errors %}<small class="text-danger">{{ form.middle_name.errors|join:", " }}</small>{% endif %}
           </div>
           <div class="form-group">
             <label>Last Name</label>
@@ -195,24 +306,32 @@
           <div class="form-group">
             <label>Role</label>
             <select name="role" class="form-control" required>
+              {% if not signup_scope %}
               <option value="">Select Role</option>
-              <option value="graduand" {% if form.role.value == 'graduand' or form.role.value == 'student' %}selected{% endif %}>Graduand</option>
-              <option value="nurse" {% if form.role.value == 'nurse' %}selected{% endif %}>Nurse</option>
-              <option value="doctor" {% if form.role.value == 'doctor' %}selected{% endif %}>Doctor</option>
-              <option value="chw" {% if form.role.value == 'chw' %}selected{% endif %}>Community Health Worker</option>
-              <option value="nurse_aide" {% if form.role.value == 'nurse_aide' %}selected{% endif %}>Nurse Aide</option>
+              {% endif %}
+              {% for value, label in form.role.field.choices %}
+              <option value="{{ value }}" {% if form.role.value == value %}selected{% elif not form.role.value and form.role.field.initial == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
             </select>
             {% if form.role.errors %}<small class="text-danger">{{ form.role.errors|join:", " }}</small>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Cadre</label>
+            {{ form.cadre_name }}
+            {% if form.cadre_name.errors %}<small class="text-danger">{{ form.cadre_name.errors|join:", " }}</small>{% endif %}
+            <div class="field-note">Select the professional cadre used with your name and number to link the correct registry record.</div>
           </div>
           <div class="form-group">
             <label>License Number</label>
             <input type="text" name="license_number" class="form-control {% if form.license_number.errors %}is-invalid{% endif %}" value="{{ form.license_number.value|default:'' }}">
             {% if form.license_number.errors %}<small class="text-danger">{{ form.license_number.errors|join:", " }}</small>{% endif %}
+            <div class="field-note">{{ license_number_note }}</div>
           </div>
           <div class="form-group">
             <label>Registration Number</label>
             <input type="text" name="registration_number" class="form-control {% if form.registration_number.errors %}is-invalid{% endif %}" value="{{ form.registration_number.value|default:'' }}">
             {% if form.registration_number.errors %}<small class="text-danger">{{ form.registration_number.errors|join:", " }}</small>{% endif %}
+            <div class="field-note">{{ registration_number_note }}</div>
           </div>
           <div class="form-group">
             <label>Profile Picture</label>
@@ -239,11 +358,11 @@
             <input type="password" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" required>
             {% if form.password2.errors %}<small class="text-danger">{{ form.password2.errors|join:", " }}</small>{% endif %}
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Register</button>
+          <button type="submit" class="btn btn-primary btn-block">{{ signup_submit_label|default:"Register" }}</button>
         </form>
 
         <div class="text-center mt-3">
-          <a href="{% url 'login' %}">I already have an account</a>
+          <a href="{{ signup_login_url|default:'#' }}">I already have an account</a>
         </div>
         <div class="text-center mt-2">
           <a href="{% url 'staff_login' %}">Staff login</a>
@@ -256,6 +375,6 @@
 <script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
 <script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
 <script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
-<script src="{% static 'js/page-section-navigation.js' %}?v=20260515-section-nav-1"></script>
+<script src="{% static 'js/page-section-navigation.js' %}?v=20260708-dashboard-links-1"></script>
 </body>
 </html>

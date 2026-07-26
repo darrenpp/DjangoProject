@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}Review Centre{% endblock %}
+{% block page_title %}Review Centre{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .review-centre-hero {
+        background: linear-gradient(135deg, #163a63 0%, #0f8b8d 100%);
+        color: #fff;
+        border-radius: 8px;
+        padding: 1.4rem;
+    }
+
+    .review-centre-hero h1,
+    .review-centre-hero p,
+    .review-centre-hero label {
+        color: #fff;
+    }
+
+    .review-summary-card {
+        border: 1px solid rgba(15, 139, 141, 0.18);
+        border-radius: 8px;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+        height: 100%;
+    }
+
+    .review-summary-card .review-icon {
+        align-items: center;
+        border-radius: 50%;
+        display: inline-flex;
+        height: 42px;
+        justify-content: center;
+        width: 42px;
+    }
+
+    .review-table-card .table td,
+    .review-table-card .table th {
+        vertical-align: middle;
+    }
+
+    .review-muted {
+        color: #5b6b7a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-centre-hero mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+        <div>
+            <p class="text-uppercase mb-1" style="letter-spacing:.08em;">Registrar and reviewer workload</p>
+            <h1 class="h2 mb-2">Review Centre</h1>
+            <p class="mb-0">
+                Consolidated review-only dashboard for applications, missing data, duplicates, mobile intake, mobile accounts, and receipt checks.
+            </p>
+        </div>
+        <div class="text-right">
+            <div class="display-4 font-weight-bold">{{ review_counts.total_open }}</div>
+            <div>Total open review items</div>
+        </div>
+    </div>
+    <form method="get" class="row g-2 align-items-end mt-3">
+        <div class="col-md-4 col-lg-3">
+            <label for="review-scope" class="form-label">Review scope</label>
+            <select id="review-scope" name="scope" class="form-control">
+                {% for value, label in review_scope_options %}
+                    <option value="{{ value }}" {% if review_scope == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <button type="submit" class="btn btn-light btn-block">Apply Scope</button>
+        </div>
+        <div class="col-md-5 col-lg-7">
+            <p class="mb-0 small">Current scope: <strong>{{ review_scope_label }}</strong></p>
+        </div>
+    </form>
+</div>
+
+<div class="row">
+    {% for card in review_cards %}
+    <div class="col-xl-4 col-md-6 mb-3">
+        <div class="card review-summary-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="h3 mb-1">{{ card.count }}</div>
+                        <h2 class="h5 mb-2">{{ card.title }}</h2>
+                    </div>
+                    <span class="review-icon bg-{{ card.theme }} text-white">
+                        <i class="{{ card.icon }}"></i>
+                    </span>
+                </div>
+                <p class="review-muted mb-3">{{ card.subtitle }}</p>
+                <a href="{{ card.href }}" class="btn btn-outline-{{ card.theme }} btn-sm">Open Queue</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-3">
+    <div class="col-xl-6 mb-4">
+        <div class="card review-table-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Pending Applications</h2>
+                <span class="badge bg-primary">{{ review_counts.pending_applications }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Form</th>
+                                <th>Applicant</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in recent_applications %}
+                            <tr>
+                                <td><strong>{{ application.form_code }}</strong></td>
+                                <td>{{ application.professional|default:"Unlinked applicant" }}</td>
+                                <td><span class="badge bg-warning text-dark">{{ application.get_status_display }}</span></td>
+                                <td>{{ application.submitted_date|date:"d M Y" }}</td>
+                                <td class="text-right">
+                                    <a href="{% url 'application_detail' application.pk %}" class="btn btn-sm btn-outline-primary">Review</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-muted">No pending applications for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mb-4">
+        <div class="card review-table-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Mobile Intake Reviews</h2>
+                <span class="badge bg-info">{{ review_counts.mobile_reviews }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Form</th>
+                                <th>Applicant</th>
+                                <th>Office</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for submission in recent_mobile_submissions %}
+                            <tr>
+                                <td><strong>{{ submission.form_code }}</strong></td>
+                                <td>{{ submission.applicant_name|default:"-" }}</td>
+                                <td>{{ submission.office_scope|title }}</td>
+                                <td><span class="badge bg-secondary">{{ submission.status }}</span></td>
+                                <td class="text-right">
+                                    <a href="{% url 'mobile_intake_detail' submission.submission_uuid %}" class="btn btn-sm btn-outline-primary">Open</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-muted">No open mobile intake reviews for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mb-4">
+        <div class="card review-table-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Data Quality Reviews</h2>
+                <span class="badge bg-warning text-dark">{{ review_counts.missing_data }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Record</th>
+                                <th>Type</th>
+                                <th>Missing</th>
+                                <th>Severity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in recent_missing_reviews %}
+                            <tr>
+                                <td>
+                                    <div>{{ review.full_name|default:review.registration_no|default:"Unidentified record" }}</div>
+                                    <div class="small text-muted">{{ review.registration_no|default:"No registration number" }}</div>
+                                </td>
+                                <td>{{ review.professional_type|default:review.content_type.model }}</td>
+                                <td>{{ review.missing_count }}</td>
+                                <td>
+                                    <span class="badge bg-{% if review.severity == 'high' %}danger{% elif review.severity == 'medium' %}warning text-dark{% else %}secondary{% endif %}">
+                                        {{ review.get_severity_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted">No missing-data reviews for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mb-4">
+        <div class="card review-table-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Duplicate Reviews</h2>
+                <span class="badge bg-danger">{{ review_counts.duplicate_reviews }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Record Type</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in recent_duplicate_reviews %}
+                            <tr>
+                                <td>{{ review.content_type.model|title }}</td>
+                                <td>{{ review.similarity_score|floatformat:2 }}</td>
+                                <td><span class="badge bg-danger">{{ review.get_status_display }}</span></td>
+                                <td class="text-right">
+                                    <a href="{% url 'duplicate_review_workflow' %}" class="btn btn-sm btn-outline-danger">Open Queue</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted">No duplicate-review cases for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mb-4">
+        <div class="card review-table-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Mobile Account Requests</h2>
+                <span class="badge bg-success">{{ review_counts.mobile_account_requests }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Office</th>
+                                <th>Requested</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in recent_mobile_account_requests %}
+                            <tr>
+                                <td>{{ account.full_name }}</td>
+                                <td>{{ account.username }}</td>
+                                <td>{{ account.office_scope|title }}</td>
+                                <td>{{ account.created_at|date:"d M Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted">No pending mobile account requests for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mb-4">
+        <div class="card review-table-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Pending Receipt Reviews</h2>
+                <span class="badge bg-secondary">{{ review_counts.receipt_reviews }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Receipt</th>
+                                <th>Amount</th>
+                                <th>Applicant</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for receipt in recent_receipt_reviews %}
+                            <tr>
+                                <td>{{ receipt.receipt_number }}</td>
+                                <td>{{ receipt.amount }}</td>
+                                <td>{{ receipt.user.get_full_name|default:receipt.user.username|default:"Unassigned" }}</td>
+                                <td>{{ receipt.transaction_date|date:"d M Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted">No pending receipt reviews for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mb-4">
+        <div class="card review-table-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Complaints and ICMS Cases</h2>
+                <span class="badge bg-danger">{{ review_counts.complaint_cases }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Case</th>
+                                <th>Office</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for case in recent_complaint_cases %}
+                            <tr>
+                                <td>
+                                    <strong>{{ case.case_number }}</strong>
+                                    <div class="small text-muted">{{ case.title }}</div>
+                                </td>
+                                <td>{{ case.get_office_scope_display }}</td>
+                                <td><span class="badge bg-info">{{ case.get_status_display }}</span></td>
+                                <td><span class="badge bg-danger">{{ case.get_priority_display }}</span></td>
+                                <td class="text-right">
+                                    <a href="{% url 'complaint_case_detail' case.case_uuid %}" class="btn btn-sm btn-outline-danger">Open</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-muted">No open complaint or incident cases for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mb-4">
+        <div class="card review-table-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Disciplinary Cases</h2>
+                <span class="badge bg-danger">{{ review_counts.disciplinary_cases }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Case</th>
+                                <th>Subject</th>
+                                <th>Stage</th>
+                                <th>Severity</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for case in recent_disciplinary_cases %}
+                            <tr>
+                                <td><strong>{{ case.discipline_number }}</strong></td>
+                                <td>{{ case.subject_name }}</td>
+                                <td><span class="badge bg-info">{{ case.get_stage_display }}</span></td>
+                                <td><span class="badge bg-danger">{{ case.get_severity_display }}</span></td>
+                                <td class="text-right">
+                                    <a href="{% url 'disciplinary_case_detail' case.discipline_uuid %}" class="btn btn-sm btn-outline-danger">Open</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-muted">No open disciplinary cases for this scope.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

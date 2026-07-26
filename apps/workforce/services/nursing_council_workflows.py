@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.competency.models import CompetencyAssessment
+from apps.complaints.models import RegulatoryDecisionRecord
 from apps.dashboard.models import Receipt
 from apps.workforce.models import (
     Application,
@@ -35,6 +36,7 @@ from apps.workforce.models import (
     RegulatoryBody,
     SupervisorAssignment,
 )
+from apps.workforce.services.data_quality import quality_approved_import_records
 
 
 NURSING_COUNCIL_CODE = "PNG_NURSING_COUNCIL"
@@ -48,7 +50,7 @@ FORM_DEFINITIONS = [
     ("NC6", "Competency for Full Licence Nursing", "PNG_PROV_TO_FULL"),
     ("NC7", "Competency for Full Licence Midwifery", "PNG_MIDWIFE_GRAD_FULL"),
     ("NC8", "Application for Temporary Licence to Practice", "OVERSEAS_TEMP"),
-    ("NC9", "Temporary Overseas Licence Checklist", "OVERSEAS_TEMP"),
+    ("NC9", "Temporary Licence to Practise Criteria for Overseas Nurses Checklist (Revised 2023)", "OVERSEAS_TEMP"),
     ("NC10", "Competency for Full Licence Child Nursing", "CHILD_HEALTH_SPEC"),
     ("NC11", "Double Major Full Registration Checklist", "DOUBLE_MAJOR"),
     ("G1", "Graduate Nurses Checklist", "PNG_NURSE_GRAD_PROV"),
@@ -289,13 +291,18 @@ DOCUMENT_REQUIREMENTS = {
         ("treasury_receipt", "Treasury receipt", True),
     ],
     "OVERSEAS_TEMP": [
-        ("passport", "Passport", True),
-        ("home_registration", "Current licence or registration from home country", True),
-        ("work_contract", "Work contract or employer support letter", True),
-        ("police_clearance", "Police clearance", True),
-        ("medical_report", "Medical report", True),
-        ("english_language_evidence", "English-language evidence", True),
-        ("treasury_receipt", "Treasury receipt or approved waiver", True),
+        ("work_contract", "PNG contract or employment letter", True),
+        ("temporary_licence_application", "Form NC8 - applicant form for nursing temporary licence", True),
+        ("home_registration", "Current registration licence issued by regulatory authority", True),
+        ("academic_award", "Institution awards - academic and professional awards", True),
+        ("cv", "Curriculum vitae", True),
+        ("professional_reference", "Two professional references", True),
+        ("passport", "Copy of passport bio-page verified by recognised authority", True),
+        ("police_clearance", "Current police clearance report from country of origin", True),
+        ("medical_report", "Full medical report signed and certified by examining doctor", True),
+        ("name_change_evidence", "Evidence of name change if applicable", False),
+        ("english_language_evidence", "Evidence of knowledge of English; IELTS report score 4 or more", True),
+        ("treasury_receipt", "Original receipt payment K50.00 or approved waiver fee for applicants 2-9 months", True),
     ],
     "CHILD_HEALTH_SPEC": [
         ("academic_award", "Specialist qualification evidence", True),
@@ -483,6 +490,8 @@ def _default_sections_for_form(form_code):
     base = ["Applicant Identity", "Education and Qualification", "Documents", "Declaration"]
     if form_code == "NC3":
         return base[:1] + ["Licence Renewal", "Employment Update", "Payment"] + base[-1:]
+    if form_code == "NC9":
+        return ["Applicant Details", "Temporary Registration Criteria", "Office Use", "Declaration"]
     if form_code in {"NC1", "NC5", "NC8"}:
         return base[:1] + ["Registration Details", "Overseas Details", "Payment"] + base[-1:]
     if form_code in {"G4", "G5", "NC6", "NC7", "NC10"}:
@@ -496,6 +505,24 @@ def _default_fields_for_form(form_code):
     fields = ["first_name", "surname", "date_of_birth", "gender"]
     if form_code == "NC3":
         fields += ["registration_number", "practitioner_number", "employment_status", "employer_name", "facility_name", "province", "position_title", "receipt_number"]
+    elif form_code == "NC9":
+        fields += [
+            "organisation_name",
+            "place_of_work",
+            "postal_address",
+            "png_contract_or_employment_letter",
+            "nc8_application_form",
+            "home_registration_license",
+            "academic_awards",
+            "curriculum_vitae",
+            "professional_references",
+            "passport_bio_page",
+            "police_clearance_report",
+            "medical_report",
+            "name_change_evidence",
+            "english_language_evidence",
+            "temporary_licence_receipt",
+        ]
     elif form_code in {"NC1", "NC2", "NC5", "NC8"}:
         fields += ["registration_number", "practitioner_number", "qualification", "institution", "receipt_number"]
     elif form_code in {"G2", "G7"}:
@@ -736,6 +763,83 @@ def reject_nursing_application(application, *, actor=None, request=None, reason=
     return application
 
 
+NURSING_PUBLIC_IMPORT_TARGET_CATEGORIES = {
+    "nursingprofessional": "Registered Nurse",
+    "midwife": "Midwife",
+    "nurseaide": "Nurse Aide",
+    "healthstudent": "Graduand",
+}
+NURSING_PUBLIC_IMPORT_RECORD_TYPES = {
+    "provisional",
+    "full",
+    "full_approved",
+    "temporary",
+    "practicing_license",
+    "workforce_listing",
+}
+
+
+def _apply_public_token_search(queryset, query, fields):
+    tokens = [token.strip() for token in str(query or "").split() if token.strip()]
+    for token in tokens:
+        token_filter = Q()
+        for field in fields:
+            token_filter |= Q(**{f"{field}__icontains": token})
+        queryset = queryset.filter(token_filter)
+    return queryset
+
+
+def _nursing_import_record_status(record):
+    if record.record_type == "practicing_license":
+        current_year = date.today().year
+        if record.record_year and record.record_year < current_year:
+            return "Expired"
+        return "Active"
+    if record.record_type in {"full", "full_approved", "workforce_listing"}:
+        return "Registered"
+    if record.record_type == "provisional":
+        return "Provisional"
+    if record.record_type == "temporary":
+        return "Temporary"
+    return record.get_record_type_display()
+
+
+def _nursing_import_category(record):
+    category = NURSING_PUBLIC_IMPORT_TARGET_CATEGORIES.get(record.target_model, "")
+    if category:
+        return category
+    text = (record.category or record.qualification_name or "").lower()
+    if "midwife" in text or "midwifery" in text:
+        return "Midwife"
+    if "aide" in text:
+        return "Nurse Aide"
+    return "Registered Nurse"
+
+
+def _safe_public_import_record(record):
+    status = _nursing_import_record_status(record)
+    return {
+        "full_name": record.full_name,
+        "registration_number": record.registration_no or "",
+        "practitioner_number": record.practitioner_number or "",
+        "professional_category": _nursing_import_category(record),
+        "licence_status": status,
+        "licence_expiry_date": "",
+        "eligible_to_practice": status in {"Active", "Registered", "Provisional", "Temporary"},
+        "conditions_summary": "Check with Nursing Council for current public conditions",
+        "source": f"Nursing Council import {record.record_year or ''}".strip(),
+    }
+
+
+def _nursing_public_row_identity(row):
+    return (
+        (row.get("registration_number") or "").strip().upper(),
+        (row.get("practitioner_number") or "").strip().upper(),
+        (row.get("full_name") or "").strip().upper(),
+        (row.get("professional_category") or "").strip().upper(),
+    )
+
+
 def search_public_nursing_register(*, query="", registration_number="", practitioner_number="", professional_category="", licence_status=""):
     rows = []
     model_category = [
@@ -746,11 +850,10 @@ def search_public_nursing_register(*, query="", registration_number="", practiti
     for model, category in model_category:
         queryset = model.objects.all()
         if query:
-            queryset = queryset.filter(
-                Q(first_name__icontains=query)
-                | Q(last_name__icontains=query)
-                | Q(registration_no__icontains=query)
-                | Q(registration_number__icontains=query)
+            queryset = _apply_public_token_search(
+                queryset,
+                query,
+                ["first_name", "middle_name", "last_name", "registration_no", "registration_number"],
             )
         if registration_number:
             queryset = queryset.filter(registration_no__icontains=registration_number)
@@ -763,7 +866,41 @@ def search_public_nursing_register(*, query="", registration_number="", practiti
             if licence_status and safe["licence_status"].lower() != licence_status.lower():
                 continue
             rows.append(safe)
-    return rows[:100]
+
+    imported_records = quality_approved_import_records(
+        PracticingLicenseRecord.objects.select_related("batch").filter(
+            target_model__in=NURSING_PUBLIC_IMPORT_TARGET_CATEGORIES.keys(),
+            record_type__in=NURSING_PUBLIC_IMPORT_RECORD_TYPES,
+        ).exclude(batch__source_kind="medical_board_workbook")
+    )
+    if query:
+        imported_records = _apply_public_token_search(
+            imported_records,
+            query,
+            ["full_name", "first_name", "last_name", "registration_no", "practitioner_number", "category", "qualification_name"],
+        )
+    if registration_number:
+        imported_records = imported_records.filter(registration_no__icontains=registration_number)
+    if practitioner_number:
+        imported_records = imported_records.filter(practitioner_number__icontains=practitioner_number)
+
+    for record in imported_records.order_by("-record_year", "-issued_date", "full_name")[:200]:
+        safe = _safe_public_import_record(record)
+        if professional_category and professional_category.lower() not in safe["professional_category"].lower():
+            continue
+        if licence_status and safe["licence_status"].lower() != licence_status.lower():
+            continue
+        rows.append(safe)
+
+    deduped = []
+    seen = set()
+    for row in rows:
+        identity = _nursing_public_row_identity(row)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        deduped.append(row)
+    return deduped[:100]
 
 
 def create_employer_verification_request(*, actor, registration_number="", practitioner_number="", employer_name="", facility_name="", comments="", request=None):
@@ -860,6 +997,9 @@ def approve_deceased_notification(notification, *, actor=None, request=None):
             professional.save(update_fields=["is_active", "license_expiry_date", "updated_at"])
         else:
             professional.save(update_fields=["is_active", "updated_at"])
+        from apps.accounts.professional_linking import mark_users_deceased_for_professional
+
+        mark_users_deceased_for_professional(professional)
     audit_action(
         "PRACTITIONER_MARKED_DECEASED",
         notification,
@@ -900,6 +1040,17 @@ def build_public_form_guide():
         ]
         if not guide[pathway_label]:
             guide[pathway_label] = [(pathway.primary_form_code, pathway.pathway_name)]
+    nc9 = DynamicFormDefinition.objects.filter(
+        regulatory_body__code=NURSING_COUNCIL_CODE,
+        form_code="NC9",
+        active=True,
+    ).first()
+    guide["Special application forms"] = [
+        (
+            "NC9",
+            nc9.form_name if nc9 else "Temporary Licence to Practise Criteria for Overseas Nurses Checklist (Revised 2023)",
+        ),
+    ]
     return guide
 
 
@@ -997,12 +1148,12 @@ def _record_licence_event(application, pathway):
         return None
     record_type = {
         "provisional": "provisional",
-        "full_registration": "full",
+        "full_registration": "full_approved",
         "renewal": "practicing_license",
         "temporary": "temporary",
-        "specialist_recognition": "full",
-        "double_major": "full",
-    }.get(pathway.creates_licence_type, "full")
+        "specialist_recognition": "full_approved",
+        "double_major": "full_approved",
+    }.get(pathway.creates_licence_type, "full_approved")
     batch = _get_live_workflow_batch()
     full_name = f"{getattr(professional, 'first_name', '')} {getattr(professional, 'last_name', '')}".strip()
     payload = application.payload or {}
@@ -1100,10 +1251,26 @@ def _licence_status(professional):
     return "Registered"
 
 
+def _public_condition_count(professional):
+    content_type = ContentType.objects.get_for_model(professional)
+    registration_number = str(getattr(professional, "registration_no", "") or "").strip()
+    query = Q(subject_content_type=content_type, subject_object_id=professional.pk)
+    if registration_number:
+        query |= Q(subject_identifier__iexact=registration_number)
+    return RegulatoryDecisionRecord.objects.filter(
+        query,
+        office_scope="nursing",
+        status="final",
+    ).exclude(conditions="").filter(
+        Q(expiry_date__isnull=True) | Q(expiry_date__gte=date.today())
+    ).count()
+
+
 def _safe_public_professional(professional, category=""):
     if not professional:
         return {}
     expiry = getattr(professional, "license_expiry_date", None)
+    conditions_count = _public_condition_count(professional)
     return {
         "full_name": f"{professional.first_name} {professional.last_name}".strip(),
         "registration_number": professional.registration_no or "",
@@ -1112,6 +1279,7 @@ def _safe_public_professional(professional, category=""):
         "licence_status": _licence_status(professional),
         "licence_expiry_date": expiry.isoformat() if expiry else "",
         "eligible_to_practice": _licence_status(professional) in {"Active", "Registered"},
+        "conditions_summary": "Active conditions recorded" if conditions_count else "No active public conditions recorded",
     }
 
 

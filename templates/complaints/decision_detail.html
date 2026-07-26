@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{{ decision.decision_number }}{% endblock %}
+{% block title_label %}{{ decision.decision_number }}{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-success">
+    <div class="card-header d-flex justify-content-between align-items-start">
+        <div>
+            <h3 class="card-title mb-1">{{ decision.title }}</h3>
+            <div class="text-muted small">{{ decision.get_office_scope_display }} &middot; {{ decision.get_decision_type_display }} &middot; {{ decision.get_status_display }}</div>
+        </div>
+        <a href="{% url 'regulatory_decision_list' %}" class="btn btn-outline-secondary">Back to Decisions</a>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3"><strong>Subject</strong><div>{{ decision.subject_name|default:"-" }}</div></div>
+            <div class="col-md-3"><strong>Identifier</strong><div>{{ decision.subject_identifier|default:"-" }}</div></div>
+            <div class="col-md-3"><strong>Decided By</strong><div>{% if decision.decided_by %}{{ decision.decided_by.get_full_name|default:decision.decided_by.username }}{% else %}-{% endif %}</div></div>
+            <div class="col-md-3"><strong>Decided At</strong><div>{{ decision.decided_at|date:"d M Y H:i"|default:"Not final" }}</div></div>
+        </div>
+        <h4 class="h6">Decision</h4>
+        <div class="border rounded p-3 mb-3">{{ decision.decision_text|linebreaksbr }}</div>
+        <h4 class="h6">Rationale</h4>
+        <div class="border rounded p-3 mb-3">{{ decision.rationale|linebreaksbr }}</div>
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="h6">Authority / SOP Reference</h4>
+                <div class="border rounded p-3 mb-3">{{ decision.authority_reference|default:"Not recorded"|linebreaksbr }}</div>
+            </div>
+            <div class="col-md-6">
+                <h4 class="h6">Evidence Summary</h4>
+                <div class="border rounded p-3 mb-3">{{ decision.evidence_summary|default:"Not recorded"|linebreaksbr }}</div>
+            </div>
+        </div>
+        <h4 class="h6">Conditions</h4>
+        <div class="border rounded p-3 mb-3">{{ decision.conditions|default:"No conditions recorded"|linebreaksbr }}</div>
+        <h4 class="h6">Appeal Rights</h4>
+        <div class="border rounded p-3">{{ decision.appeal_rights|default:"Not recorded"|linebreaksbr }}</div>
+    </div>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>The National Department Of Health Regulatory Bodies Nursing Council &amp; The Medical Board Online Workforce System - Portal Selection</title>
+    <title>PNG Regulatory Bodies:The Medical Board &amp; Nursing Council - Portal Selection</title>
     <script>
         window.ndohAssets = {
             bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
@@ -115,6 +115,7 @@
         }
 
         .nursing-portal .portal-icon { color: #2f5f53; }
+        .board-portal .portal-icon { color: #6b4e16; }
         .medical-portal .portal-icon { color: #18324a; }
         .student-portal .portal-icon { color: #ab7b2d; }
         .staff-portal .portal-icon { color: #4a5d6d; }
@@ -175,6 +176,17 @@
             font-weight: 500;
         }
 
+        .auth-links a.btn-portal,
+        .auth-links a.btn-portal:visited,
+        .auth-links a.btn-portal:hover,
+        .auth-links a.btn-portal:focus,
+        .auth-links a.btn-portal:active {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            font-weight: 800;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.24);
+        }
+
         .auth-links a:hover {
             text-decoration: underline;
         }
@@ -182,6 +194,102 @@
         .official-info-section {
             border-top: 1px solid #d9e1dd;
             padding: 0 30px 34px;
+        }
+
+        .public-services-section {
+            border-top: 1px solid #d9e1dd;
+            padding: 0 30px 34px;
+        }
+
+        .nursing-profile-section {
+            border-top: 1px solid #d9e1dd;
+            padding: 0 30px 34px;
+        }
+
+        .nursing-profile-card {
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #d9e1dd;
+            border-left: 6px solid #2f5f53;
+            border-radius: 20px;
+            box-shadow: 0 14px 30px rgba(14, 32, 49, 0.06);
+            display: grid;
+            gap: 18px;
+            grid-template-columns: minmax(0, 1fr) auto;
+            padding: 22px;
+        }
+
+        .nursing-profile-card h2 {
+            color: #18324a;
+            font-size: 1.32rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .nursing-profile-card p {
+            color: #425466;
+            line-height: 1.55;
+            margin-bottom: 0;
+        }
+
+        .nursing-profile-card .profile-pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .nursing-profile-card .profile-pill-list span {
+            background: #eef6f3;
+            border: 1px solid #cbd8d4;
+            border-radius: 999px;
+            color: #17443b;
+            font-size: .8rem;
+            font-weight: 800;
+            padding: 6px 10px;
+        }
+
+        .public-services-heading {
+            color: #18324a;
+            font-size: 1.28rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .public-services-copy {
+            color: #425466;
+            margin-bottom: 18px;
+        }
+
+        .public-service-card {
+            background: #ffffff;
+            border: 1px solid #d9e1dd;
+            border-radius: 20px;
+            height: 100%;
+            padding: 22px;
+            box-shadow: 0 14px 30px rgba(14, 32, 49, 0.06);
+        }
+
+        .public-service-card h3 {
+            color: #18324a;
+            font-size: 1.05rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .public-service-card p {
+            color: #425466;
+            line-height: 1.55;
+        }
+
+        .public-service-card .form-control {
+            border-radius: 12px;
+        }
+
+        .public-service-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .official-info-card {
@@ -284,9 +392,13 @@
             .standards-badge-list {
                 justify-content: flex-start;
             }
+
+            .nursing-profile-card {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
-    <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}">
+    <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}?v=20260708-dashboard-links-1">
 </head>
 <body>
     {% include 'includes/page_section_navigation.html' %}
@@ -300,7 +412,7 @@
                              onerror="this.style.display='none'"
                              style="max-height: 96px; width: auto; object-fit: contain; margin-bottom: 8px;">
                     </div>
-                    <h1>The National Department Of Health Regulatory Bodies Nursing Council &amp; The Medical Board Online Workforce System</h1>
+                    <h1>PNG Medical Board &amp; Nursing Council Regulatory Agencies.</h1>
                     <p>National Department of Health - Professional Registration & Licensing System</p>
                 </div>
 
@@ -308,7 +420,7 @@
                 <div class="portal-grid">
                     <div class="row">
                         <!-- Nursing Council Portal -->
-                        <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 mb-4">
                             <a href="{% url 'login' %}?portal=nursing" class="portal-option nursing-portal">
                                 <i class="fas fa-user-nurse portal-icon"></i>
                                 <div class="portal-title">Nursing Council Portal</div>
@@ -318,8 +430,21 @@
                             </a>
                         </div>
 
+                        {% if not user.is_authenticated or can_access_nursing_board_portal %}
+                        <!-- Nursing Council Board Portal -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <a href="{% if user.is_authenticated %}{% url 'board_nursing_dashboard' %}{% else %}{% url 'board_login' %}{% endif %}" class="portal-option board-portal">
+                                <i class="fas fa-landmark portal-icon"></i>
+                                <div class="portal-title">{% if user.is_authenticated %}Nursing Council Board Portal{% else %}Nursing Council Board Sign In{% endif %}</div>
+                                <div class="portal-description">
+                                    Secure board governance workspace for meetings, board papers, conflicts, decisions, minutes, and governance actions.
+                                </div>
+                            </a>
+                        </div>
+                        {% endif %}
+
                         <!-- Medical Board Portal -->
-                        <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 mb-4">
                             <a href="{% url 'login' %}?portal=medical" class="portal-option medical-portal">
                                 <i class="fas fa-user-md portal-icon"></i>
                                 <div class="portal-title">Medical Board Portal</div>
@@ -330,7 +455,7 @@
                         </div>
 
                         <!-- Graduand Portal -->
-                        <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 mb-4">
                             <a href="{% url 'login' %}?portal=graduand" class="portal-option student-portal">
                                 <i class="fas fa-graduation-cap portal-icon"></i>
                                 <div class="portal-title">Graduand Portal</div>
@@ -341,7 +466,7 @@
                         </div>
 
                         <!-- Medical Staff Portal -->
-                        <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 mb-4">
                             <a href="{% url 'login' %}?portal=staff" class="portal-option staff-portal">
                                 <i class="fas fa-users portal-icon"></i>
                                 <div class="portal-title">Medical Staff Portal</div>
@@ -349,6 +474,82 @@
                                     Community Health Workers, allied health professionals, and support staff registration.
                                 </div>
                             </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nursing-profile-section">
+                    <div class="nursing-profile-card">
+                        <div>
+                            <h2><i class="fas fa-landmark mr-2"></i>PNG Nursing Council Regulatory Profile</h2>
+                            <p>Public overview of the Nursing Council mandate, registration and licensing functions, standards, accreditation, complaints management, discipline, policy advice, partnerships, and public-protection responsibilities.</p>
+                            <div class="profile-pill-list" aria-label="Nursing Council profile areas">
+                                <span>Legislative Mandate</span>
+                                <span>Key Functions</span>
+                                <span>Public Protection</span>
+                                <span>Professional Standards</span>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{% url 'nursing_council_public_profile' %}" class="btn btn-success">
+                                <i class="fas fa-arrow-right mr-1"></i> View Nursing Council Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="public-services-section">
+                    <div class="mb-3">
+                        <h2 class="public-services-heading">Public Verification and Maps</h2>
+                        <p class="public-services-copy">These services are available from the home page without registrar access. Use them to verify public register details and view mapped institutions, schools, and facilities.</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4 mb-3 mb-lg-0">
+                            <div class="public-service-card">
+                                <h3><i class="fas fa-search mr-2"></i>Nursing Register Verification</h3>
+                                <p>Search public-safe Nursing Council register details by name, registration number, or practitioner number.</p>
+                                <form method="get" action="{% url 'public_nursing_register_search_root' %}">
+                                    <div class="input-group">
+                                        <input type="text" name="q" class="form-control" placeholder="Name or registration number">
+                                        <button class="btn btn-primary" type="submit">Search</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mb-3 mb-lg-0">
+                            <div class="public-service-card">
+                                <h3><i class="fas fa-user-doctor mr-2"></i>Medical Board Verification</h3>
+                                <p>Verify doctors, specialists, and CHWs using public-safe Medical Board register fields.</p>
+                                <form method="get" action="{% url 'public_medical_board_register_search_root' %}">
+                                    <div class="input-group">
+                                        <input type="text" name="q" class="form-control" placeholder="Name, registration, or specialty">
+                                        <button class="btn btn-danger" type="submit">Search</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="public-service-card">
+                                <h3><i class="fas fa-map-location-dot mr-2"></i>Institutions and Facilities Map</h3>
+                                <p>View public map references for Nursing Council and Medical Board schools, institutions, and facilities.</p>
+                                <div class="public-service-actions">
+                                    <a href="{% url 'workforce_map' %}" class="btn btn-outline-primary btn-sm">Open Public Map</a>
+                                    <a href="{% url 'workforce_map' %}?office=nursing" class="btn btn-outline-success btn-sm">Nursing Map</a>
+                                    <a href="{% url 'workforce_map' %}?office=medical" class="btn btn-outline-danger btn-sm">Medical Map</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-12 mt-3">
+                            <div class="public-service-card">
+                                <h3><i class="fas fa-circle-question mr-2"></i>Public Help and Forms</h3>
+                                <p>Open registration guidance, FAQs, moderated public questions, and application forms.</p>
+                                <div class="public-service-actions">
+                                    <a href="{% url 'public_faqs' %}" class="btn btn-outline-primary btn-sm">FAQs</a>
+                                    <a href="{% url 'forum_index' %}" class="btn btn-outline-success btn-sm">Forum</a>
+                                    <a href="{% url 'public_nursing_account_register' %}" class="btn btn-outline-success btn-sm">Nursing Signup</a>
+                                    <a href="{% url 'public_medical_board_account_register' %}" class="btn btn-outline-danger btn-sm">Medical Signup</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -410,8 +611,32 @@
                             <i class="fas fa-sign-in-alt mr-2"></i>Sign In
                         </a>
                         <span class="text-muted">|</span>
-                        <a href="{% url 'public_register' %}">
-                            <i class="fas fa-user-plus mr-1"></i>Register New Account
+                        <a href="{% url 'public_nursing_account_register' %}">
+                            <i class="fas fa-user-nurse mr-1"></i>Nursing Sign Up
+                        </a>
+                        <span class="text-muted">|</span>
+                        <a href="{% url 'public_medical_board_account_register' %}">
+                            <i class="fas fa-user-doctor mr-1"></i>Medical Sign Up
+                        </a>
+                        <span class="text-muted">|</span>
+                        <a href="{% url 'public_nursing_register_search_root' %}">
+                            <i class="fas fa-search mr-1"></i>Verify Nursing
+                        </a>
+                        <span class="text-muted">|</span>
+                        <a href="{% url 'public_medical_board_register_search_root' %}">
+                            <i class="fas fa-user-doctor mr-1"></i>Verify Medical Board
+                        </a>
+                        <span class="text-muted">|</span>
+                        <a href="{% url 'public_faqs' %}">
+                            <i class="fas fa-circle-question mr-1"></i>FAQs
+                        </a>
+                        <span class="text-muted">|</span>
+                        <a href="{% url 'forum_index' %}">
+                            <i class="fas fa-comments mr-1"></i>Forum
+                        </a>
+                        <span class="text-muted">|</span>
+                        <a href="{% url 'workforce_map' %}">
+                            <i class="fas fa-map-marker-alt mr-1"></i>Map
                         </a>
                     </div>
 
@@ -431,6 +656,6 @@
     <script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
     <script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
     <script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
-    <script src="{% static 'js/page-section-navigation.js' %}?v=20260515-section-nav-1"></script>
+    <script src="{% static 'js/page-section-navigation.js' %}?v=20260708-dashboard-links-1"></script>
 </body>
 </html>

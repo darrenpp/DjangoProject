@@ -3,6 +3,7 @@ from apps.dashboard.access import (
     is_data_quality_reviewer,
     is_finance_reviewer,
     is_medical_board_staff,
+    is_nursing_council_board_member,
     is_nursing_council_staff,
     is_system_admin,
 )
@@ -90,7 +91,28 @@ def _policy_allows(user, document, permission_field):
     return False
 
 
+def _is_board_linked_document(document):
+    return any(
+        getattr(document, relation).exists()
+        for relation in [
+            "board_agenda_items",
+            "board_papers",
+            "board_committee_terms",
+            "board_minutes_records",
+            "board_action_evidence",
+            "governance_library_items",
+        ]
+    )
+
+
 def can_view_document(user, document):
+    if (
+        is_nursing_council_board_member(user)
+        and document.office_scope in {"general", "nursing"}
+        and _is_board_linked_document(document)
+        and _policy_allows(user, document, "can_view")
+    ):
+        return True
     return (
         can_access_document_repository(user)
         and document.office_scope in visible_document_scopes_for_user(user)

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Professional Profile Update Queue{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+        <div>
+            <div class="text-uppercase text-muted small font-weight-bold">{{ office_scope|title }} regulatory workspace</div>
+            <h1 class="h3 mb-1">Professional profile update queue</h1>
+            <p class="text-muted mb-0">{{ pending_profile_update_count }} request{{ pending_profile_update_count|pluralize }} awaiting review. Approve only after evidence and regulatory checks are complete.</p>
+        </div>
+        <a href="{% if office_scope == 'medical' %}{% url 'medical_board_portal' %}{% else %}{% url 'nursing_council_portal' %}{% endif %}" class="btn btn-outline-secondary btn-sm mt-2">Back to workspace</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body border-bottom">
+            <form method="get" class="form-inline">
+                <input type="hidden" name="office" value="{{ office_scope }}">
+                <label class="mr-2" for="status">Status</label>
+                <select id="status" name="status" class="form-control form-control-sm mr-2">
+                    {% for value, label in status_choices %}<option value="{{ value }}"{% if selected_status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+                <button class="btn btn-sm btn-outline-primary">Filter</button>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="thead-light"><tr><th>Professional</th><th>Request</th><th>Submitted</th><th>Proposed change</th><th>Evidence</th><th>Decision</th></tr></thead>
+                <tbody>
+                    {% for item in profile_update_requests %}
+                    <tr>
+                        <td><strong>{{ item.professional|default:"Linked record unavailable" }}</strong><div class="small text-muted">{{ item.get_office_scope_display }}</div></td>
+                        <td><strong>{{ item.get_update_type_display }}</strong><div class="small text-muted">{{ item.get_status_display }}</div>{% if item.reason %}<div class="small mt-1">{{ item.reason }}</div>{% endif %}</td>
+                        <td>{{ item.submitted_at|date:"d M Y H:i" }}<div class="small text-muted">{{ item.requested_by|default:"-" }}</div></td>
+                        <td class="small"><ul class="mb-0 pl-3">{% for key, value in item.proposed_changes.items %}<li><strong>{{ key|cut:"_"|title }}:</strong> {{ value }}</li>{% empty %}<li>No structured values</li>{% endfor %}</ul></td>
+                        <td>{% if item.evidence %}<a href="{{ item.evidence.url }}" target="_blank" rel="noopener">Open evidence</a>{% else %}<span class="text-muted">None</span>{% endif %}</td>
+                        <td style="min-width: 260px;">
+                            {% if item.status == 'submitted' or item.status == 'under_review' %}
+                            <form method="post" action="{% url 'review_professional_profile_update_request' item.pk %}">
+                                {% csrf_token %}
+                                <textarea class="form-control form-control-sm mb-2" name="reviewer_note" rows="2" placeholder="Verification / decision note"></textarea>
+                                <button class="btn btn-success btn-sm" name="action" value="approve" onclick="return confirm('Approve and promote the verified update to the official record?');">Approve</button>
+                                <button class="btn btn-outline-danger btn-sm" name="action" value="reject">Reject</button>
+                            </form>
+                            {% else %}
+                            <strong>{{ item.get_status_display }}</strong>{% if item.reviewer_note %}<div class="small mt-1">{{ item.reviewer_note }}</div>{% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No profile-update requests in this queue.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

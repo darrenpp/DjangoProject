@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Mobile Intake Review Queue{% endblock %}
+{% block page_title %}Mobile Intake Review Queue{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white">
+        <h3 class="card-title mb-0"><i class="fas fa-mobile-screen-button mr-2"></i>Mobile Intake Review Queue</h3>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">Office Scope</label>
+                <select name="office_scope" class="form-select">
+                    <option value="">All</option>
+                    <option value="nursing" {% if filters.office_scope == "nursing" %}selected{% endif %}>Nursing</option>
+                    <option value="medical" {% if filters.office_scope == "medical" %}selected{% endif %}>Medical</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Form Code</label>
+                <select name="form_code" class="form-select">
+                    <option value="">All</option>
+                    {% for form_code in form_codes %}
+                        <option value="{{ form_code }}" {% if filters.form_code == form_code %}selected{% endif %}>{{ form_code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All</option>
+                    {% for value,label in status_choices %}
+                        <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Duplicate Risk</label>
+                <select name="duplicate_risk" class="form-select">
+                    <option value="">All</option>
+                    <option value="LOW" {% if filters.duplicate_risk == "LOW" %}selected{% endif %}>Low</option>
+                    <option value="MEDIUM" {% if filters.duplicate_risk == "MEDIUM" %}selected{% endif %}>Medium</option>
+                    <option value="HIGH" {% if filters.duplicate_risk == "HIGH" %}selected{% endif %}>High</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Province</label>
+                <input type="text" name="province" value="{{ filters.province }}" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Facility</label>
+                <input type="text" name="facility" value="{{ filters.facility }}" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Submitted By</label>
+                <input type="text" name="submitted_by" value="{{ filters.submitted_by }}" class="form-control">
+            </div>
+            <div class="col-md-2 form-check mt-4">
+                <input class="form-check-input" type="checkbox" name="missing_fields" value="1" id="missing_fields" {% if request.GET.missing_fields %}checked{% endif %}>
+                <label class="form-check-label" for="missing_fields">Missing fields only</label>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Rows</label>
+                <select name="per_page" class="form-select">
+                    <option value="25">25</option>
+                    <option value="50" {% if request.GET.per_page == "50" %}selected{% endif %}>50</option>
+                    <option value="100" {% if request.GET.per_page == "100" %}selected{% endif %}>100</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-primary" type="submit"><i class="fas fa-filter mr-1"></i>Filter</button>
+                <a class="btn btn-outline-secondary" href="{% url 'mobile_intake_queue' %}">Reset</a>
+                <a class="btn btn-outline-primary" href="{% url 'mobile_production_readiness' %}">Mobile Readiness</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="mobile-intake-table" class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Submission ID</th>
+                        <th>Received</th>
+                        <th>Submitted By</th>
+                        <th>Device</th>
+                        <th>Office</th>
+                        <th>Form</th>
+                        <th>Applicant</th>
+                        <th>Registration</th>
+                        <th>Practitioner</th>
+                        <th>Licence</th>
+                        <th>Province</th>
+                        <th>District</th>
+                        <th>Facility</th>
+                        <th>Employment</th>
+                        <th>Attachments</th>
+                        <th>Duplicate Risk</th>
+                        <th>Missing Fields</th>
+                        <th>Status</th>
+                        <th>Reviewer</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in page_obj.object_list %}
+                    <tr>
+                        <td class="small">{{ submission.submission_uuid }}</td>
+                        <td>{{ submission.received_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ submission.submitted_by.username|default:"-" }}</td>
+                        <td>{{ submission.device_label|default:"-" }}</td>
+                        <td>{{ submission.office_scope|title }}</td>
+                        <td><strong>{{ submission.form_code }}</strong></td>
+                        <td>{{ submission.applicant_name|default:"-" }}</td>
+                        <td>{{ submission.registration_number|default:"-" }}</td>
+                        <td>{{ submission.practitioner_number|default:"-" }}</td>
+                        <td>{{ submission.licence_number|default:"-" }}</td>
+                        <td>{{ submission.province|default:"-" }}</td>
+                        <td>{{ submission.district|default:"-" }}</td>
+                        <td>{{ submission.facility|default:"-" }}</td>
+                        <td>{{ submission.employment_status|default:"-" }}</td>
+                        <td><span class="badge bg-info">{{ submission.attachments.count }}</span></td>
+                        <td><span class="badge bg-{% if submission.duplicate_summary.duplicate_risk == 'HIGH' %}danger{% elif submission.duplicate_summary.duplicate_risk == 'MEDIUM' %}warning{% else %}success{% endif %}">{{ submission.duplicate_summary.duplicate_risk|default:"LOW" }}</span></td>
+                        <td><span class="badge bg-{% if submission.validation_errors %}warning{% else %}success{% endif %}">{{ submission.validation_errors|length }}</span></td>
+                        <td><span class="badge bg-secondary">{{ submission.status }}</span></td>
+                        <td>{{ submission.reviewed_by.username|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'mobile_intake_detail' submission.submission_uuid %}" class="btn btn-sm btn-primary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <div>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} | {{ page_obj.paginator.count }} submissions</div>
+        <div class="btn-group">
+            {% if page_obj.has_previous %}
+                <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function initializeMobileIntakeTable(attempt) {
+        attempt = attempt || 1;
+        if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) {
+            if (attempt < 40) {
+                window.setTimeout(function () {
+                    initializeMobileIntakeTable(attempt + 1);
+                }, 250);
+            }
+            return;
+        }
+
+        const table = document.getElementById('mobile-intake-table');
+        if (!table) {
+            return;
+        }
+        const $table = jQuery(table);
+        if ($table.attr('data-ndoh-datatables-ready') === '1') {
+            return;
+        }
+        if (jQuery.fn.dataTable && jQuery.fn.dataTable.isDataTable(table)) {
+            $table.attr('data-ndoh-datatables-ready', '1');
+            return;
+        }
+
+        const bodyRows = table.tBodies.length ? table.tBodies[0].rows.length : 0;
+        $table.DataTable({
+            paging: false,
+            info: false,
+            order: bodyRows ? [[1, 'desc']] : [],
+            autoWidth: false,
+            scrollX: true,
+            language: {
+                emptyTable: 'No mobile intake submissions found.'
+            }
+        });
+        $table.attr('data-ndoh-datatables-ready', '1');
+    }
+
+    initializeMobileIntakeTable();
+});
+</script>
+{% endblock %}

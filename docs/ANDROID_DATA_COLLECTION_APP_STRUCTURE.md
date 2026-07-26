@@ -10,14 +10,46 @@ The Android app must not approve applications, issue licences, verify payments, 
 
 The app must sync into the existing platform concepts:
 
-- Authentication: existing JWT login through `/accounts/token/` and `/accounts/token/refresh/`.
+- Authentication: mobile JWT login through `/api/mobile/v1/auth/login/`.
 - Staff scoping: user office determines available forms.
-- Registration workflow: synced submissions become `Application` rows with `status="pending"`.
-- Professional records: synced person data creates or updates the correct workforce model only after duplicate checks.
-- Supporting files: photos, ID images, certificates, competency evidence, and signatures map to `ProfessionalPhoto`, `ProfessionalDocument`, `ApplicationFormResponse`, and `Application.payload`.
+- Registration workflow: synced submissions enter Mobile Intake staging first and become official application, practitioner, employment, receipt, or repository records only after review and promotion.
+- Professional records: synced person data creates or updates the correct workforce model only after validation, duplicate checks, and registrar decision.
+- Supporting files: photos, ID images, certificates, competency evidence, receipts, and signatures upload through `/api/mobile/v1/submissions/{submission_uuid}/attachments/` and link to the repository only after acceptance/promotion.
 - Review remains web-based: registrars and reviewers continue using the Django platform for approval, rejection, payment verification, and licence actions.
 
-Current API note: the platform has JWT auth, read APIs under `/workforce/api/`, and purpose-built mobile sync endpoints under `/workforce/api/mobile/` and `/api/mobile/`. Use the current mobile alignment scope in `docs/MOBILE_APP_ALIGNMENT_SCOPE_OF_WORK_20260513.md` when connecting the Android app.
+Current API note: the authoritative integration contract is under `/api/mobile/v1/`. Legacy mobile endpoints may remain as compatibility shims only.
+
+For the detailed Nursing Council mobile form list, common payload field names, form-specific sections, attachment rules, and Android acceptance checklist, see `docs/ANDROID_NURSING_COUNCIL_FORMS_IMPLEMENTATION_BRIEF.md`.
+
+## Local Integrated Testing
+
+The desktop/backend and Android app are ready for controlled local integrated testing when the backend is reachable from the emulator or phone and these endpoints respond:
+
+- `/api/mobile/v1/health/`
+- `/api/mobile/v1/auth/login/`
+- `/api/mobile/v1/bootstrap/`
+- `/api/mobile/v1/forms/`
+- `/api/mobile/v1/lookups/`
+- `/api/mobile/v1/submissions/status/`
+- `/api/mobile/v1/accounts/register/`
+- `/api/mobile/v1/accounts/status/`
+
+Use:
+
+```text
+Desktop browser:   http://127.0.0.1:8000/
+Android emulator:  http://10.0.2.2:8000/
+Physical phone:    http://YOUR-PC-IP:8000/
+Django command:    python manage.py runserver 0.0.0.0:8000
+```
+
+Run this helper command from the backend project to print local URLs, firewall guidance, and API smoke-check status:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py local_mobile_test_setup --check-api
+```
+
+See `docs/LOCAL_MOBILE_INTEGRATED_TESTING.md` for the full local setup and test sequence. Local hosting is not production hosting.
 
 ## User Scope
 

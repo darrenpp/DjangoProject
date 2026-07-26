@@ -27,6 +27,9 @@ Store and classify:
 - Import source workbooks.
 - Management reports.
 - Registrar decisions and signed outputs.
+- ICMS complaint evidence, investigation notes, and correspondence.
+- Disciplinary case evidence, hearing papers, and decision notices.
+- NHWA sign-off exports and approved reporting packs.
 
 ## Standard Upload Procedure
 
@@ -48,7 +51,8 @@ Store and classify:
 7. Link to application or practitioner record where applicable.
 8. Mark official record if it is part of the legal/regulatory file.
 9. Set retention years where policy is known.
-10. Confirm audit event is recorded.
+10. Approve or reject the current version where the document is controlled evidence, policy, SOP, or signed output.
+11. Confirm audit event is recorded.
 
 ## Versioning Rule
 
@@ -60,6 +64,28 @@ If a corrected file arrives:
 - Keep the old version.
 - Add notes explaining why the version changed.
 - Ensure only one version is marked current.
+
+## Approval And Rejection Rule
+
+Controlled documents should be signed off inside the repository after upload and versioning.
+
+Use approval when:
+
+- A policy, SOP, decision notice, report, or evidence pack is accepted as the current controlled version.
+- A registrar or authorised reviewer has checked the document and the metadata is sufficient.
+
+Use rejection when:
+
+- The wrong office scope, wrong file, missing metadata, unreadable scan, or incorrect version has been uploaded.
+- The document needs correction before it can support a regulatory decision.
+
+Every approval or rejection must record:
+
+- Approver.
+- Date and time.
+- Current version number where available.
+- Note explaining authority, meeting, SOP, or rejection reason.
+- Document audit event.
 
 ## OCR and Search
 
@@ -103,6 +129,8 @@ Document audit events should show:
 
 - Created.
 - Uploaded.
+- Approved.
+- Rejected.
 - Viewed.
 - Downloaded.
 - Metadata updated.

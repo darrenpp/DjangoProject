@@ -18,7 +18,7 @@ from .access import (
     visible_document_scopes_for_user,
 )
 from .forms import DocumentUpdateForm, DocumentUploadForm, DocumentVersionUploadForm
-from .models import Document, DocumentAuditEvent, DocumentVersion
+from .models import Document, DocumentApproval, DocumentAuditEvent, DocumentVersion
 from .services import document_matches_query, duplicate_checksums
 
 
@@ -163,6 +163,7 @@ def repository_detail(request, pk):
     return render(request, "documents/detail.html", {
         "document": document,
         "versions": document.versions.select_related("uploaded_by").all(),
+        "approvals": document.approvals.select_related("approved_by", "version")[:10],
         "audit_events": document.audit_events.select_related("user", "version")[:20],
         "update_form": DocumentUpdateForm(instance=document, visible_scopes=visible_scopes),
         "version_form": DocumentVersionUploadForm(),
@@ -195,6 +196,45 @@ def repository_update_metadata(request, pk):
         messages.success(request, "Repository document metadata updated.")
     else:
         messages.error(request, "Metadata update failed. Please check the form fields.")
+    return redirect("repository_detail", pk=document.pk)
+
+
+@login_required
+@require_POST
+def repository_approval_action(request, pk, action):
+    document = get_object_or_404(Document, pk=pk)
+    if not can_edit_document(request.user, document):
+        _audit(document, request.user, "access_denied", details={"action": f"approval_{action}"})
+        return _forbidden(request, "You do not have permission to approve or reject this repository document.")
+    if action not in {"approve", "reject"}:
+        raise Http404("Unknown approval action.")
+
+    version = document.current_version
+    status = "approved" if action == "approve" else "rejected"
+    note = request.POST.get("approval_note", "").strip()
+    approval = DocumentApproval.objects.create(
+        document=document,
+        version=version,
+        status=status,
+        note=note,
+        approved_by=request.user,
+    )
+    old_status = document.status
+    document.status = "active" if status == "approved" else "draft"
+    document.save(update_fields=["status", "updated_at"])
+    _audit(
+        document,
+        request.user,
+        status,
+        version=version,
+        details={
+            "approval_id": approval.pk,
+            "old_status": old_status,
+            "new_status": document.status,
+            "note": note,
+        },
+    )
+    messages.success(request, f"Repository document {approval.get_status_display().lower()} and audit trail updated.")
     return redirect("repository_detail", pk=document.pk)
 
 

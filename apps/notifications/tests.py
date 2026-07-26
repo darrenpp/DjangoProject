@@ -1,15 +1,25 @@
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.test import Client, TestCase
+from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from apps.common.models import DuplicateReviewQueue
 from apps.dashboard.models import Receipt
 from apps.documents.models import Document, DocumentFolder
-from apps.notifications.models import EnquiryThread
+from apps.notifications.models import (
+    EnquiryMailboxState,
+    EnquiryMessage,
+    EnquiryMessageAttachment,
+    EnquiryThread,
+    Notification,
+)
+from apps.notifications.views import send_application_status_email
 from apps.workforce.models import (
     Application,
     CommunityHealthWorker,
@@ -299,12 +309,15 @@ class StaffCommunicationsTests(TestCase):
         self.assertEqual(response.context["staff_ai_context"]["missing_review_count"], 1)
         self.assertContains(response, "Missing Data Reviews")
 
-    def test_profile_hides_nursing_regulatory_alignment_for_admin(self):
+    def test_profile_shows_nursing_regulatory_alignment_for_admin(self):
+        self.admin_user.is_superuser = True
+        self.admin_user.is_staff = True
+        self.admin_user.save(update_fields=["is_superuser", "is_staff"])
         self.client.force_login(self.admin_user)
         response = self.client.get(reverse("user_profile"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Statutory Context and Mandate of the PNG Nursing Council")
+        self.assertContains(response, "Statutory Context and Mandate of the PNG Nursing Council")
         self.assertContains(response, "AI Registrar Assistant")
 
     def test_profile_hides_staff_ai_controls_for_applicant(self):
@@ -349,6 +362,397 @@ class StaffCommunicationsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "AI Helpdesk")
 
+    def test_applicant_can_view_unassigned_enquiry_thread(self):
+        thread = EnquiryThread.objects.create(
+            subject="Applicant Unassigned Enquiry",
+            office="nursing",
+            created_by=self.applicant,
+        )
+        self.client.force_login(self.applicant)
+
+        response = self.client.get(reverse("enquiry_thread", args=[thread.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Applicant Unassigned Enquiry")
+        self.assertContains(response, "Unassigned")
+
+    def test_mailbox_folders_are_available_to_applicant(self):
+        self.client.force_login(self.applicant)
+
+        response = self.client.get(reverse("enquiry_inbox"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Inbox")
+        self.assertContains(response, "Sent Items")
+        self.assertContains(response, "Archived")
+        self.assertContains(response, "Deleted Items")
+        self.assertContains(response, "Conversation History")
+        self.assertContains(response, "Notes")
+
+    def test_applicant_navbar_shows_notifications_dropdown(self):
+        Notification.objects.create(
+            user=self.applicant,
+            subject="Profile information required",
+            message="Please complete missing registration details.",
+        )
+        self.client.force_login(self.applicant)
+
+        response = self.client.get(reverse("enquiry_inbox"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Notifications")
+        self.assertContains(response, "Profile information required")
+        self.assertContains(response, "View Notification History")
+        self.assertContains(response, "data-notification-badge")
+        self.assertContains(response, "Open Messages")
+
+    def test_notification_dropdown_mark_read_endpoint_clears_unread_count(self):
+        notification = Notification.objects.create(
+            user=self.applicant,
+            subject="Missing profile fields",
+            message="Please update your contact details.",
+        )
+        self.client.force_login(self.applicant)
+
+        response = self.client.post(
+            reverse("notification_mark_read"),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"ok": True, "updated": 1, "count": 0})
+        notification.refresh_from_db()
+        self.assertIsNotNone(notification.read_at)
+
+        response = self.client.get(reverse("enquiry_inbox"))
+        self.assertNotContains(response, 'class="badge badge-warning navbar-badge" data-notification-badge')
+        self.assertContains(response, "Missing profile fields")
+
+    def test_notification_history_marks_notifications_read_for_staff_users(self):
+        for user in [self.registrar, self.admin_user]:
+            with self.subTest(username=user.username):
+                notification = Notification.objects.create(
+                    user=user,
+                    subject=f"Staff notice for {user.username}",
+                    message="Review the current queue.",
+                )
+                self.client.force_login(user)
+
+                response = self.client.get(reverse("notification_history"))
+
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "Notification History")
+                self.assertContains(response, notification.subject)
+                self.assertContains(response, "Current Staff Notices")
+                notification.refresh_from_db()
+                self.assertIsNotNone(notification.read_at)
+
+    def test_registrar_can_search_individual_recipients_on_message_form(self):
+        self.client.force_login(self.registrar)
+
+        response = self.client.get(f"{reverse('enquiry_create')}?recipient_search=Nursing")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Create a Message or Enquiry")
+        self.assertContains(response, "Nursing Applicant")
+        self.assertContains(response, "Platform mailbox and direct email")
+
+    def test_registrar_can_send_platform_message_to_linked_individual_record(self):
+        recipient = get_user_model().objects.create_user(
+            username="linked.nurse",
+            password="testpass123",
+            role="nurse",
+            email=self.nursing_professional.email,
+        )
+        content_type = ContentType.objects.get_for_model(self.nursing_professional)
+        recipient_reference = f"record:{content_type.pk}:{self.nursing_professional.pk}"
+        self.client.force_login(self.registrar)
+
+        response = self.client.post(reverse("enquiry_create"), {
+            "recipient": recipient_reference,
+            "delivery_channel": "mailbox",
+            "subject": "Missing profile information",
+            "body": "Please provide your missing profile fields.",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        thread = EnquiryThread.objects.get(subject="Missing profile information")
+        self.assertEqual(thread.recipient_user, recipient)
+        self.assertEqual(thread.delivery_channel, "mailbox")
+        self.assertEqual(thread.recipient_name, "Nursing Applicant")
+        self.assertTrue(EnquiryMessage.objects.filter(thread=thread, sender=self.registrar).exists())
+        self.assertTrue(Notification.objects.filter(user=recipient, subject="Missing profile information").exists())
+
+        self.client.force_login(recipient)
+        inbox_response = self.client.get(reverse("enquiry_inbox"))
+        self.assertContains(inbox_response, 'class="badge badge-warning navbar-badge" data-notification-badge')
+        self.assertContains(inbox_response, "Mailbox messages waiting")
+        self.assertContains(inbox_response, "Unread")
+
+        thread_response = self.client.get(reverse("enquiry_thread", args=[thread.pk]))
+        self.assertEqual(thread_response.status_code, 200)
+        self.assertContains(thread_response, "Please provide your missing profile fields.")
+        recipient_state = EnquiryMailboxState.objects.get(user=recipient, thread=thread)
+        self.assertIsNotNone(recipient_state.read_at)
+
+        inbox_response = self.client.get(reverse("enquiry_inbox"))
+        self.assertNotContains(inbox_response, 'class="badge badge-warning navbar-badge" data-notification-badge')
+        self.assertNotContains(inbox_response, "Mailbox messages waiting")
+        self.assertContains(inbox_response, "Read")
+
+        self.client.force_login(self.registrar)
+        sent_response = self.client.get(f"{reverse('enquiry_inbox')}?folder=sent")
+        self.assertContains(sent_response, "Missing profile information")
+        self.assertContains(sent_response, "Opened")
+
+        self.client.force_login(recipient)
+        reply_response = self.client.post(reverse("enquiry_thread", args=[thread.pk]), {
+            "body": "I have updated the missing fields.",
+        })
+        self.assertEqual(reply_response.status_code, 302)
+
+        self.client.force_login(self.registrar)
+        registrar_inbox_response = self.client.get(reverse("enquiry_inbox"))
+        self.assertContains(registrar_inbox_response, 'class="badge badge-warning navbar-badge" data-notification-badge')
+        self.assertContains(registrar_inbox_response, "Unread")
+
+        registrar_thread_response = self.client.get(reverse("enquiry_thread", args=[thread.pk]))
+        self.assertEqual(registrar_thread_response.status_code, 200)
+        registrar_state = EnquiryMailboxState.objects.get(user=self.registrar, thread=thread)
+        self.assertIsNotNone(registrar_state.read_at)
+
+        self.client.force_login(recipient)
+        sent_response = self.client.get(f"{reverse('enquiry_inbox')}?folder=sent")
+        self.assertContains(sent_response, "Missing profile information")
+        self.assertContains(sent_response, "Opened")
+
+    def test_registrar_can_attach_receipt_or_certificate_to_mailbox_message(self):
+        recipient = get_user_model().objects.create_user(
+            username="linked.attachment.nurse",
+            password="testpass123",
+            role="nurse",
+            email=self.nursing_professional.email,
+        )
+        content_type = ContentType.objects.get_for_model(self.nursing_professional)
+        recipient_reference = f"record:{content_type.pk}:{self.nursing_professional.pk}"
+        upload = SimpleUploadedFile(
+            "receipt_certificate.pdf",
+            b"%PDF-1.4 test receipt and certificate",
+            content_type="application/pdf",
+        )
+
+        with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            self.client.force_login(self.registrar)
+            response = self.client.post(reverse("enquiry_create"), {
+                "recipient": recipient_reference,
+                "delivery_channel": "mailbox",
+                "subject": "Issued receipt and certificate",
+                "body": "Please find your receipt and certificate attached.",
+                "attachments": upload,
+            })
+
+            self.assertEqual(response.status_code, 302)
+            thread = EnquiryThread.objects.get(subject="Issued receipt and certificate")
+            message = EnquiryMessage.objects.get(thread=thread, sender=self.registrar)
+            attachment = EnquiryMessageAttachment.objects.get(message=message)
+            self.assertEqual(attachment.original_filename, "receipt_certificate.pdf")
+            self.assertEqual(attachment.content_type, "application/pdf")
+
+            self.client.force_login(recipient)
+            thread_response = self.client.get(reverse("enquiry_thread", args=[thread.pk]))
+
+            self.assertContains(thread_response, "receipt_certificate.pdf")
+            self.assertContains(thread_response, "Please find your receipt and certificate attached.")
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_direct_email_message_includes_uploaded_attachment(self):
+        content_type = ContentType.objects.get_for_model(self.nursing_professional)
+        recipient_reference = f"record:{content_type.pk}:{self.nursing_professional.pk}"
+        upload = SimpleUploadedFile(
+            "full_license.pdf",
+            b"%PDF-1.4 issued full licence",
+            content_type="application/pdf",
+        )
+
+        with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            self.client.force_login(self.registrar)
+            response = self.client.post(reverse("enquiry_create"), {
+                "recipient": recipient_reference,
+                "delivery_channel": "email",
+                "subject": "Issued full licence",
+                "body": "Your full licence is attached.",
+                "attachments": upload,
+            })
+
+            self.assertEqual(response.status_code, 302)
+            thread = EnquiryThread.objects.get(subject="Issued full licence")
+            self.assertTrue(EnquiryMessageAttachment.objects.filter(message__thread=thread).exists())
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertEqual(mail.outbox[0].attachments[0][0], "full_license.pdf")
+
+    def test_office_enquiry_read_by_registrar_clears_bell_and_marks_sender_opened(self):
+        self.client.force_login(self.applicant)
+
+        response = self.client.post(reverse("enquiry_create"), {
+            "recipient": "office:nursing",
+            "office": "nursing",
+            "subject": "Registrar read receipt request",
+            "body": "Please review this nursing enquiry.",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        thread = EnquiryThread.objects.get(subject="Registrar read receipt request")
+        self.assertTrue(Notification.objects.filter(
+            user=self.registrar,
+            subject="New mailbox message: Registrar read receipt request",
+        ).exists())
+
+        self.client.force_login(self.registrar)
+        inbox_response = self.client.get(reverse("enquiry_inbox"))
+        self.assertContains(inbox_response, 'class="badge badge-warning navbar-badge" data-notification-badge')
+        self.assertContains(inbox_response, "Inbox messages waiting")
+        self.assertContains(inbox_response, "Unread")
+
+        thread_response = self.client.get(reverse("enquiry_thread", args=[thread.pk]))
+        self.assertEqual(thread_response.status_code, 200)
+        registrar_state = EnquiryMailboxState.objects.get(user=self.registrar, thread=thread)
+        self.assertIsNotNone(registrar_state.read_at)
+
+        inbox_response = self.client.get(reverse("enquiry_inbox"))
+        self.assertNotContains(inbox_response, 'class="badge badge-warning navbar-badge" data-notification-badge')
+        self.assertNotContains(inbox_response, "Inbox messages waiting")
+
+        self.client.force_login(self.applicant)
+        sender_inbox_response = self.client.get(reverse("enquiry_inbox"))
+        self.assertContains(sender_inbox_response, "Registrar read receipt request")
+        self.assertContains(sender_inbox_response, "Opened")
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_registrar_can_send_direct_email_to_individual_record(self):
+        content_type = ContentType.objects.get_for_model(self.nursing_professional)
+        recipient_reference = f"record:{content_type.pk}:{self.nursing_professional.pk}"
+        self.client.force_login(self.registrar)
+
+        response = self.client.post(reverse("enquiry_create"), {
+            "recipient": recipient_reference,
+            "delivery_channel": "email",
+            "subject": "Direct email follow up",
+            "body": "Please email the missing documents.",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        thread = EnquiryThread.objects.get(subject="Direct email follow up")
+        self.assertIsNone(thread.recipient_user)
+        self.assertEqual(thread.recipient_email, self.nursing_professional.email)
+        self.assertEqual(thread.delivery_channel, "email")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.nursing_professional.email])
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_application_status_email_skips_unlinked_application_without_recipient(self):
+        content_type = ContentType.objects.get_for_model(NursingProfessional)
+        application = Application.objects.create(
+            content_type=content_type,
+            object_id=999999,
+            form_code="NC1",
+            status="rejected",
+        )
+
+        sent = send_application_status_email(application)
+
+        self.assertFalse(sent)
+        self.assertEqual(len(mail.outbox), 0)
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_application_status_email_uses_payload_email_when_record_missing(self):
+        application = Application.objects.create(
+            form_code="NC1",
+            status="rejected",
+            payload={"email_address": "applicant@example.test"},
+        )
+
+        sent = send_application_status_email(application)
+
+        self.assertTrue(sent)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["applicant@example.test"])
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_registrar_can_reject_application_without_linked_professional(self):
+        content_type = ContentType.objects.get_for_model(NursingProfessional)
+        application = Application.objects.create(
+            content_type=content_type,
+            object_id=999999,
+            form_code="NC1",
+            status="pending",
+        )
+        self.client.force_login(self.registrar)
+
+        response = self.client.post(reverse("reject_application", args=[application.pk]), {"reason": ""})
+
+        self.assertRedirects(response, reverse("application_detail", args=[application.pk]), fetch_redirect_response=False)
+        application.refresh_from_db()
+        self.assertEqual(application.status, "rejected")
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_applicant_can_archive_restore_and_delete_mailbox_thread(self):
+        thread = EnquiryThread.objects.create(
+            subject="Mailbox Folder Test",
+            office="nursing",
+            created_by=self.applicant,
+        )
+        self.client.force_login(self.applicant)
+
+        archive_response = self.client.post(
+            reverse("enquiry_mailbox_action", args=[thread.pk]),
+            {"action": "archive", "next": reverse("enquiry_inbox")},
+        )
+
+        self.assertEqual(archive_response.status_code, 302)
+        state = EnquiryMailboxState.objects.get(user=self.applicant, thread=thread)
+        self.assertEqual(state.folder, "archived")
+        inbox_response = self.client.get(reverse("enquiry_inbox"))
+        self.assertNotContains(inbox_response, "Mailbox Folder Test")
+        archived_response = self.client.get(f"{reverse('enquiry_inbox')}?folder=archived")
+        self.assertContains(archived_response, "Mailbox Folder Test")
+
+        restore_response = self.client.post(
+            reverse("enquiry_mailbox_action", args=[thread.pk]),
+            {"action": "restore", "next": reverse("enquiry_inbox")},
+        )
+        self.assertEqual(restore_response.status_code, 302)
+        state.refresh_from_db()
+        self.assertEqual(state.folder, "active")
+
+        delete_response = self.client.post(
+            reverse("enquiry_mailbox_action", args=[thread.pk]),
+            {"action": "delete", "next": reverse("enquiry_inbox")},
+        )
+        self.assertEqual(delete_response.status_code, 302)
+        state.refresh_from_db()
+        self.assertEqual(state.folder, "deleted")
+        deleted_response = self.client.get(f"{reverse('enquiry_inbox')}?folder=deleted")
+        self.assertContains(deleted_response, "Mailbox Folder Test")
+
+    def test_private_notes_show_thread_in_notes_folder(self):
+        thread = EnquiryThread.objects.create(
+            subject="Mailbox Notes Test",
+            office="nursing",
+            created_by=self.applicant,
+        )
+        self.client.force_login(self.applicant)
+
+        response = self.client.post(
+            reverse("enquiry_thread", args=[thread.pk]),
+            {"thread_action": "note", "notes": "Follow up with registrar next week."},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        state = EnquiryMailboxState.objects.get(user=self.applicant, thread=thread)
+        self.assertEqual(state.notes, "Follow up with registrar next week.")
+        notes_response = self.client.get(f"{reverse('enquiry_inbox')}?folder=notes")
+        self.assertContains(notes_response, "Mailbox Notes Test")
+
     def test_import_page_redirects_non_staff_user(self):
         self.client.force_login(self.applicant)
         response = self.client.get(reverse("import_data"))
@@ -368,12 +772,27 @@ class StaffCommunicationsTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
 
+    def test_nursing_regulatory_alignment_page_is_available_to_system_admin(self):
+        self.admin_user.is_superuser = True
+        self.admin_user.is_staff = True
+        self.admin_user.save(update_fields=["is_superuser", "is_staff"])
+        self.client.force_login(self.admin_user)
+        response = self.client.get(reverse("nursing_regulatory_alignment"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Document-To-Database Comparison Summary")
+
     def test_duplicate_review_workflow_is_scoped_for_nursing_registrar(self):
         self.client.force_login(self.registrar)
         response = self.client.get(reverse("duplicate_review_workflow"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Anna Duplicate")
+        self.assertContains(response, 'data-duplicate-review-datatable="1"')
+        self.assertContains(response, "Search duplicate queue:")
+        self.assertContains(response, "Show _MENU_ duplicate reviews")
+        self.assertContains(response, "pagingType: 'full_numbers'")
+        self.assertNotContains(response, 'colspan="6"')
         self.assertNotContains(response, "Brian Duplicate")
 
     def test_duplicate_review_workflow_is_scoped_for_medical_registrar(self):
@@ -490,6 +909,24 @@ class StaffCommunicationsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertIn("Latest Source Import", payload["title"])
+
+    def test_staff_ai_chat_stream_returns_sse_answer(self):
+        self.client.force_login(self.registrar)
+        csrf_token = self.client.get(reverse("staff_ai_assistant")).cookies["csrftoken"].value
+
+        response = self.client.post(
+            reverse("staff_ai_chat_stream"),
+            data='{"question":"Where did the latest data come from?"}',
+            content_type="application/json",
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/event-stream")
+        body = b"".join(response.streaming_content).decode("utf-8")
+        self.assertIn("event: status", body)
+        self.assertIn("event: answer", body)
+        self.assertIn("Latest Source Import", body)
 
     def test_staff_ai_chat_requires_csrf_token(self):
         csrf_client = Client(enforce_csrf_checks=True)

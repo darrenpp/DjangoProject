@@ -1,0 +1,628 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nursing Council Board Portal{% endblock %}
+{% block title_label %}{{ dashboard_platform_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .board-portal-shell {
+        --board-ink: #102033;
+        --board-muted: #526172;
+        --board-line: #d8e1e8;
+        --board-green: #12624f;
+        --board-navy: #18324a;
+        --board-amber: #9a6700;
+        --board-red: #b42318;
+        color: var(--board-ink);
+    }
+    .board-commandbar {
+        align-items: flex-start;
+        background: #ffffff;
+        border: 1px solid var(--board-line);
+        border-left: 6px solid var(--board-navy);
+        border-radius: 8px;
+        display: flex;
+        gap: 18px;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding: 18px;
+    }
+    .board-kicker {
+        color: var(--board-green);
+        font-size: .76rem;
+        font-weight: 900;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+    .board-commandbar h2 {
+        color: var(--board-ink);
+        font-size: 1.35rem;
+        font-weight: 900;
+        margin: 4px 0;
+    }
+    .board-commandbar p {
+        color: var(--board-muted);
+        margin: 0;
+    }
+    .board-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+    .board-metric-grid,
+    .committee-grid,
+    .governance-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        margin-bottom: 16px;
+    }
+    .board-metric,
+    .committee-card,
+    .governance-card,
+    .board-panel {
+        background: #ffffff;
+        border: 1px solid var(--board-line);
+        border-radius: 8px;
+        box-shadow: 0 12px 30px rgba(15, 32, 51, 0.06);
+    }
+    .board-metric {
+        align-items: center;
+        display: flex;
+        gap: 14px;
+        min-height: 98px;
+        padding: 16px;
+    }
+    .board-metric-icon {
+        align-items: center;
+        border-radius: 8px;
+        color: #ffffff;
+        display: inline-flex;
+        height: 44px;
+        justify-content: center;
+        width: 44px;
+    }
+    .board-theme-navy { background: var(--board-navy); }
+    .board-theme-green { background: var(--board-green); }
+    .board-theme-amber { background: var(--board-amber); }
+    .board-theme-red { background: var(--board-red); }
+    .board-theme-slate { background: #475569; }
+    .board-metric strong {
+        color: var(--board-ink);
+        display: block;
+        font-size: 1.65rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+    .board-metric span,
+    .board-panel .panel-note,
+    .committee-card small,
+    .governance-card small {
+        color: var(--board-muted);
+    }
+    .board-panel {
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .board-panel-header {
+        align-items: center;
+        background: #f7fafc;
+        border-bottom: 1px solid var(--board-line);
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        padding: 14px 16px;
+    }
+    .board-panel-header h3 {
+        color: var(--board-ink);
+        font-size: 1rem;
+        font-weight: 900;
+        margin: 0;
+    }
+    .board-panel-body {
+        padding: 16px;
+    }
+    .meeting-summary {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        margin-top: 12px;
+    }
+    .meeting-fact {
+        background: #f8fafc;
+        border: 1px solid var(--board-line);
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+    .meeting-fact span {
+        color: var(--board-muted);
+        display: block;
+        font-size: .76rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .meeting-fact strong {
+        color: var(--board-ink);
+        display: block;
+        margin-top: 2px;
+    }
+    .board-badge {
+        border-radius: 999px;
+        display: inline-block;
+        font-size: .76rem;
+        font-weight: 900;
+        padding: 5px 9px;
+    }
+    .board-badge-private { background: #e0f2fe; color: #075985; }
+    .board-badge-confidential { background: #fee2e2; color: #991b1b; }
+    .board-badge-public { background: #dcfce7; color: #166534; }
+    .board-badge-neutral { background: #e2e8f0; color: #334155; }
+    .board-badge-warning { background: #fef3c7; color: #92400e; }
+    .board-badge-success { background: #dcfce7; color: #166534; }
+    .committee-card,
+    .governance-card {
+        padding: 16px;
+    }
+    .committee-card h4,
+    .governance-card h4 {
+        color: var(--board-ink);
+        font-size: 1rem;
+        font-weight: 900;
+        margin-bottom: 8px;
+    }
+    .committee-metrics {
+        display: grid;
+        gap: 6px;
+        margin: 12px 0;
+    }
+    .committee-metric {
+        align-items: center;
+        border-top: 1px solid #edf2f7;
+        display: flex;
+        justify-content: space-between;
+        padding-top: 6px;
+    }
+    .committee-metric span {
+        color: var(--board-muted);
+    }
+    .committee-metric strong {
+        color: var(--board-ink);
+    }
+    .board-form-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    }
+    .board-form-grid .wide {
+        grid-column: 1 / -1;
+    }
+    .table.board-table th {
+        background: #eef3f1;
+        color: #102033 !important;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+    .table.board-table td {
+        color: #20303c;
+        vertical-align: middle;
+    }
+    .board-empty {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        color: var(--board-muted);
+        padding: 14px;
+    }
+    @media (max-width: 768px) {
+        .board-commandbar,
+        .board-panel-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .board-actions {
+            justify-content: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="board-portal-shell">
+    <section class="board-commandbar">
+        <div>
+            <div class="board-kicker">Nursing Council Board Governance</div>
+            <h2>Board pack, decisions, committee assurance, conflicts, minutes, and action register</h2>
+            <p>Role: {{ board_user_role|title }}{% if board_current_meeting %} · Meeting status: {{ board_current_meeting.get_status_display }}{% endif %}</p>
+        </div>
+        <div class="board-actions">
+            <a href="{% url 'board_nursing_papers' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-folder-open mr-1"></i> Board Papers</a>
+            <a href="{% url 'board_nursing_decision_queue' %}" class="btn btn-outline-dark btn-sm"><i class="fas fa-file-signature mr-1"></i> Board Decisions</a>
+            <a href="{% url 'board_nursing_committee_conduct' %}" class="btn btn-outline-danger btn-sm"><i class="fas fa-scale-balanced mr-1"></i> Conduct Governance</a>
+        </div>
+    </section>
+
+    <div class="board-metric-grid">
+        {% for metric in board_metrics %}
+        <div class="board-metric">
+            <span class="board-metric-icon board-theme-{{ metric.theme }}"><i class="{{ metric.icon }}"></i></span>
+            <span><strong>{{ metric.value }}</strong><span>{{ metric.label }}</span></span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <section class="board-panel" id="board-meeting">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-calendar-check mr-2"></i>Current Board Meeting</h3>
+            {% if board_quorum_met %}
+            <span class="board-badge board-badge-success">Quorum met</span>
+            {% else %}
+            <span class="board-badge board-badge-warning">Quorum pending</span>
+            {% endif %}
+        </div>
+        <div class="board-panel-body">
+            {% if board_current_meeting %}
+            <h4 class="mb-1">{{ board_current_meeting.title }}</h4>
+            <p class="panel-note mb-0">{{ board_current_meeting.public_summary|default:"Nursing Council Board governance meeting." }}</p>
+            <div class="meeting-summary">
+                <div class="meeting-fact"><span>Date and time</span><strong>{{ board_current_meeting.scheduled_for|date:"d M Y, H:i" }}</strong></div>
+                <div class="meeting-fact"><span>Mode</span><strong>{{ board_current_meeting.get_meeting_mode_display }}</strong></div>
+                <div class="meeting-fact"><span>Location</span><strong>{{ board_current_meeting.location|default:"To be confirmed" }}</strong></div>
+                <div class="meeting-fact"><span>Attendance</span><strong>{{ board_present_count }} present / {{ board_apology_count }} apologies</strong></div>
+                <div class="meeting-fact"><span>Quorum</span><strong>{{ board_present_count }} of {{ board_quorum_required }}</strong></div>
+                <div class="meeting-fact"><span>Conflicts</span><strong>{{ board_conflict_count }} declared</strong></div>
+            </div>
+            {% else %}
+            <div class="board-empty">No Nursing Council Board meeting has been scheduled in the portal.</div>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if board_current_meeting %}
+    <section class="board-panel" id="board-attendance">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-user-check mr-2"></i>Attendance and Conflict Declaration</h3>
+            {% if board_user_attendance.conflict_declared %}
+            <span class="board-badge board-badge-confidential">Conflict declared</span>
+            {% else %}
+            <span class="board-badge board-badge-neutral">No conflict recorded</span>
+            {% endif %}
+        </div>
+        <div class="board-panel-body">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="record_attendance">
+                <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                <div class="board-form-grid">
+                    <div>
+                        <label class="form-label" for="attendanceStatus">Attendance</label>
+                        <select class="form-control" id="attendanceStatus" name="attendance_status">
+                            {% for value, label in board_attendance_status_choices %}
+                            <option value="{{ value }}"{% if board_user_attendance.attendance_status == value %} selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-end">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="conflictDeclared" name="conflict_declared"{% if board_user_attendance.conflict_declared %} checked{% endif %}>
+                            <label class="form-check-label" for="conflictDeclared">Conflict declared</label>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-end">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="recusalRequired" name="recusal_required"{% if board_user_attendance.recusal_required %} checked{% endif %}>
+                            <label class="form-check-label" for="recusalRequired">Recusal required</label>
+                        </div>
+                    </div>
+                    <div class="wide">
+                        <label class="form-label" for="conflictNote">Conflict note</label>
+                        <textarea class="form-control" id="conflictNote" name="conflict_note" rows="2">{{ board_user_attendance.conflict_note|default:"" }}</textarea>
+                    </div>
+                    <div class="wide">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save Declaration</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="board-panel" id="board-decisions">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-list-check mr-2"></i>Board Decision Queue</h3>
+            <span class="board-badge board-badge-private">{{ board_decision_queue|length }} items</span>
+        </div>
+        <div class="board-panel-body">
+            {% if board_decision_queue %}
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Paper / Matter</th>
+                            <th>Subject</th>
+                            <th>Committee</th>
+                            <th>Status</th>
+                            <th>Access</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in board_decision_queue %}
+                        <tr>
+                            <td>{{ item.source }}</td>
+                            <td><strong>{{ item.title }}</strong><br><span class="panel-note">{{ item.priority }}</span></td>
+                            <td>{{ item.subject }}</td>
+                            <td>{{ item.committee }}</td>
+                            <td><span class="board-badge {% if item.confidentiality == 'Confidential' %}board-badge-confidential{% else %}board-badge-private{% endif %}">{{ item.status }}</span></td>
+                            <td><a href="{{ item.href }}" class="btn btn-outline-primary btn-sm">Open</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="board-empty">No Nursing Council board decision items are awaiting review.</div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="board-panel" id="board-papers">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-folder-open mr-2"></i>Board Papers</h3>
+            <a href="{% url 'board_nursing_papers' %}" class="btn btn-outline-primary btn-sm">Board papers</a>
+        </div>
+        <div class="board-panel-body">
+            {% if board_papers %}
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Paper</th>
+                            <th>Agenda item</th>
+                            <th>Classification</th>
+                            <th>Status</th>
+                            <th>Version</th>
+                            <th>Open</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paper in board_papers %}
+                        <tr>
+                            <td><strong>{{ paper.title }}</strong>{% if paper.is_late %}<br><span class="board-badge board-badge-warning">Late</span>{% endif %}</td>
+                            <td>{{ paper.agenda_item.title|default:"Board pack" }}</td>
+                            <td><span class="board-badge board-badge-{{ paper.classification }}">{{ paper.get_classification_display }}</span></td>
+                            <td>{{ paper.get_status_display }}</td>
+                            <td>{{ paper.version_label|default:"Current" }}</td>
+                            <td>{% if paper.document_id %}<a href="{% url 'repository_detail' paper.document_id %}" class="btn btn-outline-primary btn-sm">Open</a>{% else %}<span class="panel-note">No repository file</span>{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% elif board_recent_documents %}
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Repository document</th>
+                            <th>Scope</th>
+                            <th>Status</th>
+                            <th>Updated</th>
+                            <th>Open</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in board_recent_documents %}
+                        <tr>
+                            <td><strong>{{ document.title }}</strong></td>
+                            <td>{{ document.get_office_scope_display }}</td>
+                            <td>{{ document.get_status_display }}</td>
+                            <td>{{ document.updated_at|date:"d M Y" }}</td>
+                            <td><a href="{% url 'repository_detail' document.pk %}" class="btn btn-outline-primary btn-sm">Open</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="board-empty">No Nursing Council board papers or repository documents are available.</div>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="committee-grid" id="board-committees">
+        {% for committee in board_committee_rows %}
+        <div class="committee-card">
+            <h4><i class="{{ committee.icon }} mr-2"></i>{{ committee.committee }}</h4>
+            <small>{{ committee.status }}</small>
+            <div class="committee-metrics">
+                {% for label, value in committee.metrics %}
+                <div class="committee-metric"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+                {% endfor %}
+            </div>
+            <a href="{{ committee.href }}" class="btn btn-outline-primary btn-sm">Open workspace</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <section class="board-panel" id="board-agenda">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-clipboard-list mr-2"></i>Agenda and Minutes</h3>
+            {% if board_current_meeting %}<span class="board-badge board-badge-private">{{ board_current_meeting.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="board-panel-body">
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Agenda item</th>
+                            <th>Purpose</th>
+                            <th>Category</th>
+                            <th>Classification</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if board_agenda_items %}
+                            {% for item in board_agenda_items %}
+                            <tr>
+                                <td>{{ item.order }}</td>
+                                <td><strong>{{ item.title }}</strong><br><span class="panel-note">{{ item.summary|default:item.recommendation|default:"No summary recorded" }}</span></td>
+                                <td>{{ item.get_purpose_display }}</td>
+                                <td>{{ item.get_category_display }}</td>
+                                <td><span class="board-badge board-badge-{{ item.confidentiality }}">{{ item.get_confidentiality_display }}</span></td>
+                                <td>{{ item.get_status_display }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            {% for item in board_default_agenda_items %}
+                            <tr>
+                                <td>{{ item.order }}</td>
+                                <td><strong>{{ item.title }}</strong></td>
+                                <td>{{ item.purpose }}</td>
+                                <td>Governance</td>
+                                <td><span class="board-badge board-badge-private">{{ item.confidentiality }}</span></td>
+                                <td>Template</td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if board_current_meeting %}
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="add_agenda_item">
+                <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                <div class="board-form-grid">
+                    <div class="wide">
+                        <label class="form-label" for="agendaTitle">New agenda item</label>
+                        <input class="form-control" id="agendaTitle" name="title" type="text">
+                    </div>
+                    <div>
+                        <label class="form-label" for="agendaPurpose">Purpose</label>
+                        <select class="form-control" id="agendaPurpose" name="purpose">
+                            {% for value, label in board_agenda_purpose_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" for="agendaCategory">Category</label>
+                        <select class="form-control" id="agendaCategory" name="category">
+                            {% for value, label in board_agenda_category_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="wide">
+                        <label class="form-label" for="agendaSummary">Summary</label>
+                        <textarea class="form-control" id="agendaSummary" name="summary" rows="2"></textarea>
+                    </div>
+                    <div class="wide">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus mr-1"></i> Add Agenda Item</button>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="board-panel" id="board-actions">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-clipboard-check mr-2"></i>Action Register</h3>
+            {% if board_current_meeting %}<span class="board-badge board-badge-neutral">{{ board_action_items|length }} actions</span>{% endif %}
+        </div>
+        <div class="board-panel-body">
+            {% if board_action_items %}
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Owner</th>
+                            <th>Due</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Update</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in board_action_items %}
+                        <tr>
+                            <td><strong>{{ item.title }}</strong><br><span class="panel-note">{{ item.description|default:"No description" }}</span></td>
+                            <td>{{ item.owner.account_display_name|default:item.owner.username|default:"Unassigned" }}</td>
+                            <td>{{ item.due_date|date:"d M Y"|default:"No due date" }}</td>
+                            <td>{{ item.get_priority_display }}</td>
+                            <td>{{ item.get_status_display }}</td>
+                            <td>
+                                <form method="post" class="d-flex gap-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="board_action" value="update_action_status">
+                                    <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                                    <input type="hidden" name="action_id" value="{{ item.pk }}">
+                                    <select class="form-control form-control-sm" name="status">
+                                        {% for value, label in board_action_status_choices %}
+                                        <option value="{{ value }}"{% if item.status == value %} selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button class="btn btn-outline-primary btn-sm" type="submit">Save</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="board-empty">No board action items are recorded for the current meeting.</div>
+            {% endif %}
+
+            {% if board_current_meeting %}
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="add_action_item">
+                <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                <div class="board-form-grid">
+                    <div>
+                        <label class="form-label" for="actionTitle">Action</label>
+                        <input class="form-control" id="actionTitle" name="title" type="text">
+                    </div>
+                    <div>
+                        <label class="form-label" for="actionDue">Due date</label>
+                        <input class="form-control" id="actionDue" name="due_date" type="date">
+                    </div>
+                    <div>
+                        <label class="form-label" for="actionPriority">Priority</label>
+                        <select class="form-control" id="actionPriority" name="priority">
+                            {% for value, label in board_action_priority_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="wide">
+                        <label class="form-label" for="actionDescription">Description</label>
+                        <textarea class="form-control" id="actionDescription" name="description" rows="2"></textarea>
+                    </div>
+                    <div class="wide">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus mr-1"></i> Add Action</button>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="governance-grid">
+        {% for control in board_governance_controls %}
+        <div class="governance-card">
+            <h4><i class="fas fa-shield-halved mr-2"></i>Governance Control</h4>
+            <small>{{ control }}</small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}New Disciplinary Case{% endblock %}
+{% block title_label %}New Disciplinary Case{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-danger">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">Open Disciplinary Case</h3>
+            <div class="text-muted small">Use this when an ICMS complaint or registrar matter requires a formal disciplinary pathway.</div>
+        </div>
+        <a href="{% url 'disciplinary_case_list' %}" class="btn btn-outline-secondary">Back to Discipline</a>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if source_complaint %}
+        <input type="hidden" name="source_complaint_uuid" value="{{ source_complaint.case_uuid }}">
+        <div class="alert alert-info m-3 mb-0">
+            Source ICMS case:
+            <a href="{% url 'complaint_case_detail' source_complaint.case_uuid %}">{{ source_complaint.case_number }}</a>
+        </div>
+        {% endif %}
+        <div class="card-body">
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="row">
+                {% for field in form %}
+                <div class="col-md-{% if field.name == 'allegation_summary' or field.name == 'statutory_basis' %}12{% else %}4{% endif %} mb-3">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label for="attachments">Initial evidence</label>
+                <input type="file" id="attachments" name="attachments" class="form-control-file" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.txt">
+            </div>
+        </div>
+        <div class="card-footer text-right">
+            <button type="submit" class="btn btn-danger">Open Disciplinary Case</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -33,15 +33,17 @@
                     <p><strong>Notes:</strong> {{ object.reviewer_notes|default:"No notes" }}</p>
                     {% if is_nursing_application and can_edit_application %}
                         <hr>
-                        <form method="post" action="{% url 'approve_application' object.pk %}" class="mb-2">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-success btn-block">Approve Through Workflow</button>
-                        </form>
-                        <form method="post" action="{% url 'reject_application' object.pk %}" class="mb-2">
-                            {% csrf_token %}
-                            <input type="text" name="reason" class="form-control form-control-sm mb-2" placeholder="Reason for rejection">
-                            <button type="submit" class="btn btn-outline-danger btn-block">Reject Application</button>
-                        </form>
+                        {% if object.status != "approved" %}
+                            <form method="post" action="{% url 'approve_application' object.pk %}" class="mb-2">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-block">Approve Through Workflow</button>
+                            </form>
+                            <form method="post" action="{% url 'reject_application' object.pk %}" class="mb-2">
+                                {% csrf_token %}
+                                <input type="text" name="reason" class="form-control form-control-sm mb-2" placeholder="Reason for rejection">
+                                <button type="submit" class="btn btn-outline-danger btn-block">Reject Application</button>
+                            </form>
+                        {% endif %}
                         <form method="post" action="{% url 'application_generate_checklist' object.pk %}" class="mb-2">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline-primary btn-block">Refresh Checklist</button>
@@ -51,7 +53,64 @@
                             <button type="submit" class="btn btn-outline-info btn-block">Verify Linked Payment</button>
                         </form>
                     {% endif %}
+                    {% if can_issue_licence_document %}
+                        <hr>
+                        <h5>Issue Official Document</h5>
+                        <form method="post" action="{% url 'application_issue_document' object.pk %}" class="border rounded p-3 bg-light">
+                            {% csrf_token %}
+                            <label for="delivery_channel" class="small font-weight-bold">Delivery</label>
+                            <select name="delivery_channel" id="delivery_channel" class="form-control form-control-sm mb-2">
+                                <option value="both">Mailbox and email</option>
+                                <option value="mailbox">Platform mailbox only</option>
+                                <option value="email">Direct email only</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-block">Generate and Send</button>
+                        </form>
+                    {% endif %}
                 </div>
+            </div>
+            <hr>
+            <h5>Issued Documents</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>Number</th>
+                            <th>Delivery</th>
+                            <th>Status</th>
+                            <th>Issued By</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for issued in issued_documents %}
+                        <tr>
+                            <td>{{ issued.get_document_type_display }}</td>
+                            <td>{{ issued.document_number }}</td>
+                            <td>{{ issued.get_delivery_channel_display }}</td>
+                            <td>
+                                <span class="badge badge-{% if issued.status == 'sent' %}success{% elif issued.status == 'failed' %}danger{% else %}secondary{% endif %}">
+                                    {{ issued.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ issued.issued_by|default:"-" }}</td>
+                            <td>{{ issued.issued_at|date:"d M Y H:i" }}</td>
+                            <td class="text-right">
+                                {% if issued.file %}
+                                    <a href="{{ issued.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">Open PDF</a>
+                                {% endif %}
+                                {% if issued.mailbox_thread %}
+                                    <a href="{% url 'enquiry_thread' issued.mailbox_thread.pk %}" class="btn btn-sm btn-outline-secondary">Mailbox</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7" class="text-muted text-center">No official documents have been issued from this application yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
             {% if is_nursing_application %}
                 <hr>

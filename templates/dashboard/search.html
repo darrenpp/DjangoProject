@@ -101,6 +101,56 @@
     </div>
 </div>
 
+{% if show_nursing_analytics_search %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header"><h3 class="card-title mb-0">Nursing Analytics Snapshot Records</h3></div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-striped mb-0">
+            <thead><tr><th>Name</th><th>Registration</th><th>Stage</th><th>Year</th><th>Source</th><th></th></tr></thead>
+            <tbody>
+            {% for item in results.analytics_records %}
+                <tr>
+                    <td>
+                        <strong>{{ item.name }}</strong>
+                        <div class="small text-muted">{{ item.cadre }}</div>
+                        {% if item.has_linked_pathway %}
+                            <div class="small mt-1">
+                                <span class="badge {% if item.pathway_complete %}badge-success{% else %}badge-info{% endif %}">
+                                    {% if item.pathway_complete %}Linked pathway{% else %}Linked records{% endif %}
+                                </span>
+                                <span class="text-muted">{{ item.pathway_stage_summary }} ({{ item.pathway_record_count }} records)</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.registration }}</td>
+                    <td>
+                        {{ item.stage }}
+                        <div class="small text-muted">{{ item.quality }} quality</div>
+                    </td>
+                    <td>{{ item.year }}</td>
+                    <td>
+                        {{ item.source }}
+                        <div class="small text-muted">
+                            Analytics snapshot only; not an operational registry row.
+                            {% if item.institution and item.institution != "-" %}Institution: {{ item.institution }}{% endif %}
+                            {% if item.facility and item.facility != "-" %}Facility: {{ item.facility }}{% endif %}
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <a href="{{ item.detail_url }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye mr-1"></i> {{ item.open_label|default:"Open" }}
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="text-muted text-center">No Nursing Council analytics snapshot records found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
 <div class="row">
     <div class="col-lg-7">
         <div class="card card-outline card-secondary mb-4">
@@ -127,19 +177,45 @@
     </div>
     <div class="col-lg-5">
         <div class="card card-outline card-success mb-4">
-            <div class="card-header"><h3 class="card-title mb-0">Facilities</h3></div>
+            <div class="card-header"><h3 class="card-title mb-0">Facility Search Engine</h3></div>
             <div class="card-body p-0">
                 <table class="table table-striped mb-0">
-                    <thead><tr><th>Facility</th><th>Type</th><th>Location</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Facility</th>
+                            <th>Type / Location</th>
+                            <th>Workers</th>
+                            <th>Licence Status</th>
+                            <th>Cadres</th>
+                        </tr>
+                    </thead>
                     <tbody>
                     {% for item in results.facilities %}
                         <tr>
-                            <td><strong>{{ item.name }}</strong><div class="small text-muted">{{ item.code }}</div></td>
-                            <td>{{ item.type }}</td>
-                            <td>{{ item.location }}</td>
+                            <td>
+                                <strong><a href="{{ item.detail_url }}">{{ item.name }}</a></strong>
+                                <div class="small text-muted">{{ item.code }}</div>
+                            </td>
+                            <td>
+                                {{ item.type }}
+                                <div class="small text-muted">{{ item.location }}</div>
+                            </td>
+                            <td><strong>{{ item.worker_count|default:0 }}</strong></td>
+                            <td>
+                                <span class="badge badge-success">Current {{ item.current_licence_count|default:0 }}</span>
+                                <span class="badge badge-danger">Expired {{ item.expired_licence_count|default:0 }}</span>
+                                <span class="badge badge-warning">Under review {{ item.under_review_licence_count|default:0 }}</span>
+                            </td>
+                            <td>
+                                {% for cadre in item.cadre_breakdown|slice:":4" %}
+                                <div class="small"><strong>{{ cadre.label }}</strong>: {{ cadre.count }}</div>
+                                {% empty %}
+                                <span class="text-muted">No cadre captured</span>
+                                {% endfor %}
+                            </td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="3" class="text-muted text-center">No facilities found.</td></tr>
+                        <tr><td colspan="5" class="text-muted text-center">No facilities found.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

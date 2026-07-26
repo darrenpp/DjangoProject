@@ -8,10 +8,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Import Cadres
-        cadres = ['Registered Nurse', 'Enrolled Nurse', 'Midwife', 'Community Health Worker',
-                  'Medical Doctor', 'Allied Health Professional']
-        for name in cadres:
-            Cadre.objects.get_or_create(name=name)
+        cadres = [
+            ('Registered Nurse', 'nursing'),
+            ('Enrolled Nurse', 'nursing'),
+            ('Midwife', 'midwifery'),
+            ('Community Health Worker', 'chw'),
+            ('Medical Doctor', 'medical'),
+            ('Allied Health Professional', 'medical'),
+        ]
+        for name, category in cadres:
+            Cadre.objects.update_or_create(name=name, defaults={'category': category})
 
         # Import Provinces (sample)
         provinces = [

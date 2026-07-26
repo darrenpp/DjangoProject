@@ -8,7 +8,7 @@
     <div class="col-lg-8">
         <div class="card card-outline card-primary">
             <div class="card-header">
-                <h3 class="card-title mb-0">Upload PDF for OCR</h3>
+                <h3 class="card-title mb-0">Upload PDF or Image for OCR</h3>
             </div>
             <div class="card-body">
                 {% if forbidden %}
@@ -18,7 +18,7 @@
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
-                        <label for="{{ form.pdf_file.id_for_label }}">PDF File</label>
+                        <label for="{{ form.pdf_file.id_for_label }}">PDF or Image File</label>
                         {{ form.pdf_file }}
                         {% if form.pdf_file.errors %}<small class="text-danger d-block">{{ form.pdf_file.errors|join:", " }}</small>{% endif %}
                     </div>
@@ -36,5 +36,40 @@
             </div>
         </div>
     </div>
+    {% if not forbidden %}
+    <div class="col-lg-4">
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Recent OCR Records</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for ocr_document in recent_ocr_documents %}
+                    <a class="list-group-item list-group-item-action" href="{% url 'ocr_detail' ocr_document.pk %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="mr-2">
+                                <div class="font-weight-bold text-truncate">{{ ocr_document.file.name }}</div>
+                                <div class="small text-muted">
+                                    {{ ocr_document.processed_at|date:"d M Y H:i" }}
+                                    {% if ocr_document.document_version %}
+                                    | Linked repository version
+                                    {% else %}
+                                    | Standalone OCR
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <span class="badge {% if ocr_document.processing_status == 'completed' %}badge-success{% elif ocr_document.processing_status == 'failed' %}badge-danger{% else %}badge-warning{% endif %}">
+                                {{ ocr_document.get_processing_status_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="list-group-item text-muted">No OCR records have been processed yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

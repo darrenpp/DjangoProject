@@ -115,8 +115,15 @@
                                 </td>
                                 <td>{{ row.issues|join:", "|default:"-" }}</td>
                                 <td class="text-nowrap">
+                                    {% if row.detail_url %}
                                     <a href="{{ row.detail_url }}" class="btn btn-sm btn-info">View</a>
+                                    {% endif %}
+                                    {% if row.edit_url %}
                                     <a href="{{ row.edit_url }}" class="btn btn-sm btn-primary">Edit</a>
+                                    {% endif %}
+                                    {% if not row.detail_url and not row.edit_url %}
+                                    <span class="badge badge-secondary">Snapshot</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% empty %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ case.case_number }}{% endblock %}
+{% block title_label %}{{ case.case_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card card-outline card-danger">
+            <div class="card-header d-flex justify-content-between align-items-start">
+                <div>
+                    <h3 class="card-title mb-1">{{ case.title }}</h3>
+                    <div class="text-muted small">
+                        {{ case.get_office_scope_display }} &middot; {{ case.get_case_type_display }} &middot; {{ case.get_source_display }}
+                    </div>
+                </div>
+                <a href="{% url 'complaint_case_list' %}" class="btn btn-outline-secondary">Back to Cases</a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Status</strong><div>{{ case.get_status_display }}</div></div>
+                    <div class="col-md-3"><strong>Priority</strong><div>{{ case.get_priority_display }}</div></div>
+                    <div class="col-md-3"><strong>Risk</strong><div>{{ case.get_risk_level_display }}</div></div>
+                    <div class="col-md-3"><strong>Due</strong><div>{{ case.due_at|date:"d M Y H:i"|default:"Not set" }}</div></div>
+                </div>
+                <h4 class="h6">Case Description</h4>
+                <div class="border rounded p-3 mb-3">{{ case.description|linebreaksbr }}</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="h6">Complainant</h4>
+                        <div>{{ case.complainant_display }}</div>
+                        <div class="small text-muted">{{ case.complainant_email|default:"No email" }}{% if case.complainant_phone %} &middot; {{ case.complainant_phone }}{% endif %}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 class="h6">Subject / Respondent</h4>
+                        <div>{{ case.subject_name|default:"Not linked" }}</div>
+                        <div class="small text-muted">{{ case.subject_identifier|default:"No identifier" }}</div>
+                    </div>
+                </div>
+                {% if case.source_enquiry %}
+                <div class="alert alert-info mt-3 mb-0">
+                    Source enquiry:
+                    <a href="{% url 'enquiry_thread' case.source_enquiry.pk %}">{{ case.source_enquiry.subject }}</a>
+                </div>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{% url 'disciplinary_case_create' %}?complaint={{ case.case_uuid }}" class="btn btn-outline-danger">
+                        <i class="fas fa-gavel mr-1"></i> Escalate to Discipline
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title mb-0">Case Timeline</h3></div>
+            <div class="card-body">
+                {% for event in events %}
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ event.get_action_type_display }}</strong>
+                        <span class="text-muted small">{{ event.created_at|date:"d M Y H:i" }}</span>
+                    </div>
+                    <div class="small text-muted">
+                        {% if event.created_by %}{{ event.created_by.get_full_name|default:event.created_by.username }}{% else %}System{% endif %}
+                        {% if event.from_status or event.to_status %} &middot; {{ event.from_status|default:"-" }} -> {{ event.to_status|default:"-" }}{% endif %}
+                    </div>
+                    <div class="mt-2">{{ event.body|linebreaksbr }}</div>
+                    {% if event.attachments.all %}
+                    <div class="mt-2">
+                        {% for attachment in event.attachments.all %}
+                        <a href="{{ attachment.file.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary mb-1">
+                            <i class="fas fa-paperclip mr-1"></i>{{ attachment.original_filename }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-muted">No case events recorded yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card card-outline card-primary">
+            <div class="card-header"><strong>Update Case</strong></div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_name" value="update">
+                <div class="card-body">
+                    {% for field in update_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Save Case</button>
+                </div>
+            </form>
+        </div>
+
+        {% if not case.acknowledged_at %}
+        <form method="post" action="{% url 'complaint_case_acknowledge' case.case_uuid %}" class="mb-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning btn-block">
+                <i class="fas fa-check-circle mr-1"></i> Acknowledge for Triage
+            </button>
+        </form>
+        {% endif %}
+
+        <div class="card card-outline card-secondary">
+            <div class="card-header"><strong>Add Action / Note</strong></div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="form_name" value="event">
+                <div class="card-body">
+                    {% for field in event_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="form-group">
+                        <label for="attachments">Attachments</label>
+                        <input type="file" id="attachments" name="attachments" class="form-control-file" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.txt">
+                    </div>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-secondary">Record Action</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

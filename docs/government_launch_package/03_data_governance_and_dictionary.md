@@ -4,12 +4,15 @@
 
 Imported rows are not automatically trusted. They are staged, validated, cleansed, reviewed, approved, then promoted into live registry records.
 
+Analytics snapshots and NHWA workbooks are reporting layers. They support dashboards, drilldowns, and sign-off packages, but they must not overwrite legal registry records automatically.
+
 ## Data Lifecycle
 
 ```text
 Raw paper/spreadsheet/source file
   -> import batch
   -> staged import rows
+  -> analytics snapshot or NHWA workbook when the source is a reporting dataset
   -> validation and normalization
   -> missing-data/duplicate review
   -> authorised approval
@@ -48,9 +51,19 @@ Every imported or corrected record should keep:
 | Employment status | Whether a practitioner is employed, unemployed, inactive, retired, deceased, or unknown. | Used for workforce planning and renewal validation. | Renewal workflows should require employment status before approval. |
 | Employment sector | Public, church, private, NGO, overseas, or unknown workplace category. | Used in workforce-sector reporting. | Must be selected from a controlled list, not free text where avoidable. |
 | Professional category | Nurse, midwife, nurse aide, doctor, CHW, allied health, graduand, specialist, etc. | Used for dashboards, role alignment, pathways, and counts. | Must remain inside correct regulatory body scope. |
+| Cadre | Applicant-selected or staff-confirmed professional pathway/specialty. | Used during public account registration and record matching. | Must use controlled dropdown choices. CHW provisional and CHW full-license choices must remain distinct. |
 | Application status | Current stage of a submitted application. | Drives review queues and registrar action. | Every official status change must write status history. |
 | Document type | Receipt, qualification, competency, transcript, ID, police clearance, medical report, letter, etc. | Drives checklists and repository metadata. | Required documents must be verified, rejected, waived, or marked pending. |
 | Office scope | General, Nursing Council, or Medical Board. | Separates records, receipts, documents, reports, and access. | Cross-office access must be denied unless explicitly authorised. |
+| Notification status | Whether a notification or mailbox thread is unread, read, or opened. | Drives top-bar bell count and mailbox status. | Counts must clear after notification history or related message thread is opened. |
+| Analytics snapshot | Imported cleansed workbook version used for dashboards. | Drives Nursing Council analytics, KPIs, charts, and drilldowns. | Keep provenance, file hash, row counts, active flag, and source lineage. Do not treat as legal registry identity. |
+| Person group key | Workbook-derived grouping key used to estimate matched practitioner groups. | Supports analytics grouping and deduplication review. | Must not be used as the legal practitioner identifier. |
+| ICMS case | Formal complaint, incident, or enquiry case. | Tracks triage, assignment, events, attachments, risk, and closure. | Public submissions do not change registry records. High-risk cases require staff review. |
+| Disciplinary case | Formal discipline workflow record. | Tracks assessment, investigation, committee review, hearing, decision, appeal/monitoring, and closure. | Must link evidence and decision records where disciplinary action is taken. |
+| Regulatory decision | Formal decision record. | Stores decision text, rationale, authority/SOP reference, evidence summary, conditions, appeal rights, maker, and dates. | Use for defensible registrar/committee decisions. |
+| Document approval | Approval or rejection of a repository document version. | Controls official evidence and policy/SOP sign-off. | Record approver, date, note, and audit event. |
+| Mapped entity | Stored school, institution, facility, hospital, PHA, clinic, or workplace reference. | Drives the map and reference list. | Coordinates must be stored and verified locally; do not geocode on every page load. |
+| NHWA workbook cell | Standards/reporting output cell. | Supports official NHWA collection templates and exports. | Populate from verified data, allow audited edits for uncertain cells, and never push values back into the registry automatically. |
 
 ## Trusted Versus Untrusted Data
 
@@ -58,6 +71,8 @@ Every imported or corrected record should keep:
 |---|---|---|
 | Raw paper records | Untrusted until captured and verified | Scan, index, extract, validate, and attach to source record |
 | Spreadsheet imports | Untrusted until reviewed | Stage, normalize, run duplicate/missing-data checks, then approve |
+| Analytics snapshot rows | Trusted for analytics only after active snapshot validation | Keep separate from legal registry records and expose through server-side drilldown |
+| NHWA workbook values | Reporting/sign-off output | Populate from verified data and export after review; do not overwrite registry |
 | Live registry records | Operational source of truth | Protect with role checks, audit changes, and reconcile regularly |
 | Public register output | Public-safe view only | Expose only name, registration number, category, status, and expiry where policy allows |
 | Management reports | Decision-support output | Show source date, live count date, and limitations |
@@ -74,6 +89,13 @@ Minimum checks before promotion to live registry:
 - Receipt rows have amount, date, reference, source, and office scope.
 - Qualification rows have institution, award, and completion year where available.
 - Reviewer notes explain unresolved exceptions.
+- Duplicate Review Queue decisions are recorded after grouped source rows are inspected.
+- Mailbox and notification read/opened status is accurate for sender and recipient.
+- Active Nursing Council analytics snapshot has one active version only.
+- Analytics KPIs match source workbook totals before the dashboard is published.
+- Public complaints and forum posts are moderated.
+- Receipt links are accepted only when matching evidence is strong; unmatched or suspicious receipts go to high-value review.
+- Coordinates are verified before map records are shown as official reference locations.
 
 ## Production Data Preparation Command
 
@@ -114,3 +136,4 @@ Reports must separate:
 - Current year activity.
 - Latest source file and source date.
 - Cleansing limitations.
+- Whether a value comes from a legal registry table, analytics snapshot, workbook import, NHWA workbook, or financial receipt ledger.

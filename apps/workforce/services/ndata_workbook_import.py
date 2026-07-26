@@ -106,6 +106,18 @@ def normalize_registration_no(value, prefix=""):
     return base
 
 
+def normalize_provisional_registration(value, prefix=""):
+    base = normalize_identifier(value)
+    prefix = normalize_identifier(prefix)
+    if not base:
+        return ""
+    if prefix in {"PRO", "PROV", "PROVISIONAL", ""}:
+        base = re.sub(r"^PROV?[-\s]*", "", base, flags=re.IGNORECASE)
+        base = base.replace(" - ", "-").replace(" ", "")
+        return f"PROV-{base}"[:100]
+    return normalize_registration_no(value, prefix)
+
+
 def registration_for_model(value):
     value = normalize_registration_no(value)
     if not value or len(value) > 50:
@@ -272,9 +284,25 @@ def unique_preserve_order(values):
 
 
 class NDataWorkbookImporter:
-    def __init__(self, workbook_path=DEFAULT_WORKBOOK, initiated_by=None):
+    def __init__(
+        self,
+        workbook_path=DEFAULT_WORKBOOK,
+        initiated_by=None,
+        sync_live_profiles=True,
+        deduplicate_rows=True,
+        blank_row_limit=200,
+        sheet_names=None,
+    ):
         self.workbook_path = Path(workbook_path)
         self.initiated_by = initiated_by
+        self.sync_live_profiles = sync_live_profiles
+        self.deduplicate_rows = deduplicate_rows
+        self.blank_row_limit = blank_row_limit
+        self.sheet_names = unique_preserve_order(
+            normalize_text(sheet_name)
+            for sheet_name in (sheet_names or [])
+            if normalize_text(sheet_name)
+        )
         self.batch = None
         self._model_map = {
             "nursingprofessional": NursingProfessional,
@@ -293,49 +321,78 @@ class NDataWorkbookImporter:
             "records_created": Counter(),
             "records_updated": Counter(),
             "practice_records": 0,
+            "duplicate_rows_skipped": 0,
+            "current_year_field_updates": 0,
             "receipts": 0,
             "sheets_processed": 0,
             "sheets_skipped": 0,
         }
+        self._practice_record_keys = set()
 
     def import_workbook(self):
         if not self.workbook_path.exists():
             raise FileNotFoundError(f"Workbook not found: {self.workbook_path}")
 
         workbook = load_workbook(self.workbook_path, read_only=True, data_only=True)
-        non_chart_sheets = [
-            name for name in workbook.sheetnames
-            if not isinstance(workbook[name], Chartsheet)
-        ]
-        self.batch = DataImportBatch.objects.create(
-            source_file_name=self.workbook_path.name,
-            source_file_path=str(self.workbook_path),
-            source_kind="ndata_workbook",
-            status="running",
-            total_sheets=len(non_chart_sheets),
-            initiated_by=self.initiated_by,
-        )
-
         try:
-            with transaction.atomic():
-                for name in workbook.sheetnames:
-                    ws = workbook[name]
-                    if isinstance(ws, Chartsheet):
-                        continue
-                    self._process_sheet(ws)
-                self._sync_snapshots()
-                self.batch.status = "completed"
+            non_chart_sheets = [
+                name for name in workbook.sheetnames
+                if not isinstance(workbook[name], Chartsheet)
+            ]
+            selected_sheet_names = self._selected_workbook_sheet_names(non_chart_sheets)
+            self.batch = DataImportBatch.objects.create(
+                source_file_name=self.workbook_path.name,
+                source_file_path=str(self.workbook_path),
+                source_kind="ndata_workbook",
+                status="running",
+                total_sheets=len(selected_sheet_names),
+                initiated_by=self.initiated_by,
+            )
+
+            try:
+                with transaction.atomic():
+                    for name in selected_sheet_names:
+                        ws = workbook[name]
+                        if isinstance(ws, Chartsheet):
+                            continue
+                        self._process_sheet(ws)
+                    self._hydrate_from_current_year_rows()
+                    self._sync_snapshots()
+                    self.batch.status = "completed"
+                    self.batch.completed_at = timezone.now()
+                    self.batch.summary = self._build_summary()
+                    self.batch.save(update_fields=["status", "completed_at", "summary", "processed_sheets", "processed_rows", "total_rows"])
+            except Exception as exc:
+                self.batch.status = "failed"
                 self.batch.completed_at = timezone.now()
-                self.batch.summary = self._build_summary()
-                self.batch.save(update_fields=["status", "completed_at", "summary", "processed_sheets", "processed_rows", "total_rows"])
-        except Exception as exc:
-            self.batch.status = "failed"
-            self.batch.completed_at = timezone.now()
-            self.batch.summary = self._build_summary(error=str(exc))
-            self.batch.save(update_fields=["status", "completed_at", "summary"])
-            raise
+                self.batch.summary = self._build_summary(error=str(exc))
+                self.batch.save(update_fields=["status", "completed_at", "summary"])
+                raise
+        finally:
+            workbook.close()
 
         return self.batch
+
+    def _selected_workbook_sheet_names(self, non_chart_sheets):
+        if not self.sheet_names:
+            return non_chart_sheets
+
+        available_by_key = {name.strip().lower(): name for name in non_chart_sheets}
+        missing = [
+            sheet_name for sheet_name in self.sheet_names
+            if sheet_name.strip().lower() not in available_by_key
+        ]
+        if missing:
+            available = ", ".join(non_chart_sheets)
+            requested = ", ".join(missing)
+            raise ValueError(
+                f"Selected sheet not found: {requested}. Available sheets: {available}"
+            )
+
+        return [
+            available_by_key[sheet_name.strip().lower()]
+            for sheet_name in self.sheet_names
+        ]
 
     def _build_summary(self, error=""):
         return {
@@ -343,9 +400,13 @@ class NDataWorkbookImporter:
             "records_created": dict(self.summary["records_created"]),
             "records_updated": dict(self.summary["records_updated"]),
             "practice_records": self.summary["practice_records"],
+            "duplicate_rows_skipped": self.summary["duplicate_rows_skipped"],
+            "current_year_field_updates": self.summary["current_year_field_updates"],
+            "sync_live_profiles": self.sync_live_profiles,
             "receipts": self.summary["receipts"],
             "sheets_processed": self.summary["sheets_processed"],
             "sheets_skipped": self.summary["sheets_skipped"],
+            "selected_sheet_names": self.sheet_names,
         }
 
     def _process_sheet(self, ws):
@@ -411,7 +472,49 @@ class NDataWorkbookImporter:
         defaults.update(kwargs)
         return defaults
 
+    def _iter_value_rows(self, ws, min_row, max_col):
+        blank_count = 0
+        for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_col=max_col, values_only=True), start=min_row):
+            if all(not normalize_text(value) for value in row):
+                blank_count += 1
+                if blank_count >= self.blank_row_limit:
+                    break
+                continue
+            blank_count = 0
+            yield idx, row
+
+    def _practice_record_dedupe_key(self, record_type, kwargs):
+        registration_no = normalize_registration_no(kwargs.get("registration_no"))
+        practitioner_number = normalize_identifier(kwargs.get("practitioner_number"))
+        full_name = normalize_name(kwargs.get("full_name"))
+        dob = kwargs.get("date_of_birth") or ""
+        identity = registration_no or practitioner_number or f"{full_name}|{dob}"
+        return (
+            record_type,
+            kwargs.get("target_model", ""),
+            kwargs.get("record_year"),
+            identity,
+            kwargs.get("issued_date"),
+            kwargs.get("payment_date"),
+            normalize_identifier(kwargs.get("reference_number")),
+            normalize_text(kwargs.get("category")).lower(),
+        )
+
     def _create_practice_record(self, sheet, source_row, record_type, **kwargs):
+        if self.deduplicate_rows:
+            dedupe_key = self._practice_record_dedupe_key(record_type, kwargs)
+            if dedupe_key in self._practice_record_keys:
+                self.summary["duplicate_rows_skipped"] += 1
+                return None
+            self._practice_record_keys.add(dedupe_key)
+            if self.batch and PracticingLicenseRecord.objects.filter(
+                batch__source_file_name=self.batch.source_file_name,
+                source_sheet_name=sheet.sheet_name,
+                source_row=source_row,
+                record_type=record_type,
+            ).exists():
+                self.summary["duplicate_rows_skipped"] += 1
+                return None
         record = PracticingLicenseRecord.objects.create(
             sheet=sheet,
             source_sheet_name=sheet.sheet_name,
@@ -421,6 +524,64 @@ class NDataWorkbookImporter:
         )
         self.summary["practice_records"] += 1
         return record
+
+    def _identity_key_for_record(self, record):
+        registration_no = normalize_registration_no(record.registration_no)
+        practitioner_number = normalize_identifier(record.practitioner_number)
+        if registration_no:
+            return ("registration", registration_no)
+        if practitioner_number:
+            return ("practitioner", practitioner_number)
+        name = normalize_name(record.full_name)
+        dob = record.date_of_birth.isoformat() if record.date_of_birth else ""
+        return ("name_dob", f"{name}|{dob}") if name and dob else ("name", name)
+
+    def _hydrate_from_current_year_rows(self):
+        batch_records = PracticingLicenseRecord.objects.filter(batch=self.batch)
+        current_year = (
+            batch_records.filter(record_year__isnull=False)
+            .order_by("-record_year")
+            .values_list("record_year", flat=True)
+            .first()
+        )
+        if not current_year:
+            return
+        field_names = [
+            "gender",
+            "date_of_birth",
+            "practitioner_number",
+            "applicant_type",
+            "nationality",
+            "qualification_name",
+            "category",
+            "workplace_address",
+            "province",
+        ]
+        current_profiles = {}
+        for record in batch_records.filter(record_year=current_year, record_type="practicing_license"):
+            key = self._identity_key_for_record(record)
+            if not key[1]:
+                continue
+            profile = current_profiles.setdefault(key, {})
+            for field_name in field_names:
+                value = getattr(record, field_name)
+                if value not in (None, "") and field_name not in profile:
+                    profile[field_name] = value
+
+        updates = 0
+        for record in batch_records.exclude(record_year=current_year):
+            profile = current_profiles.get(self._identity_key_for_record(record))
+            if not profile:
+                continue
+            update_fields = []
+            for field_name, value in profile.items():
+                if getattr(record, field_name) in (None, "") and value not in (None, ""):
+                    setattr(record, field_name, value)
+                    update_fields.append(field_name)
+            if update_fields:
+                record.save(update_fields=update_fields + ["updated_at"])
+                updates += 1
+        self.summary["current_year_field_updates"] = updates
 
     def _model_for_target(self, target_model):
         return self._model_map.get(target_model, NursingProfessional)
@@ -578,7 +739,7 @@ class NDataWorkbookImporter:
     def _import_provisional_sheet(self, ws, sheet):
         imported = 0
         skipped = 0
-        for idx, row in enumerate(ws.iter_rows(min_row=5, max_col=9, values_only=True), start=5):
+        for idx, row in self._iter_value_rows(ws, min_row=5, max_col=9):
             source_id, name, registration_label, prefix, provisional_no, issued_raw, institution, year_raw, qualification = row
             full_name = normalize_name(name)
             if not full_name or "NAME" == full_name.upper():
@@ -586,18 +747,24 @@ class NDataWorkbookImporter:
                 continue
             issued_date = parse_date(issued_raw)
             record_year = parse_year(year_raw, issued_date)
-            registration_no = normalize_registration_no(provisional_no, prefix or "PRO")
-            self._create_practice_record(
+            registration_no = normalize_provisional_registration(provisional_no, prefix or "PRO")
+            qualification_name = normalize_text(qualification)
+            target_model = infer_target_model(
+                category=normalize_text(registration_label) or qualification_name,
+                qualification=qualification_name,
+                registration_no=registration_no,
+            )
+            record = self._create_practice_record(
                 sheet,
                 idx,
                 "provisional",
-                target_model="healthstudent",
+                target_model=target_model,
                 record_year=record_year,
                 full_name=full_name,
                 first_name=split_name(full_name)[0],
                 last_name=split_name(full_name)[1],
                 registration_no=registration_no,
-                qualification_name=normalize_text(qualification),
+                qualification_name=qualification_name,
                 institution_name=normalize_text(institution),
                 issued_date=issued_date,
                 category=normalize_text(registration_label) or "Provisional",
@@ -609,6 +776,9 @@ class NDataWorkbookImporter:
                     "provisional_no": normalize_text(provisional_no),
                 },
             )
+            if record is None:
+                skipped += 1
+                continue
             imported += 1
         return imported, skipped, "Imported provisional records into practice-history store."
 
@@ -616,7 +786,7 @@ class NDataWorkbookImporter:
         imported = 0
         skipped = 0
         seen = set()
-        for idx, row in enumerate(ws.iter_rows(min_row=5, max_col=10, values_only=True), start=5):
+        for idx, row in self._iter_value_rows(ws, min_row=5, max_col=10):
             source_id, name, license_label, prefix, license_no, issued_raw, institution, year_raw, qualification, practitioner_no = row
             full_name = normalize_name(name)
             if not full_name:
@@ -639,7 +809,7 @@ class NDataWorkbookImporter:
             practitioner_number = normalize_identifier(practitioner_no)
             applicant_type = infer_applicant_type(institution, qualification)
 
-            self._create_practice_record(
+            record = self._create_practice_record(
                 sheet,
                 idx,
                 "full",
@@ -657,9 +827,12 @@ class NDataWorkbookImporter:
                 applicant_type=applicant_type,
                 raw_payload={"source_id": source_id},
             )
+            if record is None:
+                skipped += 1
+                continue
 
             model_reg = registration_for_model(registration_no)
-            if model_reg:
+            if self.sync_live_profiles and model_reg:
                 professional, _ = self._update_professional(
                     target_model,
                     model_reg,
@@ -686,7 +859,7 @@ class NDataWorkbookImporter:
         start_row = 2 if ws.title == "TEMP CERT 2020" else 5
         imported = 0
         skipped = 0
-        for idx, row in enumerate(ws.iter_rows(min_row=start_row, max_col=8, values_only=True), start=start_row):
+        for idx, row in self._iter_value_rows(ws, min_row=start_row, max_col=8):
             name, registration_label, prefix, license_no, issued_raw, institution, year_raw, qualification = row[:8]
             full_name = normalize_name(name)
             if not full_name or full_name.upper() == "NAME":
@@ -702,7 +875,7 @@ class NDataWorkbookImporter:
             applicant_type = infer_applicant_type(institution, qualification, registration_label)
             target_model = infer_target_model(category="Temporary Nurse", qualification=qualification_name, registration_no=registration_no)
 
-            self._create_practice_record(
+            record = self._create_practice_record(
                 sheet,
                 idx,
                 "temporary",
@@ -719,9 +892,12 @@ class NDataWorkbookImporter:
                 applicant_type=applicant_type,
                 raw_payload={"prefix": prefix},
             )
+            if record is None:
+                skipped += 1
+                continue
 
             model_reg = registration_for_model(registration_no)
-            if model_reg:
+            if self.sync_live_profiles and model_reg:
                 professional, _ = self._update_professional(
                     target_model,
                     model_reg,
@@ -750,7 +926,7 @@ class NDataWorkbookImporter:
         payment_year = re.search(r"(20\d{2})", ws.title)
         sheet_year = int(payment_year.group(1)) if payment_year else None
 
-        for idx, row in enumerate(ws.iter_rows(min_row=start_row, max_col=16, values_only=True), start=start_row):
+        for idx, row in self._iter_value_rows(ws, min_row=start_row, max_col=16):
             values = list(row) + [None] * (16 - len(row))
             name = values[1]
             full_name = normalize_name(name)
@@ -767,16 +943,28 @@ class NDataWorkbookImporter:
             country = normalize_text(values[8] if "2026" in ws.title else values[7])
             workplace = normalize_text(values[9] if "2026" in ws.title else values[8])
             province = normalize_text(values[10] if "2026" in ws.title else values[9])
-            payment_date = parse_date(values[12] if "2026" in ws.title else values[10])
-            renewal_fee = parse_decimal(values[13] if "2026" in ws.title else values[11])
-            late_fee = parse_decimal(values[15] if "2026" in ws.title else values[12])
-            overseas_fee = parse_decimal(values[14] if "2026" in ws.title else values[13])
-            payment_method = normalize_text(values[14] if "2022" in ws.title else values[15] if "2024" in ws.title else "")
+            reference_number = ""
+            if "2026" in ws.title:
+                payment_date = parse_date(values[11])
+                renewal_fee = parse_decimal(values[12])
+                overseas_fee = parse_decimal(values[13])
+                late_fee = parse_decimal(values[14])
+                payment_method = normalize_text(values[15])
+                if payment_method.upper().startswith("R"):
+                    reference_number = payment_method
+            else:
+                payment_date = parse_date(values[10])
+                renewal_fee = parse_decimal(values[11])
+                late_fee = parse_decimal(values[12])
+                overseas_fee = parse_decimal(values[13])
+                payment_method = normalize_text(values[14] if "2022" in ws.title else values[15] if "2024" in ws.title else "")
+                if payment_method.upper().startswith("R"):
+                    reference_number = payment_method
             record_year = parse_year(sheet_year, payment_date) or sheet_year
             applicant_type = infer_applicant_type(country, workplace)
             target_model = infer_target_model(category=category, qualification=qualification_name, registration_no=registration_no)
 
-            self._create_practice_record(
+            record = self._create_practice_record(
                 sheet,
                 idx,
                 "practicing_license",
@@ -799,12 +987,16 @@ class NDataWorkbookImporter:
                 renewal_fee=renewal_fee,
                 overseas_fee=overseas_fee,
                 late_fee=late_fee,
+                reference_number=reference_number,
                 payment_method=payment_method,
                 raw_payload={"sheet_year": sheet_year},
             )
+            if record is None:
+                skipped += 1
+                continue
 
             model_reg = registration_for_model(registration_no)
-            if model_reg:
+            if self.sync_live_profiles and model_reg:
                 professional, _ = self._update_professional(
                     target_model,
                     model_reg,
@@ -848,7 +1040,7 @@ class NDataWorkbookImporter:
         sheet_year_match = re.search(r"(20\d{2})", ws.title)
         sheet_year = int(sheet_year_match.group(1)) if sheet_year_match else None
 
-        for idx, row in enumerate(ws.iter_rows(min_row=start_row, max_col=12, values_only=True), start=start_row):
+        for idx, row in self._iter_value_rows(ws, min_row=start_row, max_col=12):
             values = list(row) + [None] * (12 - len(row))
             if "2020-2021 payment" in ws.title:
                 full_name = normalize_name(values[1])
@@ -886,7 +1078,7 @@ class NDataWorkbookImporter:
             record_year = parse_year(sheet_year, payment_date) or sheet_year
             applicant_type = infer_applicant_type(nationality, workplace)
 
-            self._create_practice_record(
+            record = self._create_practice_record(
                 sheet,
                 idx,
                 "payment",
@@ -911,6 +1103,9 @@ class NDataWorkbookImporter:
                 payment_method="Imported ATP Payment",
                 raw_payload={"sheet_year": sheet_year},
             )
+            if record is None:
+                skipped += 1
+                continue
             self._upsert_receipt(
                 full_name,
                 practitioner_number,
@@ -930,25 +1125,19 @@ class NDataWorkbookImporter:
         skipped = 0
 
         if ws.title == "Sheet2":
-            iterator = ws.iter_rows(min_row=2, max_col=9, values_only=True)
-            start = 2
+            iterator = self._iter_value_rows(ws, min_row=2, max_col=9)
         elif "active gnurse" in sheet_key:
-            iterator = ws.iter_rows(min_row=4, max_col=12, values_only=True)
-            start = 4
+            iterator = self._iter_value_rows(ws, min_row=4, max_col=12)
         elif "midwifery list" in sheet_key:
-            iterator = ws.iter_rows(min_row=5, max_col=9, values_only=True)
-            start = 5
+            iterator = self._iter_value_rows(ws, min_row=5, max_col=9)
         elif "pom gen. 2020" in sheet_key:
-            iterator = ws.iter_rows(min_row=4, max_col=7, values_only=True)
-            start = 4
+            iterator = self._iter_value_rows(ws, min_row=4, max_col=7)
         elif "update list 2020" in sheet_key:
-            iterator = ws.iter_rows(min_row=3, max_col=5, values_only=True)
-            start = 3
+            iterator = self._iter_value_rows(ws, min_row=3, max_col=5)
         else:
-            iterator = ws.iter_rows(min_row=2, max_col=7, values_only=True)
-            start = 2
+            iterator = self._iter_value_rows(ws, min_row=2, max_col=7)
 
-        for idx, row in enumerate(iterator, start=start):
+        for idx, row in iterator:
             values = list(row)
             full_name = ""
             registration_no = ""
@@ -1054,7 +1243,7 @@ class NDataWorkbookImporter:
             if record_year is None:
                 record_year = parse_year(payment_date, payment_date)
 
-            self._create_practice_record(
+            record = self._create_practice_record(
                 sheet,
                 idx,
                 "workforce_listing",
@@ -1075,9 +1264,12 @@ class NDataWorkbookImporter:
                 payment_date=payment_date,
                 raw_payload={},
             )
+            if record is None:
+                skipped += 1
+                continue
 
             model_reg = registration_for_model(registration_no)
-            if model_reg:
+            if self.sync_live_profiles and model_reg:
                 self._update_professional(
                     target_model,
                     model_reg,
@@ -1142,7 +1334,7 @@ class NDataWorkbookImporter:
                     "new_registrations": len({
                         record.registration_no or record.full_name
                         for record in year_records
-                        if record.record_type in {"full", "temporary"}
+                        if record.record_type in {"full_approved", "temporary"}
                     }),
                     "renewals": len({
                         record.registration_no or record.full_name

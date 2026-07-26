@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Medical Board Public Verification{% endblock %}
+{% block title_label %}Medical Board Public Verification{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-danger card-outline">
+            <div class="card-header">
+                <h3 class="card-title mb-0">PNG Medical Board Public Register Verification</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Search public-safe Medical Board register details for doctors, specialists, and Community Health Workers.
+                    This page shows verification fields only and does not expose contact, receipt, document, complaint, or application evidence.
+                </p>
+                <form method="get" class="mb-0">
+                    <div class="form-row">
+                        <div class="form-group col-lg-4 col-md-6">
+                            <label for="medical-register-q">Name, registration, or specialty</label>
+                            <input type="text" class="form-control" id="medical-register-q" name="q" value="{{ search_params.q }}" placeholder="Example: Dr Aiwa or MB 100">
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label for="medical-register-number">Registration No.</label>
+                            <input type="text" class="form-control" id="medical-register-number" name="registration_number" value="{{ search_params.registration_number }}">
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label for="medical-practitioner-number">Practitioner No.</label>
+                            <input type="text" class="form-control" id="medical-practitioner-number" name="practitioner_number" value="{{ search_params.practitioner_number }}">
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label for="medical-register-category">Category</label>
+                            <select class="form-control" id="medical-register-category" name="professional_category">
+                                <option value="">All categories</option>
+                                <option value="Medical Doctor" {% if search_params.professional_category == "Medical Doctor" %}selected{% endif %}>Medical Doctor</option>
+                                <option value="Specialist" {% if search_params.professional_category == "Specialist" %}selected{% endif %}>Specialist</option>
+                                <option value="Community Health Worker" {% if search_params.professional_category == "Community Health Worker" %}selected{% endif %}>Community Health Worker</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label for="medical-register-status">Status</label>
+                            <select class="form-control" id="medical-register-status" name="licence_status">
+                                <option value="">Any status</option>
+                                <option value="Active" {% if search_params.licence_status == "Active" %}selected{% endif %}>Active</option>
+                                <option value="Registered" {% if search_params.licence_status == "Registered" %}selected{% endif %}>Registered</option>
+                                <option value="Practising certificate" {% if search_params.licence_status == "Practising certificate" %}selected{% endif %}>Practising certificate</option>
+                                <option value="Expired" {% if search_params.licence_status == "Expired" %}selected{% endif %}>Expired</option>
+                                <option value="Inactive" {% if search_params.licence_status == "Inactive" %}selected{% endif %}>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center">
+                        <button type="submit" class="btn btn-danger mr-2 mb-2">
+                            <i class="fas fa-search mr-1"></i> Search Medical Board Register
+                        </button>
+                        <a href="{% url 'public_medical_board_register_search_root' %}" class="btn btn-outline-secondary mr-2 mb-2">Clear</a>
+                        <a href="{% url 'workforce_map' %}?office=medical" class="btn btn-outline-info mr-2 mb-2">
+                            <i class="fas fa-map-location-dot mr-1"></i> Medical Board Map
+                        </a>
+                        <a href="{% url 'medical_board_register' %}" class="btn btn-outline-success mb-2">Open Medical Board Forms</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card card-outline card-success">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Verification Results{% if searched %} ({{ result_count }}){% endif %}</h3>
+            </div>
+            <div class="card-body p-0">
+                {% if searched and results %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Registration No.</th>
+                                <th>Practitioner No.</th>
+                                <th>Category</th>
+                                <th>Specialty / Training</th>
+                                <th>Status</th>
+                                <th>Expiry</th>
+                                <th>Conditions</th>
+                                <th>Source</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in results %}
+                                <tr>
+                                    <td class="font-weight-bold">{{ row.full_name|default:"-" }}</td>
+                                    <td>{{ row.registration_number|default:"-" }}</td>
+                                    <td>{{ row.practitioner_number|default:"-" }}</td>
+                                    <td>{{ row.professional_category|default:"-" }}</td>
+                                    <td>{{ row.specialty_or_training|default:"-" }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if row.eligible_to_practice %}success{% elif row.licence_status == 'Expired' %}warning{% else %}secondary{% endif %}">
+                                            {{ row.licence_status|default:"Unknown" }}
+                                        </span>
+                                    </td>
+                                    <td>{{ row.licence_expiry_date|default:"-" }}</td>
+                                    <td>{{ row.conditions_summary|default:"-" }}</td>
+                                    <td>{{ row.source|default:"Medical Board" }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% elif searched %}
+                    <div class="p-4 text-muted">
+                        No public Medical Board register match was found for that search. Check the spelling, registration number, or contact the Medical Board for verification.
+                    </div>
+                {% else %}
+                    <div class="p-4 text-muted">
+                        Enter a name, registration number, practitioner number, or specialty to verify a Medical Board public register record.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

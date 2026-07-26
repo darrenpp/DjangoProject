@@ -11,12 +11,12 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
 
-PROJECT_NAME = "The National Department Of Health Regulatory Bodies Nursing Council & The Medical Board Online Workforce System"
+PROJECT_NAME = "PNG Nursing Council and Medical Board Online Regulatory Workforce Platform"
 SUBJECT = f"Updated Brief for {PROJECT_NAME}."
 BASE_DIR = Path(__file__).resolve().parent.parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ndoh_workforce_registry.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "NDOH_regulatory_bodies.settings")
 
 import django
 

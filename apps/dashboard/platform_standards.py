@@ -39,6 +39,36 @@ PLATFORM_STANDARDS_SUMMARY = {
 
 PLATFORM_STANDARD_SOURCES = [
     {
+        "name": "PNG National Department of Health",
+        "url": "https://www.health.gov.pg/",
+        "use": "Primary PNG health-sector source for NDoH mandate, National Health Plan, NHSS compliance, health standards, and health policy publications.",
+    },
+    {
+        "name": "PNG NDoH policies, standards, M&E and health-sector documents",
+        "url": "https://www.health.gov.pg/subindex.php?acts=1",
+        "use": "Official publication page for National Health Plan, M&E framework, data management SOP, HRH policy, WASH, community health post, and other health-sector policy documents.",
+    },
+    {
+        "name": "PNG National Health Plan 2021-2030",
+        "url": "https://www.health.gov.pg/pdf/NHP_1A15.pdf",
+        "use": "National policy directions, principles, KRAs, partnership model, quality-access commitments, and health-system strengthening priorities.",
+    },
+    {
+        "name": "PNG NDoH National Corporate Plan 2022-2026",
+        "url": "https://www.health.gov.pg/pdf/NDoHC_P2022-2026.pdf",
+        "use": "NDoH organizational mandate for standards, quality assurance, regulatory compliance, PHA support, and health-sector leadership.",
+    },
+    {
+        "name": "PNG NDoH Routine Health Information System Data Management SOP",
+        "url": "https://www.health.gov.pg/pdf/SOPdm_2024.pdf",
+        "use": "Data governance model for routine health information management, data quality, reporting, and accountability.",
+    },
+    {
+        "name": "PNG Nursing Council Situational Analysis Report, 30 January 2026",
+        "url": "",
+        "use": "Internal reform source for legal defensibility, governance, SOPs, documentation control, audit trails, case management, and digital regulatory systems.",
+    },
+    {
         "name": "WHO National Health Workforce Accounts handbook",
         "url": "https://www.who.int/publications/i/item/9789240081291",
         "use": "Primary model for workforce registry indicators, data quality, and policy reporting.",
@@ -57,6 +87,103 @@ PLATFORM_STANDARD_SOURCES = [
         "name": "DHIS2 HMIS platform",
         "url": "https://dhis2.org/about-2/",
         "use": "Secondary HMIS model for national health information integration and analytics.",
+    },
+]
+
+
+PNG_NDOH_STANDARD_ROWS = [
+    {
+        "standard_area": "NDoH stewardship and compliance mandate",
+        "source": "National Department of Health mandate and Corporate Plan 2022-2026",
+        "expectation": "Provide health-sector leadership, set quality health standards, support legislation and coordination, and ensure service delivery agencies comply with policies, plans, and the National Health Service Standards.",
+        "platform_alignment": "Standards dashboards, role-based registrar workflows, audit trails, facility ownership groups, PHA/private/NGO reporting, and compliance evidence for regulatory decisions.",
+    },
+    {
+        "standard_area": "National Health Plan 2021-2030 policy directions",
+        "source": "NHP 2021-2030 Volume 1",
+        "expectation": "Support people-centred, equitable, integrated, evidence-based, partnership-driven health services with stronger health systems and no one left behind.",
+        "platform_alignment": "Workforce dashboards show stock, cadre, training pipeline, province, facility, applicant origin, current practice status, and quality flags for evidence-based planning.",
+    },
+    {
+        "standard_area": "National Health Service Standards and accreditation",
+        "source": "NHSS / NHP 2021-2030 service quality and accreditation references",
+        "expectation": "Maintain minimum service expectations for staffing, facility function, equipment, scope of practice, service quality, and continuous accreditation improvement.",
+        "platform_alignment": "Facility and practitioner records distinguish official facility masters from raw workplace strings and show staffing distribution across PHA, private, NGO, church, and review-needed facilities.",
+    },
+    {
+        "standard_area": "Monitoring, evaluation, reporting, and data management",
+        "source": "NHP M&E Framework, M&E Strategic Plan, data dictionary, and Routine HIS Data Management SOP",
+        "expectation": "Use standard data definitions, maintain source provenance, improve data quality, monitor performance, and produce reliable periodic reports.",
+        "platform_alignment": "Imports retain source workbook, sheet, row, year, dates, record type, data-quality flags, duplicate review, and recent-date statistics before dashboard totals are trusted.",
+    },
+    {
+        "standard_area": "Health workforce and HRH policy alignment",
+        "source": "Health Sector Human Resource Policy and NHP workforce priorities",
+        "expectation": "Track workforce categories, training, deployment, professional registration, facility posting, capacity building, and workforce gaps.",
+        "platform_alignment": "The registry separates nurses, midwives, nurse aides, doctors, CHWs, graduands, specialists, overseas workers, national workers, employment details, and facilities.",
+    },
+    {
+        "standard_area": "PHA, private, NGO, church, and partner coordination",
+        "source": "NHP partnership and NDoH stakeholder model",
+        "expectation": "Coordinate PHAs, DDAs, churches, NGOs, private providers, education institutions, professional bodies, and development partners under a single national health-sector plan.",
+        "platform_alignment": "Dashboards group workers and facilities by PHA, private, NGO/church, province, institution, facility, current/past activity, and national/overseas origin.",
+    },
+    {
+        "standard_area": "Public health, WASH, community health post, and facility environment standards",
+        "source": "NDoH WASH in healthcare facilities and Community Health Post policy references",
+        "expectation": "Recognise facility-level standards that affect safe service delivery, community access, infection prevention, and workforce placement needs.",
+        "platform_alignment": "Facility master data and workforce-flow reporting provide the staffing and location layer needed to connect regulatory workforce data with service-standard reviews.",
+    },
+    {
+        "standard_area": "Medicines, clinical support, and regulated health practice",
+        "source": "Medicines and Cosmetics Act, National Medicines Policy, and pharmaceutical services standards references",
+        "expectation": "Maintain regulatory oversight for safe, effective, quality health products and licensed clinical support services where workforce regulation intersects with service delivery.",
+        "platform_alignment": "Medical Board and future specialist-role modules can use the same practitioner, facility, licence, source-provenance, and audit pattern.",
+    },
+    {
+        "standard_area": "Digital health, data security, and interoperability",
+        "source": "NDoH data and interoperability focus, Routine HIS SOP, NHWA, DHIS2/HMIS, and FHIR concepts",
+        "expectation": "Use secure digital records, standard reporting definitions, controlled access, reliable audit trails, and future exchange-ready data structures.",
+        "platform_alignment": "The system applies role-based access, searchable registries, import histories, audit events, document audit, FHIR-style practitioner-role concepts, and DHIS2/HMIS-ready aggregate outputs.",
+    },
+]
+
+
+PNGNC_SITUATIONAL_ANALYSIS_ROWS = [
+    {
+        "domain": "Legal and governance",
+        "finding": "The current framework relies on the Medical Act and needs a dedicated PNG Nursing Act for modern nursing and midwifery regulation.",
+        "platform_action": "Keep legal authority, decision status, committee pathways, and board/registrar actions explicit in every regulatory workflow.",
+    },
+    {
+        "domain": "Policies and SOPs",
+        "finding": "Policies and SOPs are limited or inconsistent, which weakens defensibility and standard practice.",
+        "platform_action": "Expose standard workflows for registration, licensing, complaints, discipline, accreditation, inspection, and document control.",
+    },
+    {
+        "domain": "Documentation control",
+        "finding": "Weak version control and uncontrolled document editing create regulatory and legal risk.",
+        "platform_action": "Use repository metadata, approval or rejection sign-off, current-version history, staff ownership, access rules, and audit events for official regulatory documents.",
+    },
+    {
+        "domain": "Complaints, discipline, and case management",
+        "finding": "Complaints and disciplinary handling must move from ad-hoc handling to a formal case-management pathway.",
+        "platform_action": "Use the ICMS case module to maintain case intake, assigned officer, status, evidence, decision notes, due-process checkpoints, and final outcomes.",
+    },
+    {
+        "domain": "Audit trails and legal defensibility",
+        "finding": "Weak audit trails and informal decisions are major risks if Council decisions are challenged.",
+        "platform_action": "Record source, user, time, action, field changes, approval status, formal decision rationale, authority, appeal rights, and supporting evidence for each major decision.",
+    },
+    {
+        "domain": "Digital regulatory systems",
+        "finding": "Manual and fragmented systems should be replaced with digital registration, licensing, and case tracking.",
+        "platform_action": "Prioritise fast, paginated data tables, clean imports, validated forms, dashboards by year/date, and record-quality review before official reporting.",
+    },
+    {
+        "domain": "Capacity building",
+        "finding": "Staff need training in regulatory practice, documentation, decision writing, investigations, and disciplinary processes.",
+        "platform_action": "Use guided workflow labels, dashboard explanations, required fields, and standard reports to support consistent registrar practice.",
     },
 ]
 
@@ -217,7 +344,7 @@ def _live_standard_metrics():
 
 
 def build_platform_standards_context():
-    cache_key = "platform-standards-context:v1"
+    cache_key = "platform-standards-context:v2"
     cached = cache.get(cache_key)
     if cached:
         return cached
@@ -226,6 +353,8 @@ def build_platform_standards_context():
         "standard_badges": PLATFORM_STANDARD_BADGES,
         "standard_sources": PLATFORM_STANDARD_SOURCES,
         "nhwa_alignment_rows": NHWA_ALIGNMENT_ROWS,
+        "png_ndoh_standard_rows": PNG_NDOH_STANDARD_ROWS,
+        "pngnc_situational_analysis_rows": PNGNC_SITUATIONAL_ANALYSIS_ROWS,
         "data_standard_rows": DATA_STANDARD_ROWS,
         "interoperability_rows": INTEROPERABILITY_ROWS,
         "live_standard_metrics": _live_standard_metrics(),

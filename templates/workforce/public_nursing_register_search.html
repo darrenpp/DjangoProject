@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Public Register Verification{% endblock %}
+{% block title_label %}Public Register Verification{% endblock %}
+
+{% block content %}
+<style>
+    .public-register-shell {
+        --register-ink: #102033;
+        --register-muted: #5c6b7a;
+        --register-line: #d7e0ea;
+        --register-green: #12624f;
+        color: var(--register-ink);
+    }
+    .verification-header {
+        background: #ffffff;
+        border: 1px solid var(--register-line);
+        border-left: 5px solid var(--register-green);
+        border-radius: 8px;
+        padding: 18px;
+    }
+    .verification-kicker {
+        color: var(--register-green);
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+    .verification-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        justify-content: flex-end;
+    }
+    .verification-note-grid {
+        display: grid;
+        gap: .75rem;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+    .verification-note {
+        background: #f8fafc;
+        border: 1px solid var(--register-line);
+        border-radius: 8px;
+        padding: .85rem;
+    }
+    .verification-note strong,
+    .verification-note span {
+        display: block;
+    }
+    .verification-note span {
+        color: var(--register-muted);
+        font-size: .88rem;
+    }
+</style>
+<div class="public-register-shell">
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="verification-header mb-3">
+            <div class="d-flex flex-wrap justify-content-between">
+                <div>
+                    <div class="verification-kicker">PNG Nursing Council Public Service</div>
+                    <h3 class="mb-1">PNG Nursing Council Public Register Verification</h3>
+                    <p class="text-muted mb-0">
+                        Verify a nurse, midwife, or nurse aide by name, registration number, practitioner number, category, or licence status.
+                    </p>
+                </div>
+                <div class="verification-actions mt-3 mt-md-0">
+                    <a href="{% url 'portal_home' %}" class="btn btn-outline-secondary btn-sm">Home</a>
+                    <a href="{% url 'nursing_council_public_profile' %}" class="btn btn-outline-primary btn-sm">Regulatory Profile</a>
+                    <a href="{% url 'nursing_forms_portal' %}" class="btn btn-outline-success btn-sm">Nursing Forms</a>
+                    <a href="{% url 'workforce_map' %}?office=nursing" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-map-location-dot mr-1"></i> Nursing Map
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="verification-note-grid mb-3">
+            <div class="verification-note"><strong>Best match</strong><span>Use a registration or practitioner number where possible.</span></div>
+            <div class="verification-note"><strong>Public-safe result</strong><span>No private contact, document, receipt, or application details are displayed.</span></div>
+            <div class="verification-note"><strong>Practice status</strong><span>Registration and ATP/practising authority are treated as separate checks.</span></div>
+            <div class="verification-note"><strong>Conditions</strong><span>Active final public conditions are surfaced when recorded.</span></div>
+        </div>
+
+        <div class="card card-primary card-outline">
+            <div class="card-body">
+                <form method="get" class="mb-0">
+                    <div class="form-row">
+                        <div class="form-group col-lg-4 col-md-6">
+                            <label for="public-register-q">Name or registration</label>
+                            <input type="text" class="form-control" id="public-register-q" name="q" value="{{ search_params.q }}" placeholder="Example: Alex Paito or RN 100">
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label for="public-register-number">Registration No.</label>
+                            <input type="text" class="form-control" id="public-register-number" name="registration_number" value="{{ search_params.registration_number }}">
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label for="public-practitioner-number">Practitioner No.</label>
+                            <input type="text" class="form-control" id="public-practitioner-number" name="practitioner_number" value="{{ search_params.practitioner_number }}">
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label for="public-register-category">Category</label>
+                            <select class="form-control" id="public-register-category" name="professional_category">
+                                <option value="">All categories</option>
+                                <option value="Registered Nurse" {% if search_params.professional_category == "Registered Nurse" %}selected{% endif %}>Registered Nurse</option>
+                                <option value="Midwife" {% if search_params.professional_category == "Midwife" %}selected{% endif %}>Midwife</option>
+                                <option value="Nurse Aide" {% if search_params.professional_category == "Nurse Aide" %}selected{% endif %}>Nurse Aide</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label for="public-register-status">Licence status</label>
+                            <select class="form-control" id="public-register-status" name="licence_status">
+                                <option value="">Any status</option>
+                                <option value="Active" {% if search_params.licence_status == "Active" %}selected{% endif %}>Active</option>
+                                <option value="Registered" {% if search_params.licence_status == "Registered" %}selected{% endif %}>Registered</option>
+                                <option value="Provisional" {% if search_params.licence_status == "Provisional" %}selected{% endif %}>Provisional</option>
+                                <option value="Temporary" {% if search_params.licence_status == "Temporary" %}selected{% endif %}>Temporary</option>
+                                <option value="Expired" {% if search_params.licence_status == "Expired" %}selected{% endif %}>Expired</option>
+                                <option value="Inactive" {% if search_params.licence_status == "Inactive" %}selected{% endif %}>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center">
+                    <button type="submit" class="btn btn-primary mr-2 mb-2">
+                        <i class="fas fa-search mr-1"></i> Search Register
+                    </button>
+                    <a href="{% url 'public_nursing_register_search_root' %}" class="btn btn-outline-secondary mr-2 mb-2">Clear</a>
+                    <a href="{% url 'workforce_map' %}?office=nursing" class="btn btn-outline-info mr-2 mb-2">
+                        <i class="fas fa-map-location-dot mr-1"></i> Nursing Map
+                    </a>
+                    <a href="{% url 'workforce_map' %}" class="btn btn-outline-info mr-2 mb-2">
+                        <i class="fas fa-map mr-1"></i> All Maps
+                    </a>
+                    <a href="{% url 'public_nurse_register' %}" class="btn btn-outline-success mb-2">Open Nursing Forms</a>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card card-outline card-success">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Verification Results{% if searched %} ({{ result_count }}){% endif %}</h3>
+            </div>
+            <div class="card-body p-0">
+                {% if searched and results %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Registration No.</th>
+                                <th>Practitioner No.</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Expiry</th>
+                                <th>Conditions</th>
+                                <th>Eligible</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in results %}
+                                <tr>
+                                    <td class="font-weight-bold">{{ row.full_name|default:"-" }}</td>
+                                    <td>{{ row.registration_number|default:"-" }}</td>
+                                    <td>{{ row.practitioner_number|default:"-" }}</td>
+                                    <td>{{ row.professional_category|default:"-" }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if row.licence_status == 'Active' or row.licence_status == 'Registered' %}success{% elif row.licence_status == 'Provisional' or row.licence_status == 'Temporary' %}info{% elif row.licence_status == 'Expired' %}warning{% else %}secondary{% endif %}">
+                                            {{ row.licence_status|default:"Unknown" }}
+                                        </span>
+                                    </td>
+                                    <td>{{ row.licence_expiry_date|default:"-" }}</td>
+                                    <td>{{ row.conditions_summary|default:"No active public conditions recorded" }}</td>
+                                    <td>{% if row.eligible_to_practice %}Yes{% else %}No{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% elif searched %}
+                    <div class="p-4 text-muted">
+                        No public register match was found for that search. Check the spelling, registration number, or contact the Nursing Council for verification.
+                    </div>
+                {% else %}
+                    <div class="p-4 text-muted">
+                        Enter a name, registration number, or practitioner number to verify a Nursing Council public register record.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

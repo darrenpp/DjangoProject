@@ -4,6 +4,8 @@
 
 No silent approvals. No undocumented edits. Every official decision must have status history and audit evidence.
 
+This applies to application decisions, complaint/discipline decisions, document sign-off, receipt-owner links, and NHWA/reporting sign-off.
+
 ## Standard Application Workflow
 
 ```text
@@ -16,6 +18,28 @@ Application submitted
   -> public/statistical dashboard updated
   -> audit trail retained
 ```
+
+## ICMS And Discipline Workflow
+
+```text
+Complaint / incident / enquiry
+  -> ICMS case
+  -> triage and assignment
+  -> investigation notes and attachments
+  -> resolved / closed / withdrawn
+  -> disciplinary case where required
+  -> committee review / hearing / decision
+  -> regulatory decision record
+  -> monitoring or closure
+```
+
+Rules:
+
+- Public submissions do not change registry records automatically.
+- Office scope must match the responsible regulatory body.
+- High-risk or critical cases should be assigned and tracked until closure.
+- Discipline escalation must preserve the source ICMS case link.
+- Final outcomes must be recorded in the decision register when a defensible regulatory decision is required.
 
 ## Required Statuses
 
@@ -30,6 +54,12 @@ Recommended official status vocabulary:
 - Technical review.
 - Supervisor review.
 - Registrar review.
+- ICMS triage.
+- Investigation.
+- Committee review.
+- Hearing.
+- Decision issued.
+- Appeal / monitoring.
 - Approved.
 - Rejected.
 - Withdrawn.
@@ -72,6 +102,21 @@ Registrar rejection must:
 - Create audit log.
 - Notify applicant or staff queue where appropriate.
 
+## Regulatory Decision Controls
+
+A formal decision record should capture:
+
+- Decision type and status.
+- Subject name and identifier.
+- Decision text.
+- Rationale.
+- Authority, policy, or SOP reference.
+- Evidence summary.
+- Conditions or restrictions.
+- Appeal rights.
+- Decision maker.
+- Effective and expiry dates where applicable.
+
 ## Licence Lifecycle
 
 ```text
@@ -105,6 +150,13 @@ Minimum events:
 - Licence created/renewed/expired/suspended/revoked.
 - Practitioner marked deceased.
 - Report exported.
+- Complaint case created/updated/closed.
+- Complaint escalated to discipline.
+- Discipline case stage changed.
+- Regulatory decision created/finalised.
+- Document approved/rejected.
+- Receipt linked to owner or routed for review.
+- NHWA workbook populated/signed off/exported.
 
 ## Workflow Performance Measures
 
@@ -120,3 +172,9 @@ Track:
 - Rejected this month.
 - Average days from submitted to decision.
 - Renewals due within 30/60/90 days.
+- Open ICMS cases by risk and age.
+- Open disciplinary cases by stage.
+- Decisions missing authority/SOP reference.
+- Documents awaiting approval/rejection.
+- Receipts awaiting owner review.
+- NHWA workbooks awaiting sign-off.

@@ -1,0 +1,22 @@
+{% if regulatory_ml_forecast %}
+{% with readiness=regulatory_ml_forecast.medical.planning_readiness baseline=regulatory_ml_forecast.medical.planning_readiness.aggregate_baseline %}
+<section class="mb-4" id="regulatory-ml-forecast" aria-labelledby="medical-ml-forecast-heading">
+    <div class="card border-info">
+        <div class="card-header bg-info text-white">
+            <h3 id="medical-ml-forecast-heading" class="card-title mb-1"><i class="fas fa-chart-line mr-2"></i>Medical Workforce Planning Readiness</h3>
+            <div class="small">Local, aggregate-only decision support. A shortage forecast is withheld until approved need baselines and longitudinal source data are available.</div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 col-sm-6 mb-2"><div class="border rounded p-3 h-100"><div class="metric-label">Active practitioners</div><div class="metric-value">{{ baseline.active_practitioners|default:"—" }}</div><small class="text-muted">Aggregate baseline only</small></div></div>
+                <div class="col-md-3 col-sm-6 mb-2"><div class="border rounded p-3 h-100"><div class="metric-label">Specialist profiles</div><div class="metric-value">{{ baseline.specialists|default:"—" }}</div><small class="text-muted">Not a service-availability claim</small></div></div>
+                <div class="col-md-3 col-sm-6 mb-2"><div class="border rounded p-3 h-100"><div class="metric-label">Accredited facilities</div><div class="metric-value">{{ baseline.accredited_facilities|default:"—" }}</div><small class="text-muted">Aggregate accreditation baseline</small></div></div>
+                <div class="col-md-3 col-sm-6 mb-2"><div class="border rounded p-3 h-100"><div class="metric-label">Shortage projection</div><div class="font-weight-bold text-muted">Not issued</div><small class="text-muted">Approved demand and longitudinal inputs required</small></div></div>
+            </div>
+            <div class="alert alert-light border small mb-0"><strong>Planning boundary:</strong> {{ readiness.reason }} It never uses individual credentials, clinical privileges, complaints, disciplinary records, or personal data to score a professional.</div>
+            <div class="small text-muted mt-2">{{ regulatory_ml_forecast.model_metadata.validation_requirement }}</div>
+        </div>
+    </div>
+</section>
+{% endwith %}
+{% endif %}

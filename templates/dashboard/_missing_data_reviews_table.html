@@ -46,7 +46,8 @@
                 <div class="row mb-3">
                     <div class="col-lg-7 mb-3 mb-lg-0">
                         <div class="table-responsive">
-                            <table class="table table-sm table-bordered mb-0">
+                            <table id="data-quality-year-summary-table"
+                                   class="table table-sm table-bordered mb-0 data-quality-year-summary-datatable">
                                 <thead>
                                     <tr>
                                         <th>Source Year</th>
@@ -60,12 +61,12 @@
                                 <tbody>
                                     {% for row in data_quality_year_rows %}
                                     <tr>
-                                        <td>{{ row.year }}</td>
-                                        <td class="text-right font-weight-bold">{{ row.total }}</td>
-                                        <td class="text-right text-danger">{{ row.high }}</td>
-                                        <td class="text-right text-warning">{{ row.medium }}</td>
-                                        <td class="text-right text-info">{{ row.low }}</td>
-                                        <td>{% if row.recent_date %}{{ row.recent_date|date:"d M Y" }}{% else %}-{% endif %}</td>
+                                        <td data-order="{{ row.sort_year }}">{{ row.year }}</td>
+                                        <td class="text-right font-weight-bold" data-order="{{ row.total }}">{{ row.total }}</td>
+                                        <td class="text-right text-danger" data-order="{{ row.high }}">{{ row.high }}</td>
+                                        <td class="text-right text-warning" data-order="{{ row.medium }}">{{ row.medium }}</td>
+                                        <td class="text-right text-info" data-order="{{ row.low }}">{{ row.low }}</td>
+                                        <td data-order='{% if row.recent_date %}{{ row.recent_date|date:"Ymd" }}{% else %}0{% endif %}'>{% if row.recent_date %}{{ row.recent_date|date:"d M Y" }}{% else %}-{% endif %}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -84,26 +85,60 @@
                 </div>
                 {% endif %}
 
-                <div class="table-responsive">
-                <table class="table table-striped table-hover datatable data-quality-review-datatable"
-                       data-server-side="1"
-                       data-ajax-url="{% url 'data_quality_reviews_table' %}{% if data_quality_review_scope %}?scope={{ data_quality_review_scope }}{% endif %}">
-                    <thead>
-                        <tr>
-                            <th>Source Year</th>
-                            <th>Recent Date</th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Registration No</th>
-                            <th>Flagged Issues</th>
-                            <th>Source</th>
-                            <th>Severity</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="data-quality-datatable-shell" data-data-quality-table-shell>
+                    <div class="data-quality-table-toolbar">
+                        <div class="form-group mb-0">
+                            <label for="dataQualitySeverityFilter">Severity</label>
+                            <select id="dataQualitySeverityFilter" class="form-control form-control-sm" data-data-quality-filter="severity">
+                                <option value="">All severities</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="dataQualityStatusFilter">Status</label>
+                            <select id="dataQualityStatusFilter" class="form-control form-control-sm" data-data-quality-filter="status">
+                                <option value="">All open statuses</option>
+                                <option value="under_review">Under Review</option>
+                                <option value="notified">Notified</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="dataQualityYearFilter">Source Year</label>
+                            <select id="dataQualityYearFilter" class="form-control form-control-sm" data-data-quality-filter="source_year">
+                                <option value="">All source years</option>
+                                {% for row in data_quality_year_rows %}
+                                <option value="{% if row.sort_year >= 0 %}{{ row.year }}{% else %}no_year{% endif %}">{{ row.year }} ({{ row.total }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary align-self-end" data-data-quality-reset>
+                            <i class="fas fa-rotate-left mr-1"></i> Reset
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="data-quality-review-table"
+                               class="table table-striped table-hover data-quality-review-datatable"
+                               data-server-side="1"
+                               data-ajax-url="{% url 'data_quality_reviews_table' %}{% if data_quality_review_scope %}?scope={{ data_quality_review_scope }}{% endif %}">
+                            <thead>
+                                <tr>
+                                    <th>Source Year</th>
+                                    <th>Recent Date</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Registration No</th>
+                                    <th>Flagged Issues</th>
+                                    <th>Source</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -113,7 +148,7 @@
 (function initializeDataQualityReviewTable(attempt) {
     attempt = attempt || 1;
     if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) {
-        if (attempt < 12) {
+        if (attempt < 40) {
             window.setTimeout(function () {
                 initializeDataQualityReviewTable(attempt + 1);
             }, 250);
@@ -121,20 +156,71 @@
         return;
     }
 
+    jQuery('.data-quality-year-summary-datatable').each(function () {
+        const $summaryTable = jQuery(this);
+        if ($summaryTable.attr('data-ndoh-datatables-ready') === '1') {
+            return;
+        }
+
+        $summaryTable.DataTable({
+            paging: true,
+            pagingType: 'full_numbers',
+            searching: true,
+            ordering: true,
+            info: true,
+            pageLength: 10,
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 'All']],
+            order: [[0, 'desc']],
+            responsive: true,
+            autoWidth: false,
+            language: {
+                search: 'Search yearly summary:',
+                lengthMenu: 'Show _MENU_ source years',
+                info: 'Showing _START_ to _END_ of _TOTAL_ source years',
+                emptyTable: 'No yearly data-quality statistics are available.',
+                zeroRecords: 'No yearly statistics match the search.',
+                paginate: {
+                    first: 'First',
+                    previous: 'Previous',
+                    next: 'Next',
+                    last: 'Last'
+                }
+            }
+        });
+        $summaryTable.attr('data-ndoh-datatables-ready', '1');
+    });
+
     jQuery('.data-quality-review-datatable').each(function () {
         const $table = jQuery(this);
         if ($table.attr('data-ndoh-datatables-ready') === '1') {
             return;
         }
+        const $shell = $table.closest('[data-data-quality-table-shell]');
+        const $severityFilter = $shell.find('[data-data-quality-filter="severity"]');
+        const $statusFilter = $shell.find('[data-data-quality-filter="status"]');
+        const $sourceYearFilter = $shell.find('[data-data-quality-filter="source_year"]');
 
-        $table.DataTable({
+        const dataTable = $table.DataTable({
             processing: true,
             serverSide: true,
+            deferRender: true,
+            searching: true,
+            ordering: true,
+            paging: true,
+            pagingType: 'full_numbers',
+            searchDelay: 450,
+            stateSave: true,
+            stateDuration: 0,
             ajax: {
                 url: $table.data('ajax-url'),
-                type: 'GET'
+                type: 'GET',
+                data: function (payload) {
+                    payload.severity = $severityFilter.val() || '';
+                    payload.status = $statusFilter.val() || '';
+                    payload.source_year = $sourceYearFilter.val() || '';
+                }
             },
-            pageLength: 25,
+            pageLength: 10,
             lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
             order: [[0, 'desc'], [1, 'desc']],
             responsive: false,
@@ -152,13 +238,39 @@
                 { data: 'status' },
                 { data: 'actions', orderable: false, searchable: false }
             ],
+            columnDefs: [
+                { targets: [5, 9], orderable: false }
+            ],
             language: {
                 processing: 'Loading data quality records...',
                 search: 'Search flagged records:',
                 lengthMenu: 'Show _MENU_ flagged records',
-                info: 'Showing _START_ to _END_ of _TOTAL_ flagged records'
+                info: 'Showing _START_ to _END_ of _TOTAL_ flagged records',
+                emptyTable: 'No flagged data-quality records are available for this scope.',
+                zeroRecords: 'No flagged records match the current filters.',
+                paginate: {
+                    first: 'First',
+                    previous: 'Previous',
+                    next: 'Next',
+                    last: 'Last'
+                }
             }
         });
+
+        $shell.find('[data-data-quality-filter]').on('change', function () {
+            dataTable.ajax.reload(null, true);
+        });
+
+        $shell.find('[data-data-quality-reset]').on('click', function () {
+            $severityFilter.val('');
+            $statusFilter.val('');
+            $sourceYearFilter.val('');
+            dataTable.search('');
+            dataTable.order([[0, 'desc'], [1, 'desc']]);
+            dataTable.page.len(10);
+            dataTable.ajax.reload(null, true);
+        });
+
         $table.attr('data-ndoh-datatables-ready', '1');
     });
 })();

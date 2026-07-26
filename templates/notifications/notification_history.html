@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Notification History{% endblock %}
+{% block title_label %}Notification History{% endblock %}
+
+{% block content %}
+{% if request.user.role == 'admin' or request.user.role == 'registrar' %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-clipboard-list mr-2"></i>Current Staff Notices</h3>
+            </div>
+            <div class="card-body">
+                {% if staff_summary.items %}
+                <div class="list-group list-group-flush">
+                    {% for item in staff_summary.items %}
+                    <a href="{{ item.url }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+                        <span>
+                            <strong>{{ item.title }}</strong>
+                            <span class="d-block text-muted small">{{ item.message }}</span>
+                        </span>
+                        <span class="badge badge-{{ item.level|default:'secondary' }}">{{ item.action }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-muted">No current staff notices.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card card-outline card-secondary">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0"><i class="fas fa-bell mr-2"></i>Notification History</h3>
+                <a href="{% if request.user.role == 'admin' or request.user.role == 'registrar' %}{% url 'staff_communications' %}{% else %}{% url 'enquiry_inbox' %}{% endif %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-comments mr-1"></i>Messages
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if notifications %}
+                <div class="list-group list-group-flush">
+                    {% for notification in notifications %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                <strong>{{ notification.subject }}</strong>
+                                <div class="text-muted small">{{ notification.created_at|date:"d M Y H:i" }}</div>
+                            </div>
+                            {% if notification.read_at %}
+                            <span class="badge badge-light">Viewed</span>
+                            {% else %}
+                            <span class="badge badge-warning">New</span>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2">{{ notification.message|linebreaksbr }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-4 text-muted">No notification history yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

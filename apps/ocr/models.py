@@ -1,3 +1,7 @@
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
+from io import StringIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 
 from django.db import models
@@ -5,10 +9,30 @@ from django.db import models
 from apps.documents.models import DocumentAuditEvent, DocumentVersion
 from apps.documents.services import extract_reference_candidates
 
-try:
-    import easyocr
-except ImportError:
-    easyocr = SimpleNamespace(Reader=None)
+easyocr = SimpleNamespace(Reader=None)
+
+
+class OCREngineUnavailable(RuntimeError):
+    pass
+
+
+def _easyocr_module():
+    global easyocr
+    if getattr(easyocr, "Reader", None) is not None:
+        return easyocr
+    try:
+        import easyocr as easyocr_module
+    except ImportError:
+        return easyocr
+    easyocr = easyocr_module
+    return easyocr
+
+
+@contextmanager
+def _silence_ocr_console_output():
+    """Prevent OCR library progress output from breaking Windows charmap streams."""
+    with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+        yield
 
 
 class OCRDocument(models.Model):
@@ -32,14 +56,9 @@ class OCRDocument(models.Model):
     processing_error = models.TextField(blank=True)
     processed_at = models.DateTimeField(auto_now_add=True)
 
-    def process_ocr(self):
+    def process_ocr(self, *, raise_errors=True):
         try:
-            if easyocr.Reader is None:
-                raise RuntimeError("EasyOCR is not installed for this Python runtime.")
-
-            reader = easyocr.Reader(['en'])
-            result = reader.readtext(self.file.path)
-            self.extracted_text = ' '.join([text[1] for text in result])
+            self.extracted_text = self._extract_text()
             self.extracted_metadata = extract_reference_candidates(self.extracted_text)
             self.processing_status = "completed"
             self.processing_error = ""
@@ -67,4 +86,77 @@ class OCRDocument(models.Model):
             self.processing_status = "failed"
             self.processing_error = str(exc)
             self.save(update_fields=["processing_status", "processing_error"])
-            raise
+            if raise_errors:
+                raise
+            return False
+        return True
+
+    def _extract_text(self):
+        extension = Path(self.file.name or "").suffix.lower()
+        if extension == ".pdf":
+            text = self._extract_pdf_text_layer()
+            if text.strip():
+                return text
+            return self._extract_scanned_pdf_with_easyocr()
+        return self._extract_image_with_easyocr(self.file.path)
+
+    def _reader(self):
+        easyocr_module = _easyocr_module()
+        if easyocr_module.Reader is None:
+            raise OCREngineUnavailable(
+                "EasyOCR is not installed for this Python runtime. "
+                "Install easyocr in the active virtual environment, then retry OCR processing."
+            )
+        try:
+            with _silence_ocr_console_output():
+                return easyocr_module.Reader(['en'], gpu=False, verbose=False)
+        except TypeError:
+            with _silence_ocr_console_output():
+                return easyocr_module.Reader(['en'], gpu=False)
+
+    def _extract_image_with_easyocr(self, image_path):
+        result = self._readtext(self._reader(), image_path)
+        return ' '.join([text[1] for text in result])
+
+    def _readtext(self, reader, image_path):
+        with _silence_ocr_console_output():
+            return reader.readtext(str(image_path))
+
+    def _extract_pdf_text_layer(self):
+        try:
+            import fitz
+        except ImportError:
+            return ""
+
+        text_parts = []
+        try:
+            with fitz.open(self.file.path) as pdf_document:
+                for page in pdf_document:
+                    text_parts.append(page.get_text("text"))
+        except Exception:
+            return ""
+        return "\n".join(text_parts).strip()
+
+    def _extract_scanned_pdf_with_easyocr(self):
+        try:
+            import fitz
+        except ImportError as exc:
+            raise OCREngineUnavailable(
+                "Scanned PDF OCR needs PyMuPDF plus EasyOCR. PyMuPDF is not installed."
+            ) from exc
+
+        reader = self._reader()
+        text_parts = []
+        with TemporaryDirectory() as temp_dir:
+            try:
+                with fitz.open(self.file.path) as pdf_document:
+                    for page_index, page in enumerate(pdf_document):
+                        pixmap = page.get_pixmap(dpi=200)
+                        image_path = Path(temp_dir) / f"page-{page_index + 1}.png"
+                        pixmap.save(str(image_path))
+                        result = self._readtext(reader, image_path)
+                        text_parts.extend(text[1] for text in result)
+            except Exception:
+                result = self._readtext(reader, self.file.path)
+                text_parts.extend(text[1] for text in result)
+        return " ".join(text_parts)

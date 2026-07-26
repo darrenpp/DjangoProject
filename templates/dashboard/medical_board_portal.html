@@ -1,121 +1,251 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Medical Board Dashboard{% endblock %}
-{% block title_label %}Medical Board Dashboard{% endblock %}
+{% block title_label %}{{ dashboard_platform_title }}{% endblock %}
 
 {% block extra_css %}
 <style>
     .mb-dashboard {
-        --mb-ink: #1f332d;
-        --mb-green: #176b52;
-        --mb-mint: #dff3e9;
-        --mb-amber: #c56b1d;
-        --mb-rust: #9a4f21;
-        --mb-paper: #fffaf0;
+        --mb-ink: #102033;
+        --mb-muted: #5c6b7a;
+        --mb-line: #d7e0ea;
+        --mb-blue: #0f4c81;
+        --mb-teal: #0f766e;
+        --mb-red: #b42318;
+        --mb-amber: #b45309;
         color: var(--mb-ink);
     }
-    .mb-hero {
-        border-radius: 28px;
-        padding: 28px;
-        background:
-            radial-gradient(circle at 80% 20%, rgba(255, 244, 214, .28), transparent 30%),
-            linear-gradient(135deg, #174b3d 0%, #176b52 56%, #9a4f21 100%);
-        color: #fff;
-        box-shadow: 0 26px 70px rgba(31, 51, 45, .2);
+    .mb-regulator-header {
+        background: #ffffff;
+        border: 1px solid var(--mb-line);
+        border-left: 5px solid var(--mb-blue);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(16, 32, 51, .06);
+        padding: 18px;
     }
-    .mb-hero .eyebrow {
-        letter-spacing: .18em;
-        text-transform: uppercase;
-        opacity: .78;
+    .mb-kicker {
+        color: var(--mb-blue);
+        font-size: .78rem;
         font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+    .mb-regulator-header h2 {
+        font-size: 1.35rem;
+        line-height: 1.2;
+        margin: .25rem 0 .35rem;
+    }
+    .mb-header-note {
+        color: var(--mb-muted);
+        margin: 0;
+    }
+    .mb-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        justify-content: flex-end;
+    }
+    .mb-meta-grid {
+        display: grid;
+        gap: .5rem;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        margin-top: .85rem;
+    }
+    .mb-meta-item {
+        background: #f8fafc;
+        border: 1px solid var(--mb-line);
+        border-radius: 6px;
+        padding: .6rem .7rem;
+    }
+    .mb-meta-label {
+        color: var(--mb-muted);
+        display: block;
         font-size: .75rem;
-    }
-    .mb-metric {
-        border: 0;
-        border-radius: 22px;
-        overflow: hidden;
-        background: linear-gradient(180deg, #fffdf8 0%, #f8f1e5 100%);
-        box-shadow: 0 18px 42px rgba(31, 51, 45, .12);
-    }
-    .mb-metric .card-body {
-        min-height: 130px;
-    }
-    .mb-metric span {
-        color: #6b756f;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: .08em;
-        font-size: .72rem;
     }
-    .mb-metric h3 {
-        font-size: 2.3rem;
-        font-weight: 900;
-        margin: 8px 0 0;
-    }
-    .mb-metric i {
-        color: rgba(23, 107, 82, .22);
-        font-size: 2.5rem;
-    }
-    .mb-panel {
-        border: 0;
-        border-radius: 22px;
-        background: rgba(255, 253, 248, .96);
-        box-shadow: 0 18px 42px rgba(31, 51, 45, .11);
-    }
-    .mb-panel .card-header {
-        border-bottom: 1px solid rgba(31, 51, 45, .12);
-    }
-    .mb-panel .card-title {
-        font-weight: 850;
-        color: var(--mb-ink);
-    }
-    .mb-action {
+    .mb-meta-value {
         display: block;
-        height: 100%;
-        border: 1px solid rgba(23, 107, 82, .18);
-        border-radius: 18px;
-        padding: 16px;
-        color: var(--mb-ink);
-        background: #fffdf8;
-        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        font-weight: 800;
+        margin-top: .1rem;
     }
+    .mb-risk-grid,
+    .mb-lane-grid {
+        display: grid;
+        gap: .75rem;
+        margin: 1rem 0;
+    }
+    .mb-risk-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .mb-lane-grid {
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+    }
+    .mb-risk-tile,
+    .mb-lane {
+        background: #ffffff;
+        border: 1px solid var(--mb-line);
+        border-radius: 8px;
+        color: var(--mb-ink);
+        min-height: 104px;
+        padding: .85rem;
+    }
+    .mb-risk-tile:hover,
+    .mb-lane:hover,
     .mb-action:hover {
+        border-color: #9db4cc;
         color: var(--mb-ink);
         text-decoration: none;
-        transform: translateY(-3px);
-        border-color: rgba(197, 107, 29, .42);
-        box-shadow: 0 16px 34px rgba(31, 51, 45, .13);
     }
-    .mb-action strong {
-        color: var(--mb-amber);
+    .mb-risk-tile strong,
+    .mb-lane strong {
+        display: block;
+        font-size: 1.55rem;
+        line-height: 1;
+        margin-bottom: .35rem;
+    }
+    .mb-risk-tile span,
+    .mb-lane span {
+        display: block;
+        font-weight: 800;
+    }
+    .mb-risk-tile small,
+    .mb-lane small {
+        color: var(--mb-muted);
+        display: block;
+        margin-top: .25rem;
+    }
+    .mb-risk-primary { border-top: 3px solid var(--mb-blue); }
+    .mb-risk-success { border-top: 3px solid var(--mb-teal); }
+    .mb-risk-warning { border-top: 3px solid var(--mb-amber); }
+    .mb-risk-danger { border-top: 3px solid var(--mb-red); }
+    .mb-risk-secondary { border-top: 3px solid #64748b; }
+    .mb-panel {
+        background: #ffffff;
+        border: 1px solid var(--mb-line);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(16, 32, 51, .05);
+    }
+    .mb-panel .card-header {
+        background: #ffffff;
+        border-bottom: 1px solid var(--mb-line);
+        padding: .8rem 1rem;
+    }
+    .mb-panel .card-title {
+        color: var(--mb-ink);
+        font-size: 1rem;
+        font-weight: 800;
+    }
+    .mb-action {
+        align-items: flex-start;
+        background: #ffffff;
+        border: 1px solid var(--mb-line);
+        border-radius: 8px;
+        color: var(--mb-ink);
+        display: flex;
+        gap: .7rem;
+        height: 100%;
+        padding: .75rem;
+        text-decoration: none;
+    }
+    .mb-action i {
+        color: var(--mb-blue);
+        margin-top: .2rem;
+    }
+    .mb-action strong,
+    .mb-action span {
         display: block;
     }
+    .mb-action span {
+        color: var(--mb-muted);
+        font-size: .84rem;
+    }
     .mb-import-bar {
-        height: 9px;
+        background: #e2e8f0;
         border-radius: 999px;
-        background: #e6ddd0;
+        height: 8px;
         overflow: hidden;
     }
     .mb-import-bar span {
+        background: var(--mb-teal);
         display: block;
         height: 100%;
         width: 100%;
-        background: linear-gradient(90deg, var(--mb-green), var(--mb-amber));
     }
     .mb-table th {
-        background: #f7efe2;
+        background: #eef4fa;
         color: var(--mb-ink);
+        font-size: .78rem;
         border-top: 0;
+        text-transform: uppercase;
     }
-    .mb-flow-card {
-        border: 1px solid rgba(23, 107, 82, .16);
-        background: #fffdf8;
+    .mb-table td,
+    .mb-table th {
+        vertical-align: middle;
+    }
+    .mb-section-title {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin: 1.35rem 0 .75rem;
+    }
+    .mb-section-title h3 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        margin: 0;
+    }
+    .mb-check-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+    }
+    .mb-check {
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: .72rem;
+        font-weight: 700;
+        padding: .18rem .5rem;
+    }
+    .mb-check-complete {
+        background: #dcfce7;
+        color: #166534;
+    }
+    .mb-check-missing {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    .mb-progress {
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 8px;
+        min-width: 92px;
+        overflow: hidden;
+    }
+    .mb-progress span {
+        background: var(--mb-teal);
+        display: block;
+        height: 100%;
+    }
+    .mb-standard-list {
+        display: grid;
+        gap: .6rem;
+    }
+    .mb-standard {
+        border-left: 3px solid var(--mb-blue);
+        padding-left: .7rem;
+    }
+    .mb-standard strong,
+    .mb-standard span {
+        display: block;
+    }
+    .mb-standard span {
+        color: var(--mb-muted);
+        font-size: .88rem;
     }
     .mb-flow-label {
-        color: #6b756f;
+        color: var(--mb-muted);
         font-size: .76rem;
         font-weight: 800;
-        letter-spacing: .05em;
         text-transform: uppercase;
     }
     .mb-flow-value {
@@ -129,113 +259,482 @@
     .mb-chart-tall canvas {
         min-height: 265px;
     }
+    @media (max-width: 767.98px) {
+        .mb-header-actions {
+            justify-content: flex-start;
+            margin-top: .75rem;
+        }
+        .mb-table {
+            min-width: 820px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="mb-dashboard">
-    <div class="mb-hero mb-4">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <div class="eyebrow mb-2">Medical Board Operations</div>
-                <h2 class="mb-2">Doctors, specialists, CHWs, facilities, and training institutions</h2>
-                <p class="mb-0">This dashboard is separate from the Nursing Council interface, while still feeding the same centralized NDOH registry and secure administration console.</p>
+    <div class="mb-regulator-header mb-3">
+        <div class="d-flex flex-wrap justify-content-between">
+            <div>
+                <div class="mb-kicker">PNG Medical Board Regulatory Operations</div>
+                <h2>Practitioner registration, practising certificates, facilities, training colleges, and fitness to practise</h2>
+                <p class="mb-header-note">Medical Board work is separated from Nursing Council records and handled through auditable statutory workflows.</p>
             </div>
-            <div class="col-lg-4 text-lg-right mt-3 mt-lg-0">
-                <a href="{% url 'medical_board_register' %}" class="btn btn-light mr-2">
-                    <i class="fas fa-file-medical mr-1"></i> Forms
-                </a>
-                <button class="btn btn-warning" onclick="executeCommand('import_medical_board_workbook')">
-                    <i class="fas fa-file-import mr-1"></i> Import CHW Workbook
-                </button>
-                <button class="btn btn-outline-light ml-2" onclick="executeCommand('import_medical_board_legacy_workbooks')">
-                    <i class="fas fa-file-excel mr-1"></i> Import Legacy Registers
-                </button>
+            <div class="mb-header-actions">
+                <a href="{% url 'medical_board_register' %}" class="btn btn-primary btn-sm"><i class="fas fa-file-medical mr-1"></i> Forms</a>
+                <a href="{% url 'public_medical_board_register_search_root' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-search mr-1"></i> Public Verification</a>
+                <a href="{% url 'complaint_case_list' %}?office=medical" class="btn btn-outline-danger btn-sm"><i class="fas fa-scale-balanced mr-1"></i> ICMS</a>
+                {% if can_manage_medical_operations %}
+                <button class="btn btn-outline-secondary btn-sm" onclick="executeCommand('import_medical_board_workbook')"><i class="fas fa-file-import mr-1"></i> CHW Import</button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="executeCommand('import_medical_board_legacy_workbooks')"><i class="fas fa-file-excel mr-1"></i> Legacy Import</button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="mb-meta-grid">
+            <div class="mb-meta-item"><span class="mb-meta-label">Legal office</span><span class="mb-meta-value">Medical Board</span></div>
+            <div class="mb-meta-item"><span class="mb-meta-label">Last data refresh</span><span class="mb-meta-value">{% if medical_latest_refresh_date %}{{ medical_latest_refresh_date|date:"d M Y H:i" }}{% else %}No Medical Board import{% endif %}</span></div>
+            <div class="mb-meta-item"><span class="mb-meta-label">Import status</span><span class="mb-meta-value">{{ medical_import_status_label|default:"No import" }}</span></div>
+            <div class="mb-meta-item"><span class="mb-meta-label">Formal decisions</span><span class="mb-meta-value">{{ medical_formal_decision_count|default:0 }} final / {{ medical_draft_decision_count|default:0 }} draft</span></div>
+        </div>
+    </div>
+
+    <div class="mb-risk-grid">
+        {% for tile in medical_risk_tiles %}
+        <a class="mb-risk-tile mb-risk-{{ tile.theme }}" href="{{ tile.href }}">
+            <strong>{{ tile.count }}</strong>
+            <span>{{ tile.label }}</span>
+            <small>{{ tile.detail }}</small>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% include "dashboard/_medical_board_intelligence.html" %}
+    {% include "dashboard/_medical_workforce_forecast.html" %}
+
+    <div class="card mb-panel mb-4" id="medical-dashboard-shortcuts">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+            <h3 class="card-title mb-0"><i class="fas fa-location-arrow mr-2"></i>Dashboard Shortcuts</h3>
+            <span class="badge badge-light border">Medical Board operational links</span>
+        </div>
+        <div class="card-body d-flex flex-wrap" style="gap:.55rem;">
+            <a class="btn btn-sm btn-outline-primary" href="#medical-registration-status"><i class="fas fa-id-card mr-1"></i>Register Status</a>
+            <a class="btn btn-sm btn-outline-primary" href="#medical-facility-sector-breakdown"><i class="fas fa-hospital mr-1"></i>Facility Groups</a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'facilities_directory' %}?scope=medical"><i class="fas fa-building mr-1"></i>Facilities &amp; Institutions</a>
+            <a class="btn btn-sm btn-outline-primary" href="#registrar-worker-origin-table"><i class="fas fa-users mr-1"></i>Individuals</a>
+            <a class="btn btn-sm btn-outline-primary" href="#medical-specialty-assurance"><i class="fas fa-stethoscope mr-1"></i>Specialists</a>
+            <a class="btn btn-sm btn-outline-primary" href="#medical-application-readiness"><i class="fas fa-clipboard-check mr-1"></i>Applications</a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'workforce_map' %}?office=medical"><i class="fas fa-map-location-dot mr-1"></i>Medical Map</a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'staff_ai_assistant' %}"><i class="fas fa-robot mr-1"></i>Staff Assistant</a>
+        </div>
+    </div>
+
+    <div class="mb-lane-grid">
+        {% for lane in medical_regulatory_lanes %}
+        <a class="mb-lane" href="{{ lane.href }}">
+            <i class="{{ lane.icon }} text-primary mb-2"></i>
+            <strong>{{ lane.count }}</strong>
+            <span>{{ lane.label }}</span>
+            <small>{{ lane.detail }}</small>
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="row" id="medical-registration-status">
+        <div class="col-lg-8 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header"><h3 class="card-title mb-0">Register and Practising Certificate Status</h3></div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Register</th>
+                                <th>Registered</th>
+                                <th>Licensed</th>
+                                <th>Profiles</th>
+                                <th>Expiring</th>
+                                <th>Expired</th>
+                                <th>Conditions</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in medical_register_status_rows %}
+                            <tr>
+                                <td><strong>{{ row.register }}</strong></td>
+                                <td>{{ row.registered }}</td>
+                                <td>{{ row.licensed }}</td>
+                                <td>{{ row.profiles }}</td>
+                                <td>{{ row.expiring }}</td>
+                                <td>{{ row.expired }}</td>
+                                <td>{{ row.conditions }}</td>
+                                <td>{{ row.status }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="text-muted small mt-2">
+                        Registration and licence status are shown separately. A practitioner may be registered without a current practising licence record.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header"><h3 class="card-title mb-0">Public Trust and e-Services</h3></div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for action in medical_public_trust_actions %}
+                        <div class="col-12 mb-2">
+                            <a href="{{ action.href }}" class="mb-action">
+                                <i class="{{ action.icon }}"></i>
+                                <span><strong>{{ action.label }}</strong><span>{{ action.detail }}</span></span>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card mb-metric">
-                <div class="card-body d-flex justify-content-between align-items-start">
-                    <div><span>Doctors</span><h3>{{ medical_doctor_count|default:0 }}</h3></div>
-                    <i class="fas fa-user-md"></i>
+    <div class="row" id="medical-application-readiness">
+        <div class="col-lg-8 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header"><h3 class="card-title mb-0">Application Readiness and Decision Queue</h3></div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Applicant / Facility</th>
+                                <th>Form</th>
+                                <th>Readiness</th>
+                                <th>Evidence Checklist</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in medical_application_readiness_rows %}
+                            <tr>
+                                <td><strong>{{ row.display_name }}</strong><div class="text-muted small">Submitted {{ row.application.submitted_date|date:"d M Y" }}</div></td>
+                                <td>{{ row.application.form_code }}</td>
+                                <td>
+                                    <span class="badge badge-{{ row.badge }}">{{ row.status }}</span>
+                                    <div class="mb-progress mt-1"><span style="width: {{ row.percent }}%"></span></div>
+                                    <div class="text-muted small">{{ row.complete_count }}/{{ row.total_count }} checks</div>
+                                </td>
+                                <td>
+                                    <div class="mb-check-list">
+                                        {% for check in row.checks %}
+                                        <span class="mb-check {% if check.complete %}mb-check-complete{% else %}mb-check-missing{% endif %}">{{ check.label }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>{{ row.application.status|title }}</td>
+                                <td><a href="{% url 'application_detail' row.application.pk %}" class="btn btn-sm btn-outline-primary">Review</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted">No Medical Board applications are in the current queue.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card mb-metric">
-                <div class="card-body d-flex justify-content-between align-items-start">
-                    <div><span>Specialists</span><h3>{{ medical_specialist_count|default:0 }}</h3></div>
-                    <i class="fas fa-stethoscope"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card mb-metric">
-                <div class="card-body d-flex justify-content-between align-items-start">
-                    <div><span>CHWs</span><h3>{{ medical_chw_count|default:0 }}</h3></div>
-                    <i class="fas fa-people-carry-box"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card mb-metric">
-                <div class="card-body d-flex justify-content-between align-items-start">
-                    <div><span>Allied Health</span><h3>{{ medical_allied_count|default:0 }}</h3></div>
-                    <i class="fas fa-user-nurse"></i>
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header"><h3 class="card-title mb-0">Professional Assurance Standards</h3></div>
+                <div class="card-body">
+                    <div class="mb-standard-list">
+                        <div class="mb-standard"><strong>Registration evidence</strong><span>Identity, recognised qualification, good standing, and verified scope.</span></div>
+                        <div class="mb-standard"><strong>Licence to practise</strong><span>Practising certificate status is tracked separately from registration status.</span></div>
+                        <div class="mb-standard"><strong>CPD/CME readiness</strong><span>Renewal reviews should include continuing professional development evidence.</span></div>
+                        <div class="mb-standard"><strong>Practice setting assurance</strong><span>Facilities, training colleges, employers, supervisors, and location data support safe practice.</span></div>
+                        <div class="mb-standard"><strong>Fitness to practise</strong><span>Complaints, discipline, conditions, and decisions remain auditable.</span></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card mb-metric mb-flow-card">
-                <div class="card-body">
-                    <div class="mb-flow-label">CHW Register</div>
-                    <div class="mb-flow-value">{{ medical_chw_registration_total|default:0 }}</div>
-                    <div class="text-muted small">Medical Board CHW records by year</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card mb-metric mb-flow-card">
-                <div class="card-body">
-                    <div class="mb-flow-label">CHW Licences</div>
-                    <div class="mb-flow-value">{{ medical_chw_practicing_total|default:0 }}</div>
-                    <div class="text-muted small">Practising licence records</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card mb-metric mb-flow-card">
-                <div class="card-body">
-                    <div class="mb-flow-label">Doctor Register</div>
-                    <div class="mb-flow-value">{{ medical_doctor_registration_total|default:0 }}</div>
-                    <div class="text-muted small">Ready for doctor/specialist imports</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card mb-metric mb-flow-card">
-                <div class="card-body">
-                    <div class="mb-flow-label">Missing Data</div>
-                    <div class="mb-flow-value">{{ missing_data_review_count|default:0 }}</div>
-                    <div class="text-muted small">{{ high_priority_missing_data_count|default:0 }} high priority reviews</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <div id="medical-data-quality"></div>
     {% include "dashboard/_missing_data_reviews_table.html" %}
+
+    <div class="mb-section-title" id="medical-fitness">
+        <h3>Fitness to Practise, Complaints, and Decisions</h3>
+        <a href="{% url 'regulatory_decision_list' %}?office=medical" class="btn btn-sm btn-outline-primary">Decision Register</a>
+    </div>
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header"><h3 class="card-title mb-0">Open Medical Board Complaints</h3></div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table mb-0">
+                        <thead><tr><th>Case</th><th>Risk</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                            {% for case in medical_recent_complaints %}
+                            <tr>
+                                <td><strong>{{ case.case_number }}</strong><div class="text-muted small">{{ case.title }}</div></td>
+                                <td>{{ case.risk_level|title }}</td>
+                                <td>{{ case.status|title }}</td>
+                                <td><a href="{% url 'complaint_case_detail' case.case_uuid %}" class="btn btn-sm btn-outline-danger">Open</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No open Medical Board complaints.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header"><h3 class="card-title mb-0">Open Discipline Cases</h3></div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table mb-0">
+                        <thead><tr><th>Case</th><th>Stage</th><th>Severity</th><th></th></tr></thead>
+                        <tbody>
+                            {% for case in medical_recent_discipline_cases %}
+                            <tr>
+                                <td><strong>{{ case.discipline_number }}</strong><div class="text-muted small">{{ case.subject_name }}</div></td>
+                                <td>{{ case.get_stage_display }}</td>
+                                <td>{{ case.severity|title }}</td>
+                                <td><a href="{% url 'disciplinary_case_detail' case.discipline_uuid %}" class="btn btn-sm btn-outline-danger">Open</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No open Medical Board discipline cases.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card mb-panel h-100">
+                <div class="card-header"><h3 class="card-title mb-0">Recent Regulatory Decisions</h3></div>
+                <div class="card-body table-responsive">
+                    <table class="table mb-table mb-0">
+                        <thead><tr><th>Decision</th><th>Type</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                            {% for decision in medical_recent_decisions %}
+                            <tr>
+                                <td><strong>{{ decision.decision_number }}</strong><div class="text-muted small">{{ decision.title }}</div></td>
+                                <td>{{ decision.get_decision_type_display }}</td>
+                                <td>{{ decision.status|title }}</td>
+                                <td><a href="{% url 'regulatory_decision_detail' decision.decision_uuid %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No Medical Board decision records yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {% include "dashboard/_registrar_worker_origin_table.html" %}
 
+    <div class="card mb-panel mb-4" id="medical-facility-sector-breakdown">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+            <div>
+                <h3 class="card-title mb-0">Medical Board Facility and Institution Breakdown</h3>
+                <div class="small text-muted">
+                    Medical Board scoped view of PHAs, Church Health Services, Catholic Health Services, private facilities, NGOs, training institutions, practitioner cadres, licence status, and accreditation evidence.
+                </div>
+            </div>
+            <a href="{% url 'workforce_map' %}?office=medical" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-map-location-dot mr-1"></i> Medical map
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-bordered mb-0">
+                    <thead class="thead-light">
+                    <tr>
+                        <th>Sector</th>
+                        <th>Facilities</th>
+                        <th>Training institutions</th>
+                        <th>Cadre mapping</th>
+                        <th>Competency and full-licence pathway</th>
+                        <th>Licence status</th>
+                        <th>Accreditation</th>
+                        <th>Detail links</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in medical_facility_sector_rows %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.label }}{% if row.key == "church" %} (CHS){% elif row.key == "catholic" %} (CCHS){% endif %}</strong>
+                            {% if row.key == "pha" %}
+                            <div class="small text-muted">Provincial Health Authority facilities.</div>
+                            {% elif row.key == "public" %}
+                            <div class="small text-muted">Public and national health facilities.</div>
+                            {% elif row.key == "church" %}
+                            <div class="small text-muted">Faith-based non-Catholic health service facilities.</div>
+                            {% elif row.key == "catholic" %}
+                            <div class="small text-muted">Catholic Health Services and Catholic-linked institutions.</div>
+                            {% elif row.key == "private" %}
+                            <div class="small text-muted">Privately operated medical facilities.</div>
+                            {% elif row.key == "ngo" %}
+                            <div class="small text-muted">NGO and non-government service providers.</div>
+                            {% else %}
+                            <div class="small text-muted">Records needing ownership classification.</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div><strong>{{ row.facility_count }}</strong> master</div>
+                            <div><strong>{{ row.imported_facility_count }}</strong> imported workplace refs</div>
+                            <div class="small text-muted">{{ row.practitioner_count }} linked practitioners</div>
+                        </td>
+                        <td>{{ row.institution_count }}</td>
+                        <td>
+                            {% for cadre in row.cadre_summary %}
+                            <span class="badge badge-light border mr-1 mb-1">{{ cadre.label }}: {{ cadre.count }}</span>
+                            {% empty %}
+                            <span class="text-muted small">No cadre rows captured</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div>Provisional / competency: <strong>{{ row.provisional_competency_count }}</strong></div>
+                            <div>Full applicants: <strong>{{ row.full_licence_applicant_count }}</strong></div>
+                            <div>Full approved: <strong>{{ row.full_licence_approved_count }}</strong></div>
+                        </td>
+                        <td>
+                            <div>Current: <strong>{{ row.current_count }}</strong></div>
+                            <div>Expired: <strong>{{ row.expired_count }}</strong></div>
+                            <div>Under review: <strong>{{ row.under_review_count }}</strong></div>
+                        </td>
+                        <td>
+                            <div>Captured: <strong>{{ row.accreditation_captured_count }}</strong></div>
+                            <div>Review: <strong>{{ row.accreditation_review_count }}</strong></div>
+                        </td>
+                        <td>
+                            {% for facility in row.facility_examples %}
+                            {% if facility.detail_url %}
+                            <a href="{{ facility.detail_url }}" class="d-block small">{{ facility.name }}</a>
+                            {% else %}
+                            <span class="d-block small">{{ facility.name }}</span>
+                            {% endif %}
+                            {% endfor %}
+                            {% for institution in row.institution_examples %}
+                            {% if institution.detail_url %}
+                            <a href="{{ institution.detail_url }}" class="d-block small">{{ institution.name }}</a>
+                            {% else %}
+                            <span class="d-block small">{{ institution.name }}</span>
+                            {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center text-muted">No Medical Board facility or institution references are available yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-4 mb-3">
+                    <h4 class="h6 font-weight-bold mb-2">Facility Master Detail</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead><tr><th>Facility</th><th>Workers</th><th>Accreditation</th><th></th></tr></thead>
+                            <tbody>
+                            {% for row in medical_facility_reference_rows %}
+                            <tr>
+                                <td>
+                                    <strong>{{ row.name }}</strong>
+                                    <div class="small text-muted">{{ row.sector_label }} / {{ row.province }}</div>
+                                </td>
+                                <td>
+                                    <strong>{{ row.worker_count }}</strong>
+                                    <div class="small text-muted">
+                                        {% for cadre in row.cadre_breakdown|slice:":3" %}{{ cadre.label }}: {{ cadre.count }}{% if not forloop.last %}; {% endif %}{% empty %}No cadre{% endfor %}
+                                    </div>
+                                    <div class="small text-muted">Current {{ row.current_licence_count }} / Expired {{ row.expired_licence_count }} / Review {{ row.under_review_licence_count }}</div>
+                                </td>
+                                <td>
+                                    {{ row.accreditation.status_label }}
+                                    <div class="small text-muted">{{ row.accreditation.detail }}</div>
+                                </td>
+                                <td><a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No facility master records yet.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-xl-4 mb-3">
+                    <h4 class="h6 font-weight-bold mb-2">Imported Workplace Detail</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead><tr><th>Workplace</th><th>Rows</th><th>Licence status</th><th></th></tr></thead>
+                            <tbody>
+                            {% for row in medical_imported_facility_reference_rows %}
+                            <tr>
+                                <td>
+                                    <strong>{{ row.facility_name }}</strong>
+                                    <div class="small text-muted">{{ row.sector_label }} / {{ row.province_summary }}</div>
+                                </td>
+                                <td>
+                                    <strong>{{ row.worker_count }}</strong>
+                                    <div class="small text-muted">
+                                        {% for cadre in row.cadre_breakdown|slice:":3" %}{{ cadre.label }}: {{ cadre.count }}{% if not forloop.last %}; {% endif %}{% empty %}No cadre{% endfor %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Current {{ row.current_licence_count }}</div>
+                                    <div>Expired {{ row.expired_licence_count }}</div>
+                                    <div>Review {{ row.under_review_licence_count }}</div>
+                                </td>
+                                <td><a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No imported Medical Board workplace references yet.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-xl-4 mb-3">
+                    <h4 class="h6 font-weight-bold mb-2">Medical Training Institutions</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead><tr><th>Institution</th><th>Sector</th><th>Accreditation</th><th></th></tr></thead>
+                            <tbody>
+                            {% for row in medical_training_reference_rows %}
+                            <tr>
+                                <td>
+                                    <strong>{{ row.name }}</strong>
+                                    <div class="small text-muted">{{ row.type }} / {{ row.province }}</div>
+                                </td>
+                                <td>{{ row.sector_label }}</td>
+                                <td>
+                                    {{ row.accreditation.status_label }}
+                                    <div class="small text-muted">{{ row.accreditation.detail }}</div>
+                                </td>
+                                <td>
+                                    <a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary mb-1">Open</a>
+                                    <a href="{{ row.map_url }}" class="btn btn-sm btn-outline-secondary mb-1">Map</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted text-center">No Medical Board training references yet.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-lg-8 mb-4">
-            <div class="card mb-panel h-100">
+            <div class="card mb-panel h-100" id="medical-facility-assurance">
                 <div class="card-header">
                     <h3 class="card-title mb-0">Medical Board Electronic Forms</h3>
                 </div>
@@ -244,8 +743,8 @@
                         {% for form_item in medical_board_forms %}
                             <div class="col-md-4 mb-3">
                                 <a class="mb-action" href="{% url form_item.url form_item.code %}">
-                                    <strong>{{ form_item.code }}</strong>
-                                    <span>{{ form_item.title }}</span>
+                                    <i class="fas fa-file-medical"></i>
+                                    <span><strong>{{ form_item.code }}</strong><span>{{ form_item.title }}</span></span>
                                 </a>
                             </div>
                         {% endfor %}
@@ -293,7 +792,7 @@
             </div>
         </div>
         <div class="col-lg-4 mb-4">
-            <div class="card mb-panel h-100">
+            <div class="card mb-panel h-100" id="medical-import-assurance">
                 <div class="card-header">
                     <h3 class="card-title mb-0">Latest CHW Workbook Import</h3>
                 </div>
@@ -314,7 +813,7 @@
 
     <div class="row">
         <div class="col-lg-6 mb-4">
-            <div class="card mb-panel">
+            <div class="card mb-panel" id="medical-chw-assurance">
                 <div class="card-header">
                     <h3 class="card-title mb-0">CHW Registrations by Year</h3>
                 </div>
@@ -330,6 +829,38 @@
                 </div>
                 <div class="card-body">
                     <canvas id="chwProvinceChart" height="170"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card mb-panel">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Medical Board CHW Training References</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-start">
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <div class="mb-flow-label">Training references</div>
+                            <div class="mb-flow-value">{{ medical_chw_training_reference_count|default:0 }}</div>
+                            <div class="text-muted small">Classified under Medical Board CHW scope</div>
+                        </div>
+                        <div class="col-md-9">
+                            <p class="text-muted mb-2">
+                                CHW training schools and colleges are Medical Board references. They are excluded from the Nursing Council recognised nursing-school count.
+                            </p>
+                            {% if medical_chw_training_examples %}
+                                <div class="small text-muted">
+                                    Sample references:
+                                    {{ medical_chw_training_examples|join:", " }}
+                                </div>
+                            {% else %}
+                                <div class="small text-muted">No CHW training reference rows have been classified yet.</div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -404,7 +935,17 @@
                                 <tr>
                                     <td>{{ app.id }}</td>
                                     <td>{{ app.professional|default:"Medical Board Application" }}</td>
-                                    <td>{{ app.payload.licence_number|default:app.payload.registration_no|default:app.professional.registration_no|default:"-" }}</td>
+                                    <td>
+                                        {% if app.payload.licence_number %}
+                                            {{ app.payload.licence_number }}
+                                        {% elif app.payload.registration_no %}
+                                            {{ app.payload.registration_no }}
+                                        {% elif app.professional %}
+                                            {{ app.professional.registration_no|default:"-" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
                                     <td>{% if app.approved_date %}{{ app.approved_date|date:'Y' }}{% else %}{{ app.submitted_date|date:'Y' }}{% endif %}</td>
                                     <td>{{ app.form_code }}</td>
                                     <td><span class="badge badge-{% if app.status == 'approved' %}success{% elif app.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ app.status|title }}</span></td>
@@ -420,7 +961,7 @@
             </div>
         </div>
         <div class="col-lg-5 mb-4">
-            <div class="card mb-panel">
+            <div class="card mb-panel" id="medical-specialty-assurance">
                 <div class="card-header">
                     <h3 class="card-title mb-0">Specialty Mix</h3>
                 </div>

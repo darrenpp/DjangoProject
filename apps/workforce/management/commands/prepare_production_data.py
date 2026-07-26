@@ -9,6 +9,7 @@ from django.db.models import Count
 from django.utils import timezone
 
 from apps.dashboard.models import Receipt
+from apps.dashboard.report_freshness import mark_report_generated
 from apps.workforce.models import (
     CommunityHealthWorker,
     Facility,
@@ -376,6 +377,7 @@ class Command(BaseCommand):
 
         if options['write_report']:
             path = self._write_report(results)
+            mark_report_generated('production_readiness', scope='all', output_label=str(path))
             self.stdout.write(self.style.SUCCESS(f"Production readiness report written: {path}"))
 
         self.stdout.write(self.style.SUCCESS(

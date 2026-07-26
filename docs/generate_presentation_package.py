@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ndoh_workforce_registry.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "NDOH_regulatory_bodies.settings")
 
 import django
 
@@ -37,10 +37,19 @@ from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, 
 
 from apps.common.models import DuplicateReviewQueue
 from apps.dashboard.ai_provider import ai_provider_status
-from apps.dashboard.models import Receipt
+from apps.complaints.models import ComplaintCase, DisciplinaryCase, RegulatoryDecisionRecord
+from apps.dashboard.models import (
+    FAQEntry,
+    ForumTopic,
+    MappedEntity,
+    NursingAnalyticsSnapshot,
+    NursingLifecycleFact,
+    NursingPractitionerIndex,
+    Receipt,
+)
 from apps.dashboard.reference_breakdown import build_reference_breakdown
 from apps.dashboard.reports import build_financial_forecast_payload
-from apps.documents.models import Document, DocumentAuditEvent, DocumentFolder, DocumentVersion
+from apps.documents.models import Document, DocumentApproval, DocumentAuditEvent, DocumentFolder, DocumentVersion
 from apps.workforce.models import (
     Application,
     ApplicationPathway,
@@ -68,9 +77,9 @@ SCREENSHOT_DIR = ASSET_DIR / "screenshots"
 DIAGRAM_DIR = ASSET_DIR / "diagrams"
 HTML_DIR = ASSET_DIR / "html"
 LOGO_PATH = BASE_DIR / "static" / "img" / "NDOH_LOGO.png"
-PROJECT_TITLE = "The National Department Of Health Regulatory Bodies Nursing Council & The Medical Board Online Workforce System"
-DATE_STAMP = timezone.localtime().strftime("%Y%m%d")
-DISPLAY_DATE = timezone.localtime().strftime("%d %B %Y, %I:%M %p")
+PROJECT_TITLE = "PNG Nursing Council and Medical Board Online Regulatory Workforce Platform"
+DATE_STAMP = "20260601"
+DISPLAY_DATE = "1 June 2026"
 
 PACK_MD = OUTPUT_DIR / f"NDOH_Regulatory_Platform_Presentation_Pack_{DATE_STAMP}.md"
 PACK_PDF = OUTPUT_DIR / f"NDOH_Regulatory_Platform_Presentation_Pack_{DATE_STAMP}.pdf"
@@ -363,6 +372,11 @@ def _inject_capture_head(html, port):
     return head + html
 
 
+def _clean_generated_html(html):
+    """Keep captured HTML snapshots stable enough for git diff checks."""
+    return "\n".join(line.rstrip() for line in html.splitlines()) + "\n"
+
+
 def _fallback_screenshot(path, title, description):
     image = PILImage.new("RGB", (1600, 950), "#f8fafc")
     draw = ImageDraw.Draw(image)
@@ -429,7 +443,17 @@ def capture_screenshots():
         ("financial_forecast", "Financial Forecast", "/dashboard/reports/financial/?office=nursing", users["finance"], "Separated financial forecast page for receipt and revenue tracking."),
         ("staff_ai", "Staff AI Assistant", "/dashboard/staff-ai/", users["nursing_registrar"], "Staff-only assistant for operational questions and data-quality guidance."),
         ("documents_search", "Document Repository Search", "/documents/search/", users["nursing_registrar"], "OpenKM-style repository search and records management entry point."),
+        ("complaints_icms", "ICMS Complaints Register", "/dashboard/complaints/", users["nursing_registrar"], "Formal complaint, incident, and enquiry case-management register."),
+        ("disciplinary_cases", "Disciplinary Case Register", "/dashboard/complaints/discipline/", users["nursing_registrar"], "Disciplinary pathway tracking with stages, events, attachments, and escalation."),
+        ("decision_register", "Regulatory Decision Register", "/dashboard/complaints/decisions/", users["nursing_registrar"], "Formal decision records with rationale, authority, evidence, conditions, and appeal rights."),
+        ("nhwa_workbooks", "NHWA Workbook Centre", "/dashboard/nhwa-workbooks/", users["admin"], "NHWA standards and reporting workbook layer populated from verified platform data."),
+        ("public_faqs", "Public FAQs", "/dashboard/public/faqs/", None, "Public frequently asked questions and guidance."),
+        ("public_forum", "Public And Practitioner Forum", "/dashboard/public/forum/", None, "Moderated public and role-based discussion categories."),
+        ("public_map", "Mapped Schools, Institutions, and Facilities", "/dashboard/public/map/", None, "Mapped reference entities using locally stored verified coordinates."),
         ("records_hub", "Records Hub", "/records/", users["nursing_registrar"], "Staff record management hub for authorised operational users."),
+        ("nursing_professionals", "Nursing Professionals Records Table", "/records/nursingprofessional/", users["nursing_registrar"], "Registrar records table with search, sorting, pagination, and authorised CRUD actions."),
+        ("duplicate_review_queue", "Duplicate Review Queue", "/dashboard/duplicate-reviews/", users["nursing_registrar"], "Data-quality duplicate queue with grouped source rows and review actions."),
+        ("staff_notifications", "Staff Inbox and Notifications", "/notifications/communications/", users["nursing_registrar"], "Staff mailbox, notification history, read/opened status, and access requests."),
         ("nursing_forms", "Nursing Forms Portal", "/nursing/forms/", None, "Public Nursing Council pathway and form selection screen."),
         ("public_register", "Public Nursing Register Search", "/public/nursing-council/register/search/", None, "Safe public register search with limited fields."),
         ("nurse_portal", "Nurse User Portal", "/dashboard/nurse/", users["nurse"], "Individual nurse self-service dashboard."),
@@ -458,7 +482,7 @@ def capture_screenshots():
                         _fallback_screenshot(output_png, title, description)
                 elif chrome and server:
                     html = _inject_capture_head(html, port)
-                    html_file.write_text(html, encoding="utf-8")
+                    html_file.write_text(_clean_generated_html(html), encoding="utf-8")
                     with tempfile.TemporaryDirectory() as user_data_dir:
                         result = subprocess.run(
                             [
@@ -483,7 +507,7 @@ def capture_screenshots():
                         _fallback_screenshot(output_png, title, description)
                 else:
                     html = _inject_capture_head(html, port)
-                    html_file.write_text(html, encoding="utf-8")
+                    html_file.write_text(_clean_generated_html(html), encoding="utf-8")
                     _fallback_screenshot(output_png, title, description)
             except Exception as exc:
                 _fallback_screenshot(output_png, title, f"{description} Capture note: {exc}")
@@ -504,6 +528,8 @@ def _safe_count(model):
 def collect_live_statistics():
     reference = build_reference_breakdown()
     latest_batch = DataImportBatch.objects.order_by("-completed_at", "-started_at").first()
+    active_snapshot = NursingAnalyticsSnapshot.objects.filter(is_active=True).order_by("-activated_at", "-created_at").first()
+    analytics_kpis = active_snapshot.kpi_summary if active_snapshot else {}
     application_status_rows = list(
         Application.objects.values("status").annotate(total=Count("id")).order_by("status")
     )
@@ -514,23 +540,80 @@ def collect_live_statistics():
     latest_sheet = ImportedWorkbookSheet.objects.order_by("-id").first()
     finance = build_financial_forecast_payload("nursing", generated_by="Presentation package")
     nursing_finance = finance["offices"].get("nursing", {})
+    nursing_cleaned_totals = [
+        (
+            "Nursing Council total lifecycle records",
+            analytics_kpis.get("total_lifecycle_records", NursingLifecycleFact.objects.filter(snapshot=active_snapshot).count() if active_snapshot else 0),
+            "Cleansed analytics snapshot rows across provisional, full licence, and ATP lifecycle stages.",
+        ),
+        (
+            "Clean ATP records",
+            analytics_kpis.get("clean_atp_records", 0),
+            "Cleansed Authority to Practice records from the active Nursing Council analytics snapshot.",
+        ),
+        (
+            "Clean provisional records",
+            analytics_kpis.get("clean_provisional_records", 0),
+            "Cleansed provisional licence records from the active Nursing Council analytics snapshot.",
+        ),
+        (
+            "Clean full-licence records",
+            analytics_kpis.get("clean_full_licence_records", 0),
+            "Cleansed full-licence records from the active Nursing Council analytics snapshot.",
+        ),
+        (
+            "Estimated practitioner match groups",
+            analytics_kpis.get("estimated_practitioner_match_groups", NursingPractitionerIndex.objects.filter(snapshot=active_snapshot).count() if active_snapshot else 0),
+            "Analytics grouping count used for workforce analysis; not a legal practitioner ID.",
+        ),
+        (
+            "Data quality health score",
+            f"{analytics_kpis.get('data_quality_health_score', 0)}%",
+            "Current cleansed-data quality score for the active Nursing Council analytics snapshot.",
+        ),
+    ]
+    nursing_cadre_rows = []
+    if active_snapshot:
+        nursing_cadre_rows = list(
+            active_snapshot.cadre_stage_metrics
+            .order_by("-grand_total", "cadre")
+            .values(
+                "cadre",
+                "provisional_licence_count",
+                "full_licence_count",
+                "authority_to_practice_count",
+                "grand_total",
+            )[:14]
+        )
     return {
         "generated_on": DISPLAY_DATE,
-        "headline": [
-            ("Registered Nurses", _safe_count(NursingProfessional), "Live person records in the Nursing Council nurse table."),
-            ("Midwives", _safe_count(Midwife), "Live person records in the Nursing Council midwife table."),
-            ("Nurse Aides", _safe_count(NurseAide), "Live person records in the Nursing Council nurse aide table."),
-            ("Graduands / Health Students", _safe_count(HealthStudent), "Live pipeline records for graduands and health students."),
+        "headline": nursing_cleaned_totals,
+        "nursing_cadre_rows": nursing_cadre_rows,
+        "operational_status": [
+            ("Live legal RN person table", _safe_count(NursingProfessional), "Operational NursingProfessional rows only; not the cleansed Nursing Council analytics total."),
+            ("Live legal midwife person table", _safe_count(Midwife), "Operational Midwife rows only; not the cleansed Nursing Council analytics total."),
+            ("Live legal nurse aide person table", _safe_count(NurseAide), "Operational NurseAide rows only; not the cleansed Nursing Council analytics total."),
+            ("Live legal graduand/student table", _safe_count(HealthStudent), "Operational HealthStudent rows only; not the cleansed provisional analytics total."),
             ("Community Health Workers", _safe_count(CommunityHealthWorker), "Medical Board / CHW scope records currently loaded."),
             ("Medical Doctors", _safe_count(MedicalDoctor), "Medical Board doctor records currently loaded."),
             ("Applications", _safe_count(Application), "All application records currently stored."),
-            ("Receipts", receipt_summary.get("total") or 0, f"Manual receipt records. Total amount: PGK {receipt_summary.get('amount') or 0}."),
+            ("Receipts", receipt_summary.get("total") or 0, f"Receipt records currently stored. Total amount: PGK {receipt_summary.get('amount') or 0}."),
             ("Imported Licence / History Rows", _safe_count(PracticingLicenseRecord), "Operational and historical spreadsheet rows; one person can have multiple rows."),
             ("Qualifications", _safe_count(Qualification), "Qualification records currently stored."),
-            ("Missing Data Review Items", MissingDataReview.objects.exclude(status="resolved").count(), "Open data-quality items that staff still need to review."),
-            ("Duplicate Review Items", DuplicateReviewQueue.objects.filter(status="pending").count(), "Open possible duplicate records requiring staff review."),
+            ("Missing Data Review Items", _safe_count(MissingDataReview), "Data-quality items created for review and correction."),
+            ("Pending Missing Data Review Items", MissingDataReview.objects.filter(status="pending").count(), "Missing-data items still pending."),
+            ("Duplicate Review Items", _safe_count(DuplicateReviewQueue), "Possible duplicate records requiring staff review."),
+            ("Pending Duplicate Review Items", DuplicateReviewQueue.objects.filter(status="pending").count(), "Duplicate-review items still pending."),
         ],
         "reference": reference,
+        "active_snapshot": active_snapshot,
+        "nursing_analytics": {
+            "lifecycle_facts": NursingLifecycleFact.objects.filter(snapshot=active_snapshot).count() if active_snapshot else 0,
+            "practitioner_groups": NursingPractitionerIndex.objects.filter(snapshot=active_snapshot).count() if active_snapshot else 0,
+            "kpis": analytics_kpis,
+            "source_file": active_snapshot.source_file_name if active_snapshot else "-",
+            "generated_on": active_snapshot.workbook_generated_on if active_snapshot else "-",
+        },
         "latest_batch": latest_batch,
         "latest_sheet": latest_sheet,
         "application_status_rows": application_status_rows,
@@ -540,12 +623,24 @@ def collect_live_statistics():
             "documents": _safe_count(Document),
             "versions": _safe_count(DocumentVersion),
             "audit_events": _safe_count(DocumentAuditEvent),
+            "approvals": _safe_count(DocumentApproval),
             "legacy_uploads": _safe_count(ProfessionalDocument),
         },
         "workflow_config": {
             "pathways": _safe_count(ApplicationPathway),
             "forms": _safe_count(DynamicFormDefinition),
             "requirements": _safe_count(DocumentRequirement),
+        },
+        "case_management": {
+            "complaints": _safe_count(ComplaintCase),
+            "disciplinary_cases": _safe_count(DisciplinaryCase),
+            "decisions": _safe_count(RegulatoryDecisionRecord),
+        },
+        "engagement": {
+            "mapped_entities": _safe_count(MappedEntity),
+            "geocoded_entities": MappedEntity.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True).count(),
+            "faqs": _safe_count(FAQEntry),
+            "forum_topics": _safe_count(ForumTopic),
         },
         "finance": nursing_finance,
         "ai": ai_provider_status(),
@@ -568,6 +663,17 @@ def _markdown_table(headers, rows):
 
 def build_markdown(stats, diagrams, screenshots):
     headline_rows = [(label, _format_number(value), meaning) for label, value, meaning in stats["headline"]]
+    operational_rows = [(label, _format_number(value), meaning) for label, value, meaning in stats["operational_status"]]
+    cadre_rows = [
+        (
+            row["cadre"],
+            _format_number(row["provisional_licence_count"]),
+            _format_number(row["full_licence_count"]),
+            _format_number(row["authority_to_practice_count"]),
+            _format_number(row["grand_total"]),
+        )
+        for row in stats["nursing_cadre_rows"]
+    ]
     app_rows = [(row["status"].title(), _format_number(row["total"])) for row in stats["application_status_rows"]]
     record_rows = [(row["record_type"].replace("_", " ").title(), _format_number(row["total"])) for row in stats["imported_record_mix"][:12]]
     screenshot_rows = [(item["title"], item["url"], str(item["path"].relative_to(OUTPUT_DIR))) for item in screenshots]
@@ -576,6 +682,10 @@ def build_markdown(stats, diagrams, screenshots):
     finance = stats["finance"]
     reference = stats["reference"]
     ai = stats["ai"]
+    analytics = stats["nursing_analytics"]
+    analytics_kpis = analytics.get("kpis", {})
+    cases = stats["case_management"]
+    engagement = stats["engagement"]
     latest_sheet_rows = "-"
     if latest_sheet:
         latest_sheet_rows = getattr(latest_sheet, "imported_rows", None) or getattr(latest_sheet, "raw_rows", None) or "-"
@@ -593,9 +703,15 @@ The simple rule is:
 
 **Imported rows are not automatically trusted. They are staged, validated, cleansed, reviewed, approved, then promoted into live registry records.**
 
-## 2. Current Live Statistics
+## 2. Nursing Council Cleansed Analytics Totals
 
 {_markdown_table(["Statistic", "Current total", "Meaning"], headline_rows)}
+
+These are the current Nursing Council figures after the cleanse. They come from the active cleansed analytics snapshot, not from the legal live person tables. The legal registry remains protected until records are promoted through approved workflow.
+
+## 2A. Cleansed Nursing Council Cadre / Stage Breakdown
+
+{_markdown_table(["Cadre", "Provisional", "Full licence", "ATP", "Total"], cadre_rows)}
 
 ## 3. Source And Recency
 
@@ -604,6 +720,14 @@ The simple rule is:
 - Latest import completed at: {latest_batch.completed_at if latest_batch else "-"}
 - Latest workbook sheet: {latest_sheet.sheet_name if latest_sheet else "-"}
 - Latest workbook rows processed: {latest_sheet_rows}
+- Active Nursing Council analytics source: {analytics.get("source_file")}
+- Active Nursing Council analytics generated on: {analytics.get("generated_on")}
+
+## 3A. Operational Live Registry And Platform Counts
+
+{_markdown_table(["Statistic", "Current total", "Meaning"], operational_rows)}
+
+`Person_Group_Key` is used for analytics grouping only. It is not a legal practitioner identity.
 
 ## 4. Nursing Council Institution And Facility Breakdown
 
@@ -635,6 +759,7 @@ The simple rule is:
     ("Documents", stats["documents"]["documents"]),
     ("Versions", stats["documents"]["versions"]),
     ("Document audit events", stats["documents"]["audit_events"]),
+    ("Document approvals/rejections", stats["documents"]["approvals"]),
     ("Legacy professional uploads", stats["documents"]["legacy_uploads"]),
 ])}
 
@@ -644,6 +769,9 @@ The simple rule is:
     ("Application pathways", stats["workflow_config"]["pathways"]),
     ("Dynamic form definitions", stats["workflow_config"]["forms"]),
     ("Document requirements", stats["workflow_config"]["requirements"]),
+    ("ICMS complaint cases", cases["complaints"]),
+    ("Disciplinary cases", cases["disciplinary_cases"]),
+    ("Regulatory decision records", cases["decisions"]),
 ])}
 
 ## 9. Nursing Council Finance Summary
@@ -656,6 +784,17 @@ The simple rule is:
     ("Combined total", f"PGK {finance.get('combined_total', 0)}"),
     ("Date-quality issues", finance.get("date_quality_issue_count", 0)),
 ])}
+
+## 9A. Public Engagement And Mapping
+
+{_markdown_table(["Item", "Current total"], [
+    ("Mapped entity references", engagement["mapped_entities"]),
+    ("Mapped entities with stored coordinates", engagement["geocoded_entities"]),
+    ("FAQ entries", engagement["faqs"]),
+    ("Forum topics", engagement["forum_topics"]),
+])}
+
+Google Maps reads locally stored coordinates. The page does not geocode every load.
 
 ## 10. AI Assistant Position
 
@@ -681,6 +820,15 @@ The AI assistant is for staff guidance only. It does not approve applications, i
 
 - The platform is already operating as a structured registry, workflow, reporting, finance, and records-management system.
 - Nursing Council and Medical Board workspaces are separated to support privacy and proper regulatory governance.
+- Board-specific dashboards now show the correct Nursing Council or Medical Board welcome header with PNG emblem identity.
+- Public registration now uses controlled Role/Cadre dropdowns, including separate CHW provisional and CHW full-license pathways.
+- Notification history, unread badge clearing, and opened/read mailbox status are now part of the operational workflow.
+- Records Hub and Duplicate Review Queue now include table search, sorting, page length, and pagination functions for registrar/data-quality work.
+- Formal ICMS complaints, discipline workflow, and regulatory decision register now support defensible case management.
+- Repository documents can be approved or rejected as controlled current versions.
+- Nursing Council analytics are powered by an active cleansed snapshot and server-side drilldowns.
+- NHWA workbooks are a reporting layer populated from verified platform data and do not overwrite legal registry records automatically.
+- Public FAQs, moderated forums, and mapped institutions/facilities provide a cleaner public and practitioner experience.
 - The system now shows clean institution counts separately from raw historical reference rows.
 - The biggest ongoing risk is data quality from old paper files and legacy spreadsheets, not the user interface itself.
 - Staff should use the Production Readiness dashboard, duplicate review, missing-data review, and import preview tools before publishing management statistics.
@@ -748,7 +896,25 @@ def build_presentation_pdf(stats, diagrams, screenshots):
     story.append(Paragraph("The platform is a government regulatory operations system. It manages applications, practitioner records, licences, qualifications, documents, receipts, imports, data-quality issues, dashboards, reports, and staff workflows for the Nursing Council and Medical Board.", styles["BodyClean"]))
     story.append(Paragraph("Core rule: imported rows are not automatically trusted. They are staged, validated, cleansed, reviewed, approved, then promoted into live registry records.", styles["BodyClean"]))
     story.append(Spacer(1, 0.2 * cm))
+    story.append(Paragraph("Nursing Council cleansed analytics totals", styles["SectionTitle"]))
     story.append(_pdf_table(["Statistic", "Current total", "Meaning"], [(label, _format_number(value), meaning) for label, value, meaning in stats["headline"]], [4.1 * cm, 3.0 * cm, 10.3 * cm]))
+    story.append(Spacer(1, 0.25 * cm))
+    story.append(Paragraph("These are the current Nursing Council figures after the cleanse. They come from the active analytics snapshot; legal person-table records remain protected until controlled workflow promotion.", styles["BodyClean"]))
+    story.append(Spacer(1, 0.2 * cm))
+    story.append(_pdf_table(
+        ["Cadre", "Provisional", "Full licence", "ATP", "Total"],
+        [
+            (
+                row["cadre"],
+                _format_number(row["provisional_licence_count"]),
+                _format_number(row["full_licence_count"]),
+                _format_number(row["authority_to_practice_count"]),
+                _format_number(row["grand_total"]),
+            )
+            for row in stats["nursing_cadre_rows"][:8]
+        ],
+        [5.2 * cm, 2.7 * cm, 2.7 * cm, 2.7 * cm, 2.7 * cm],
+    ))
 
     story.append(PageBreak())
     story.append(Paragraph("2. Department-Wide Diagrams", styles["SectionTitle"]))
@@ -766,12 +932,19 @@ def build_presentation_pdf(stats, diagrams, screenshots):
     story.append(Paragraph("3. Data Quality, Repository, Finance, And AI Readiness", styles["SectionTitle"]))
     reference = stats["reference"]
     finance = stats["finance"]
+    analytics = stats["nursing_analytics"]
+    analytics_kpis = analytics.get("kpis", {})
+    cases = stats["case_management"]
+    engagement = stats["engagement"]
     story.append(_pdf_table(["Area", "Current position"], [
+        ("Nursing analytics snapshot", f"{analytics_kpis.get('total_lifecycle_records', analytics.get('lifecycle_facts', 0))} lifecycle records; ATP {analytics_kpis.get('clean_atp_records', 0)}, provisional {analytics_kpis.get('clean_provisional_records', 0)}, full licence {analytics_kpis.get('clean_full_licence_records', 0)}"),
         ("Recognised PNG nursing schools", reference["png_nursing_school_count"]),
         ("Government / Non-government schools", f"{reference['government_nursing_school_count']} government, {reference['non_government_nursing_school_count']} non-government"),
         ("Open missing-data review items", MissingDataReview.objects.exclude(status="resolved").count()),
         ("Open duplicate review items", DuplicateReviewQueue.objects.filter(status="pending").count()),
-        ("Repository folders / documents / versions", f"{stats['documents']['folders']} / {stats['documents']['documents']} / {stats['documents']['versions']}"),
+        ("Repository folders / documents / versions / approvals", f"{stats['documents']['folders']} / {stats['documents']['documents']} / {stats['documents']['versions']} / {stats['documents']['approvals']}"),
+        ("ICMS / Discipline / Decision records", f"{cases['complaints']} / {cases['disciplinary_cases']} / {cases['decisions']}"),
+        ("Mapped entities / geocoded", f"{engagement['mapped_entities']} / {engagement['geocoded_entities']}"),
         ("Nursing Council finance combined total", f"PGK {finance.get('combined_total', 0)}"),
         ("AI Assistant mode", f"{stats['ai']['label']} - {stats['ai']['detail']}"),
     ], [6.1 * cm, 11.3 * cm]))
@@ -833,7 +1006,27 @@ def build_presentation_docx(stats, diagrams, screenshots):
     doc.add_heading("1. Executive Overview In Plain Language", level=1)
     doc.add_paragraph("The platform is a government regulatory operations system for the Nursing Council and Medical Board. It supports applications, registry records, licences, qualifications, documents, receipts, imports, data-quality review, dashboards, reports, and staff workflows.")
     doc.add_paragraph("Core rule: imported rows are not automatically trusted. They are staged, validated, cleansed, reviewed, approved, then promoted into live registry records.")
+    doc.add_heading("Nursing Council cleansed analytics totals", level=2)
+    doc.add_paragraph("These are the current Nursing Council figures after the cleanse. They come from the active cleansed analytics snapshot and should be used for the presentation executive overview. Legal person-table records remain protected until controlled workflow promotion.")
     _docx_add_table(doc, ["Statistic", "Current total", "Meaning"], [(label, _format_number(value), meaning) for label, value, meaning in stats["headline"]])
+    doc.add_heading("Cleansed Nursing Council cadre / stage breakdown", level=2)
+    _docx_add_table(
+        doc,
+        ["Cadre", "Provisional", "Full licence", "ATP", "Total"],
+        [
+            (
+                row["cadre"],
+                _format_number(row["provisional_licence_count"]),
+                _format_number(row["full_licence_count"]),
+                _format_number(row["authority_to_practice_count"]),
+                _format_number(row["grand_total"]),
+            )
+            for row in stats["nursing_cadre_rows"][:10]
+        ],
+    )
+    doc.add_heading("Separate operational live registry status", level=2)
+    doc.add_paragraph("The following table is not the cleansed Nursing Council workforce total. It shows live legal person-table and platform operational counts while cleansed records are promoted through controlled workflow.")
+    _docx_add_table(doc, ["Statistic", "Current total", "Meaning"], [(label, _format_number(value), meaning) for label, value, meaning in stats["operational_status"]])
 
     doc.add_heading("2. Department-Wide Diagrams", level=1)
     for title, path in [
@@ -855,13 +1048,22 @@ def build_presentation_docx(stats, diagrams, screenshots):
     for item in [
         "Nursing Council and Medical Board workspaces must remain separated.",
         "Staff must clear missing-data and duplicate-review items before publishing management statistics.",
-        "Documents should be uploaded into the correct office-scoped repository with metadata, versions, and audit records.",
+        "Documents should be uploaded into the correct office-scoped repository with metadata, versions, approval/rejection sign-off, and audit records.",
+        "ICMS complaints, disciplinary cases, and regulatory decisions should be used for formal case-management and defensible outcomes.",
+        "Nursing Council analytics snapshot rows are dashboard evidence, not legal registry identities.",
+        "NHWA workbooks are reporting/sign-off outputs and must not overwrite registry records automatically.",
+        "Mapped entities need verified stored coordinates before public demonstration.",
         "Financial reports must keep manual receipts and spreadsheet receipt rows visible as separate streams.",
         "The free local GPT assistant is guidance only and must not replace registrar approval or official workflow controls.",
     ]:
         doc.add_paragraph(item, style="List Bullet")
 
-    doc.save(PACK_DOCX)
+    try:
+        doc.save(PACK_DOCX)
+    except PermissionError:
+        fallback_docx = OUTPUT_DIR / f"NDOH_Regulatory_Platform_Presentation_Brief_{DATE_STAMP}_updated_{datetime.now():%Y%m%d%H%M%S}.docx"
+        doc.save(fallback_docx)
+        print(f"Saved updated Word brief to {fallback_docx} because {PACK_DOCX.name} is open or locked.")
 
 
 def build_index_pdf(stats):
@@ -872,7 +1074,8 @@ def build_index_pdf(stats):
         ("Presentation pack Markdown", PACK_MD.name, "Plain text source for quick edits and audit trail."),
         ("Screenshot folder", "assets/screenshots", "Fresh interface screenshots generated for this pack."),
         ("Diagram folder", "assets/diagrams", "Enterprise architecture, workflow, data governance, and privacy diagrams."),
-        ("Full-scope user guide", "docs/NDOH_Full_Scope_Platform_User_Guide_20260507.pdf", "Role-based staff guide."),
+        ("Full-scope user guide", "docs/NDOH_Full_Scope_Platform_User_Guide_20260601.pdf", "Role-based staff guide."),
+        ("Current platform update brief", "docs/PLATFORM_UPDATE_BRIEF_20260601.md", "Latest interface and workflow update summary."),
         ("Documentation index", "DOCUMENTATION_INDEX.md", "Master documentation register."),
         ("Government launch package", "docs/government_launch_package", "Architecture, security, data governance, deployment, testing, and AI setup documents."),
     ]
@@ -899,6 +1102,8 @@ This folder contains the official presentation-ready documentation pack.
 - `{PACK_DOCX.name}` - editable Word briefing version.
 - `{PACK_MD.name}` - Markdown source.
 - `{INDEX_PDF.name}` - documentation index PDF.
+- `WHO_Conference_Room_Meeting_Prep_20260604.md` - focused two-hour meeting run sheet, demo script, talking points, expected questions, and pre-meeting checklist for the Thursday 4 June 2026 WHO Conference Room presentation.
+- `../PLATFORM_UPDATE_BRIEF_20260601.md` - current platform update brief for the latest analytics snapshot, ICMS, discipline, decisions, NHWA, mapping, receipt linking, UI, notification, Records Hub, duplicate review, and registration changes.
 - `assets/screenshots/` - refreshed interface screenshots.
 - `assets/diagrams/` - enterprise architecture and workflow diagrams.
 

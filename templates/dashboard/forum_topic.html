@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ topic.title }}{% endblock %}
+{% block title_label %}{{ topic.title }}{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-0">{{ topic.title }}</h3>
+            <div class="small text-muted">{{ category.name }} · {{ topic.get_status_display }}</div>
+        </div>
+        <a href="{% url 'forum_category_detail' category.slug %}" class="btn btn-sm btn-light">
+            <i class="fas fa-arrow-left mr-1"></i> Category
+        </a>
+    </div>
+    <div class="card-body">
+        {% for post in posts %}
+        <div class="border rounded p-3 mb-3">
+            <div class="d-flex flex-wrap justify-content-between">
+                <strong>{{ post.author.username|default:post.public_author_name|default:"Anonymous" }}</strong>
+                <span class="small text-muted">{{ post.created_at|date:"d M Y H:i" }}</span>
+            </div>
+            <div class="mt-2">{{ post.body|linebreaks }}</div>
+            {% if can_moderate_forum and post.status != "approved" %}
+            <form method="post" action="{% url 'forum_moderate_post' post.pk %}" class="mt-2">
+                {% csrf_token %}
+                <button name="action" value="approved" class="btn btn-sm btn-success" type="submit">Approve</button>
+                <button name="action" value="rejected" class="btn btn-sm btn-outline-danger" type="submit">Reject</button>
+            </form>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-muted mb-0">No approved posts are available.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% if can_post %}
+<div class="card card-outline card-success">
+    <div class="card-header"><h3 class="card-title mb-0">Reply</h3></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% if not request.user.is_authenticated %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="public_author_name">Name</label>
+                    <input id="public_author_name" name="public_author_name" class="form-control" maxlength="120">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="public_author_email">Email</label>
+                    <input id="public_author_email" name="public_author_email" type="email" class="form-control">
+                </div>
+            </div>
+            {% endif %}
+            <div class="mb-3">
+                <label for="body">Message</label>
+                <textarea id="body" name="body" class="form-control" rows="5" required></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">
+                <i class="fas fa-reply mr-1"></i> Reply
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

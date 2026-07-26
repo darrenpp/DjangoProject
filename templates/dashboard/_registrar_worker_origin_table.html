@@ -1,3 +1,48 @@
+<style>
+    #registrar-worker-origin-table .worker-origin-badge {
+        border: 1px solid transparent !important;
+        border-radius: 999px !important;
+        display: inline-block;
+        font-weight: 900 !important;
+        line-height: 1.15;
+        padding: 0.38rem 0.72rem !important;
+        text-shadow: none !important;
+        white-space: nowrap;
+    }
+
+    #registrar-worker-origin-table .worker-origin-badge--national,
+    #registrar-worker-origin-table .worker-origin-badge--complete {
+        background: #dcfce7 !important;
+        border-color: #86efac !important;
+        color: #14532d !important;
+    }
+
+    #registrar-worker-origin-table .worker-origin-badge--overseas,
+    #registrar-worker-origin-table .worker-origin-badge--linked {
+        background: #e0f2fe !important;
+        border-color: #7dd3fc !important;
+        color: #075985 !important;
+    }
+
+    #registrar-worker-origin-table .worker-origin-badge--incoming {
+        background: #fef3c7 !important;
+        border-color: #fbbf24 !important;
+        color: #78350f !important;
+    }
+
+    #registrar-worker-origin-table .worker-origin-badge--outgoing {
+        background: #fee2e2 !important;
+        border-color: #fca5a5 !important;
+        color: #7f1d1d !important;
+    }
+
+    #registrar-worker-origin-table .worker-origin-badge--current {
+        background: #dbeafe !important;
+        border-color: #93c5fd !important;
+        color: #1e3a8a !important;
+    }
+</style>
+
 <div class="row mt-4" id="registrar-worker-origin-table">
     <div class="col-12">
         <div class="card card-outline card-primary table-card">
@@ -57,7 +102,7 @@
                                 </td>
                                 <td>{{ row.professional_type }}</td>
                                 <td>
-                                    <span class="badge {% if row.applicant_type == 'overseas' %}badge-info{% else %}badge-success{% endif %}">
+                                    <span class="worker-origin-badge {% if row.applicant_type == 'overseas' %}worker-origin-badge--overseas{% else %}worker-origin-badge--national{% endif %}">
                                         {{ row.applicant_type_label }}
                                     </span>
                                 </td>
@@ -71,20 +116,28 @@
                                 </td>
                                 <td>{{ row.province }}</td>
                                 <td>
-                                    <span class="badge {% if row.movement == 'incoming' %}badge-warning{% elif row.movement == 'outgoing' %}badge-danger{% else %}badge-primary{% endif %}">
+                                    <span class="worker-origin-badge {% if row.movement == 'incoming' %}worker-origin-badge--incoming{% elif row.movement == 'outgoing' %}worker-origin-badge--outgoing{% else %}worker-origin-badge--current{% endif %}">
                                         {{ row.movement_label }}
                                     </span>
                                 </td>
                                 <td>
                                     <div>{{ row.record_year }}</div>
                                     <div class="small text-muted">{{ row.record_type }}</div>
+                                    {% if row.pathway_record_count %}
+                                    <div class="small mt-1">
+                                        <span class="worker-origin-badge {% if row.pathway_complete %}worker-origin-badge--complete{% else %}worker-origin-badge--linked{% endif %}">
+                                            {% if row.pathway_complete %}Linked pathway{% else %}Linked records{% endif %}
+                                        </span>
+                                        <span class="text-muted">{{ row.pathway_record_count }} records</span>
+                                    </div>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <div>{{ row.source_label }}</div>
                                     <div class="small text-muted">{{ row.source_detail }}</div>
                                 </td>
                                 <td class="text-right">
-                                    <a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary" title="{% if row.pathway_record_count %}Open linked pathway{% else %}Open record{% endif %}">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </td>

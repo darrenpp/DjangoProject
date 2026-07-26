@@ -14,4 +14,4 @@ RUN adduser --disabled-password --gecos "" appuser \
     && chown -R appuser:appuser /app
 USER appuser
 
-CMD ["gunicorn", "ndoh_workforce_registry.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "NDOH_regulatory_bodies.wsgi:application", "--bind", "0.0.0.0:8000"]

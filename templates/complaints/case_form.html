@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}New ICMS Case{% endblock %}
+{% block title_label %}New ICMS Case{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-danger">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">Open Formal ICMS Case</h3>
+            <div class="text-muted small">Create a formal incident or complaints case. Registry records are referenced, not overwritten.</div>
+        </div>
+        <a href="{% url 'complaint_case_list' %}" class="btn btn-outline-secondary">Back to Cases</a>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if source_enquiry %}
+        <input type="hidden" name="source_enquiry_id" value="{{ source_enquiry.pk }}">
+        <div class="alert alert-info m-3 mb-0">
+            Opening this case from enquiry thread:
+            <a href="{% url 'enquiry_thread' source_enquiry.pk %}">{{ source_enquiry.subject }}</a>
+        </div>
+        {% endif %}
+        <div class="card-body">
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="row">
+                {% for field in form %}
+                <div class="col-md-{% if field.name == 'description' %}12{% elif field.name == 'title' %}8{% else %}4{% endif %} mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="small text-muted">{{ field.help_text }}</div>{% endif %}
+                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label for="attachments">Evidence or supporting files</label>
+                <input type="file" id="attachments" name="attachments" class="form-control-file" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.txt">
+                <div class="small text-muted">Maximum 8 files, 15 MB each.</div>
+            </div>
+        </div>
+        <div class="card-footer text-right">
+            <button type="submit" class="btn btn-danger">Open ICMS Case</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

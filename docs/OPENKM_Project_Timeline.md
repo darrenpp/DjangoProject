@@ -1,12 +1,12 @@
 # OpenKM-Style Project Timeline
 
-Project: The National Department Of Health Regulatory Bodies Nursing Council & The Medical Board Online Workforce System
+Project: PNG Nursing Council and Medical Board Online Regulatory Workforce Platform
 
-Date: 07 May 2026
+Date: Updated 1 June 2026
 
 ## 1. Objective
 
-Deliver OpenKM-style document management, records management, workflow control, search, audit, and governance inside the current regulatory platform without breaking Nursing Council and Medical Board operations.
+Deliver OpenKM-style document management, records management, workflow control, search, audit, ICMS/discipline evidence handling, decision traceability, and governance inside the current regulatory platform without breaking Nursing Council and Medical Board operations.
 
 This timeline is now written as the completed platform timeline plus the operational post-launch programme.
 
@@ -37,6 +37,7 @@ Delivered:
 - `DocumentVersion` model.
 - `DocumentAccessPolicy` model.
 - `DocumentAuditEvent` model.
+- `DocumentApproval` model.
 - Office scopes: General Registry, Nursing Council, Medical Board.
 - Bootstrap command: `bootstrap_document_repository`.
 - Admin management for folders, documents, versions, access policies, and audit events.
@@ -46,6 +47,7 @@ Outcome:
 - The system now has a central OpenKM-style repository integrated into staff screens.
 - Nursing Council and Medical Board documents can be scoped separately.
 - Documents can store metadata, official record flags, retention years, versions, extracted text, and audit events.
+- Controlled document versions can be approved or rejected with notes and audit events.
 
 ### Phase 2: OCR, Indexing, Search, and Duplicate Detection
 
@@ -77,6 +79,7 @@ Delivered:
 - Registrar approval and rejection workflows.
 - Employer verification and deceased practitioner workflow tools.
 - Staff inbox, chat, notification, and operational access request workflow.
+- Notification history, unread badge clearing, and mailbox opened/read status.
 - Reviewer access lock until approval by registrar or System Admin.
 - Finance Officer restricted to read-only finance and workforce views.
 - Linked repository evidence displayed on application detail review screens.
@@ -100,7 +103,19 @@ Delivered:
 - Profile Overview role explanations.
 - Export timestamp/user tracking for confidential outputs.
 - Data-quality and duplicate-review workflow guidance.
+- Duplicate Review Queue table functions and grouped source-row review.
+- Records Hub table functions and authorised registrar CRUD actions for Nursing Professionals.
+- Public registration role/cadre dropdown routing, including CHW provisional and CHW full-license separation.
+- Board-specific dashboard welcome headers with PNG emblem identity.
 - Repository official record and retention fields.
+- Repository approval/rejection sign-off for controlled current versions.
+- Formal ICMS complaint cases.
+- Disciplinary case workflow and complaint escalation.
+- Regulatory decision register.
+- Nursing Council active analytics snapshot drilldowns.
+- NHWA workbook reporting layer.
+- Public FAQ, moderated forum, and mapped reference pages.
+- Receipt-owner matching and unmatched review routing.
 
 Outcome:
 
@@ -134,7 +149,12 @@ Tasks:
 - Change testing passwords.
 - Train registrars, finance, reviewers, data-quality officers, and System Admin.
 - Demonstrate operational access request workflow.
+- Demonstrate notification history and unread badge clearing.
+- Demonstrate Records Hub and Duplicate Review Queue table functions.
 - Demonstrate Nursing Council and Medical Board separation.
+- Demonstrate ICMS case creation, enquiry escalation, discipline escalation, and regulatory decision recording.
+- Demonstrate document approval and rejection.
+- Demonstrate active Nursing Council analytics snapshot drilldown.
 
 ### Week 2: Document Repository Pilot
 
@@ -146,6 +166,7 @@ Tasks:
 - Link documents to application/practitioner records where applicable.
 - Search using title, metadata, and extracted text.
 - Confirm no cross-office leakage.
+- Approve or reject a controlled version and confirm the audit event.
 
 ### Week 3: Data Cleansing Sprint
 
@@ -156,6 +177,8 @@ Tasks:
 - Review future date issues such as accidental 2050 dates.
 - Normalize provinces, institutions, facilities, and sectors.
 - Start ATP-to-employment alignment.
+- Run receipt-owner linking and review unmatched or suspicious receipts.
+- Verify mapped entity coordinates before public map demonstration.
 
 ### Week 4: Finance and Reporting Validation
 
@@ -167,6 +190,7 @@ Tasks:
 - Generate financial forecast reports.
 - Check export timestamps and exporting user.
 - Confirm report explanations are clear for management.
+- Populate NHWA workbook cells from verified data and confirm no write-back to registry records.
 
 ### Week 5: Management Review
 
@@ -176,6 +200,7 @@ Tasks:
 - Present remaining data-quality gaps.
 - Present OpenKM-style repository process.
 - Present privacy and role access model.
+- Present ICMS, discipline, decision-register, and document sign-off controls.
 - Confirm deployment readiness with NDOH ICT.
 
 ## 5. Success Criteria
@@ -184,6 +209,7 @@ The OpenKM-style implementation is successful when:
 
 - Staff store official evidence in the correct office-scoped repository.
 - Documents have metadata and versions where appropriate.
+- Controlled documents are approved or rejected with notes.
 - Scanned documents can be searched.
 - Duplicate document checks identify repeated uploads.
 - Registrar review uses checklist, payment, competency, and source evidence.
@@ -192,6 +218,9 @@ The OpenKM-style implementation is successful when:
 - Reviewers cannot access high-risk tools until approved.
 - Reports explain live people counts separately from imported row counts.
 - Data-quality issues are reviewed before management statistics are published.
+- Complaint, discipline, and decision evidence is captured in formal modules.
+- Analytics snapshot records are distinguished from legal registry records.
+- NHWA exports are reviewed and signed off before submission.
 
 ## 6. Governance Checkpoints
 
@@ -207,7 +236,12 @@ Review these monthly:
 - Report source dates and latest import batch.
 - Backup and restore readiness.
 - User training needs.
+- Complaint and discipline case backlog.
+- Decision records missing authority/SOP references.
+- Documents awaiting approval/rejection.
+- NHWA workbook sign-off readiness.
+- Mapped entities without verified coordinates.
 
 ## 7. Current Position
 
-The OpenKM-style system foundation is complete and integrated into the platform. The remaining work is operational adoption: scanning paper records, attaching legacy evidence, cleaning historical data, training users, confirming NDOH ICT hosting/security, and enforcing disciplined reporting practices.
+The OpenKM-style system foundation is complete and integrated into the platform. The remaining work is operational adoption: scanning paper records, attaching legacy evidence, cleaning historical data, training users, verifying map coordinates, using ICMS/discipline/decision workflows consistently, confirming NDOH ICT hosting/security, and enforcing disciplined reporting practices.

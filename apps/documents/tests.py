@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from apps.documents.models import Document, DocumentAuditEvent, DocumentFolder, DocumentVersion
 from apps.ocr.models import OCRDocument
+from apps.ocr.forms import OCRImportForm
 
 
 def make_text_file(name="sample.txt", content=b"sample repository content"):
@@ -188,6 +189,20 @@ class RepositorySearchTests(TestCase):
 
 
 class OCRIntegrationTests(TestCase):
+    def test_ocr_form_accepts_receipt_image_uploads(self):
+        form = OCRImportForm(
+            data={},
+            files={
+                "pdf_file": SimpleUploadedFile(
+                    "receipt.jpg",
+                    b"image-bytes",
+                    content_type="image/jpeg",
+                )
+            },
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+
     @patch("apps.ocr.models.easyocr.Reader")
     def test_ocr_processing_updates_linked_document_version(self, reader_mock):
         reader_instance = reader_mock.return_value
@@ -234,3 +249,123 @@ class OCRIntegrationTests(TestCase):
                 event_type="ocr_processed",
             ).exists()
         )
+
+    @patch("apps.ocr.models.easyocr.Reader")
+    def test_ocr_processing_suppresses_windows_charmap_progress_output(self, reader_mock):
+        class CharmapFailingStream:
+            def write(self, text):
+                if "\u2588" in text:
+                    raise UnicodeEncodeError("charmap", text, text.index("\u2588"), text.index("\u2588") + 1, "character maps to <undefined>")
+                return len(text)
+
+            def flush(self):
+                return None
+
+        reader_instance = reader_mock.return_value
+
+        def build_reader(*args, **kwargs):
+            print("loading OCR \u2588")
+            return reader_instance
+
+        def readtext(*args, **kwargs):
+            print("processing OCR \u2588")
+            return [((0, 0), "Receipt No OR-8899", 0.97)]
+
+        reader_mock.side_effect = build_reader
+        reader_instance.readtext.side_effect = readtext
+
+        ocr_document = OCRDocument.objects.create(file=make_pdf_file())
+
+        with patch("sys.stdout", CharmapFailingStream()), patch("sys.stderr", CharmapFailingStream()):
+            ocr_document.process_ocr()
+
+        ocr_document.refresh_from_db()
+        self.assertEqual(ocr_document.processing_status, "completed")
+        self.assertIn("Receipt No OR-8899", ocr_document.extracted_text)
+        self.assertEqual(ocr_document.processing_error, "")
+
+    def test_ocr_import_view_records_processing_failure_without_500(self):
+        user_model = get_user_model()
+        user = user_model.objects.create_superuser(
+            username="ocr.admin",
+            email="ocr.admin@example.com",
+            password="testpass123",
+            role="admin",
+        )
+
+        def fail_processing(ocr_document, *, raise_errors=True):
+            ocr_document.processing_status = "failed"
+            ocr_document.processing_error = "EasyOCR is not installed for this Python runtime."
+            ocr_document.save(update_fields=["processing_status", "processing_error"])
+            return False
+
+        self.client.force_login(user)
+        with patch("apps.ocr.models.OCRDocument.process_ocr", fail_processing):
+            response = self.client.post(
+                reverse("ocr_import"),
+                {
+                    "pdf_file": SimpleUploadedFile(
+                        "receipt.jpg",
+                        b"image-bytes",
+                        content_type="image/jpeg",
+                    ),
+                    "document_version": "",
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        ocr_document = OCRDocument.objects.latest("id")
+        self.assertRedirects(response, reverse("ocr_detail", args=[ocr_document.pk]))
+        self.assertEqual(ocr_document.processing_status, "failed")
+        self.assertIn("EasyOCR is not installed", ocr_document.processing_error)
+
+        detail_response = self.client.get(reverse("ocr_detail", args=[ocr_document.pk]))
+        self.assertContains(detail_response, "OCR Record Detail")
+        self.assertContains(detail_response, "EasyOCR is not installed")
+
+    def test_ocr_import_view_redirects_to_saved_extracted_details(self):
+        user_model = get_user_model()
+        user = user_model.objects.create_superuser(
+            username="ocr.detail.admin",
+            email="ocr.detail.admin@example.com",
+            password="testpass123",
+            role="admin",
+        )
+
+        def complete_processing(ocr_document, *, raise_errors=True):
+            ocr_document.extracted_text = "Official Receipt No OR-7788 Registration No RN-1234 ATP No ATP-9922"
+            ocr_document.extracted_metadata = {
+                "official_receipt_numbers": ["OR-7788"],
+                "registration_numbers": ["RN-1234"],
+                "atp_numbers": ["ATP-9922"],
+            }
+            ocr_document.processing_status = "completed"
+            ocr_document.processing_error = ""
+            ocr_document.save()
+            return True
+
+        self.client.force_login(user)
+        with patch("apps.ocr.models.OCRDocument.process_ocr", complete_processing):
+            response = self.client.post(
+                reverse("ocr_import"),
+                {
+                    "pdf_file": SimpleUploadedFile(
+                        "receipt.jpg",
+                        b"image-bytes",
+                        content_type="image/jpeg",
+                    ),
+                    "document_version": "",
+                },
+            )
+
+        ocr_document = OCRDocument.objects.latest("id")
+        self.assertRedirects(response, reverse("ocr_detail", args=[ocr_document.pk]))
+
+        detail_response = self.client.get(reverse("ocr_detail", args=[ocr_document.pk]))
+        self.assertContains(detail_response, "Official Receipt No OR-7788")
+        self.assertContains(detail_response, "Official Receipt Numbers")
+        self.assertContains(detail_response, "OR-7788")
+        self.assertContains(detail_response, "Registration Numbers")
+        self.assertContains(detail_response, "RN-1234")
+        self.assertContains(detail_response, "ATP Numbers")
+        self.assertContains(detail_response, "ATP-9922")

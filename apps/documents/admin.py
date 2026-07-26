@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     Document,
     DocumentAccessPolicy,
+    DocumentApproval,
     DocumentAuditEvent,
     DocumentFolder,
     DocumentVersion,
@@ -20,6 +21,12 @@ class DocumentAccessPolicyInline(admin.TabularInline):
     fk_name = "document"
 
 
+class DocumentApprovalInline(admin.TabularInline):
+    model = DocumentApproval
+    extra = 0
+    readonly_fields = ("approved_at",)
+
+
 @admin.register(DocumentFolder)
 class DocumentFolderAdmin(admin.ModelAdmin):
     list_display = ("name", "office_scope", "parent", "is_active", "created_at")
@@ -32,7 +39,7 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = ("title", "office_scope", "status", "folder", "document_type", "is_record", "updated_at")
     list_filter = ("office_scope", "status", "is_record", "document_type")
     search_fields = ("title", "description")
-    inlines = [DocumentVersionInline, DocumentAccessPolicyInline]
+    inlines = [DocumentVersionInline, DocumentApprovalInline, DocumentAccessPolicyInline]
 
 
 @admin.register(DocumentVersion)
@@ -55,3 +62,10 @@ class DocumentAuditEventAdmin(admin.ModelAdmin):
     list_filter = ("event_type", "created_at")
     search_fields = ("document__title", "user__username")
 
+
+@admin.register(DocumentApproval)
+class DocumentApprovalAdmin(admin.ModelAdmin):
+    list_display = ("document", "version", "status", "approved_by", "approved_at")
+    list_filter = ("status", "approved_at")
+    search_fields = ("document__title", "note", "approved_by__username")
+    readonly_fields = ("approved_at",)

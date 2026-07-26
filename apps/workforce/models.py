@@ -64,9 +64,75 @@ class Facility(models.Model):
         return self.name
 
 
+class FacilityAccreditation(models.Model):
+    """Medical Board accreditation status for a registered health facility.
+
+    This is deliberately separate from an application/checklist.  A submitted
+    facility form is evidence in a workflow; this record represents the
+    regulator's current, reviewable accreditation decision.
+    """
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('under_review', 'Under review'),
+        ('accredited', 'Accredited'),
+        ('conditional', 'Conditionally accredited'),
+        ('suspended', 'Suspended'),
+        ('expired', 'Expired'),
+        ('not_accredited', 'Not accredited'),
+    ]
+    ACCREDITATION_TYPE_CHOICES = [
+        ('hospital', 'Hospital'),
+        ('clinic', 'Clinic'),
+        ('private_practice', 'Private practice'),
+        ('specialist_centre', 'Specialist centre'),
+        ('diagnostic_facility', 'Diagnostic facility'),
+        ('training_college', 'Training college'),
+        ('other', 'Other'),
+    ]
+
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE, related_name='medical_accreditations')
+    accreditation_type = models.CharField(max_length=40, choices=ACCREDITATION_TYPE_CHOICES, default='other')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='under_review', db_index=True)
+    reference_number = models.CharField(max_length=100, blank=True, db_index=True)
+    compliance_score = models.PositiveSmallIntegerField(null=True, blank=True)
+    last_inspection_date = models.DateField(null=True, blank=True)
+    valid_from = models.DateField(null=True, blank=True)
+    valid_until = models.DateField(null=True, blank=True, db_index=True)
+    conditions_summary = models.TextField(blank=True)
+    evidence_summary = models.TextField(blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_facility_accreditations',
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['facility__name', '-updated_at']
+        indexes = [
+            models.Index(fields=['status', 'valid_until']),
+            models.Index(fields=['accreditation_type', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.facility} - {self.get_status_display()}"
+
+
 class TrainingInstitution(models.Model):
     name = models.CharField(max_length=255, unique=True)
     type = models.CharField(max_length=100, blank=True)
+    ownership = models.CharField(max_length=120, blank=True)
+    location_name = models.CharField(max_length=255, blank=True)
+    registration_status = models.CharField(max_length=80, blank=True)
+    regulatory_body_name = models.CharField(max_length=120, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    source_reference = models.CharField(max_length=255, blank=True)
+    source_metadata = models.JSONField(default=dict, blank=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -375,11 +441,171 @@ class CPDRecord(GenericProfessionalRelation):
         return f"{self.professional or 'Unknown'} - {self.training_type}"
 
 
+class CredentialVerification(GenericProfessionalRelation):
+    """Board-verifiable credential evidence for a professional profile."""
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending verification'),
+        ('institution_check', 'Institution check'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+        ('expired', 'Expired'),
+    ]
+    CREDENTIAL_TYPE_CHOICES = [
+        ('qualification', 'Qualification'),
+        ('specialist_certificate', 'Specialist certificate'),
+        ('fellowship', 'Fellowship'),
+        ('registration', 'Registration evidence'),
+        ('cpd', 'CPD evidence'),
+        ('other', 'Other evidence'),
+    ]
+
+    credential_type = models.CharField(max_length=40, choices=CREDENTIAL_TYPE_CHOICES, default='qualification')
+    credential_title = models.CharField(max_length=255)
+    issuing_institution = models.CharField(max_length=255, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    reference_number = models.CharField(max_length=120, blank=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending', db_index=True)
+    evidence_summary = models.TextField(blank=True)
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_credentials',
+    )
+    verified_at = models.DateTimeField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at', 'credential_title']
+        indexes = [
+            models.Index(fields=['content_type', 'object_id', 'status']),
+            models.Index(fields=['credential_type', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.credential_title} - {self.get_status_display()}"
+
+
+class ClinicalPrivilege(GenericProfessionalRelation):
+    """A Medical Board-approved scope of clinical practice.
+
+    Clinical privileges are explicit decisions, never inferred from a doctor's
+    specialty or from an uploaded document.
+    """
+
+    STATUS_CHOICES = [
+        ('requested', 'Requested'),
+        ('approved', 'Approved'),
+        ('conditional', 'Approved with conditions'),
+        ('suspended', 'Suspended'),
+        ('revoked', 'Revoked'),
+        ('expired', 'Expired'),
+    ]
+
+    privilege_name = models.CharField(max_length=255)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='requested', db_index=True)
+    facility = models.ForeignKey(Facility, on_delete=models.SET_NULL, null=True, blank=True, related_name='clinical_privileges')
+    effective_from = models.DateField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True, db_index=True)
+    decision_reference = models.CharField(max_length=120, blank=True)
+    conditions_summary = models.TextField(blank=True)
+    evidence_summary = models.TextField(blank=True)
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_clinical_privileges',
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['privilege_name', '-updated_at']
+        indexes = [
+            models.Index(fields=['content_type', 'object_id', 'status']),
+            models.Index(fields=['status', 'expiry_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.privilege_name} - {self.get_status_display()}"
+
+
+class ProfessionalProfileUpdateRequest(GenericProfessionalRelation):
+    """A professional-submitted change awaiting regulatory review.
+
+    User input is stored as a proposal first.  It is only promoted into an
+    official registry, employment, credential, CPD, or clinical-privilege
+    record by an authorised office decision.
+    """
+
+    OFFICE_SCOPE_CHOICES = [
+        ('nursing', 'Nursing Council'),
+        ('medical', 'Medical Board'),
+    ]
+    UPDATE_TYPE_CHOICES = [
+        ('contact', 'Contact details'),
+        ('workplace', 'Current workplace'),
+        ('qualification', 'Qualification or specialist credential'),
+        ('cpd', 'CPD activity'),
+        ('clinical_privilege', 'Clinical privilege'),
+    ]
+    STATUS_CHOICES = [
+        ('submitted', 'Submitted'),
+        ('under_review', 'Under review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('withdrawn', 'Withdrawn'),
+    ]
+
+    office_scope = models.CharField(max_length=20, choices=OFFICE_SCOPE_CHOICES, db_index=True)
+    update_type = models.CharField(max_length=40, choices=UPDATE_TYPE_CHOICES, db_index=True)
+    proposed_changes = models.JSONField(default=dict, blank=True)
+    reason = models.TextField(blank=True)
+    evidence = models.FileField(upload_to='profile_update_requests/%Y/%m/', blank=True, null=True)
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='professional_profile_update_requests',
+    )
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='submitted', db_index=True)
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_professional_profile_update_requests',
+    )
+    reviewer_note = models.TextField(blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    applied_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['office_scope', 'status', 'submitted_at']),
+            models.Index(fields=['content_type', 'object_id', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_update_type_display()} - {self.get_status_display()}"
+
+
 class Application(GenericProfessionalRelation):
     FORM_CHOICES = [
         ('MD1', 'MD1 - Medical Registration'),
         ('MD2', 'MD2 - Medical Renewal'),
         ('CHW1', 'CHW1 - CHW Registration'),
+        ('CHWP', 'CHWP - CHW Provisional Licence'),
+        ('CHWF', 'CHWF - CHW Full Licence'),
         ('MBSP', 'MBSP - Medical Board Specialist Application'),
         ('MBRN', 'MBRN - Medical Board Renewal Registration'),
         ('MBAC', 'MBAC - Medical Board Facility Accreditation Checklist'),
@@ -400,7 +626,7 @@ class Application(GenericProfessionalRelation):
         ('NC6', 'NC6 - Competency for Full Licence Nursing'),
         ('NC7', 'NC7 - Competency for Full Licence Midwifery'),
         ('NC8', 'NC8 - Application for Temporary Licence'),
-        ('NC9', 'NC9 - Checklist for Temporary Licence'),
+        ('NC9', 'NC9 - Temporary Licence to Practise Criteria for Overseas Nurses Checklist'),
         ('NC10', 'NC10 - Competency for Full Licence Child Nursing'),
         ('NC11', 'NC11 - Double Major Full Registration Checklist'),
         ('GD', 'GD'),
@@ -788,6 +1014,12 @@ class ProfessionalPhoto(GenericProfessionalRelation):
 
 class EmploymentRecord(GenericProfessionalRelation):
     EMPLOYMENT_STATUS_CHOICES = [
+        ('employed', 'Employed'),
+        ('inactive', 'Inactive'),
+        ('retired', 'Retired'),
+        ('deceased', 'Deceased'),
+        ('overseas', 'Overseas'),
+        ('unknown', 'Unknown'),
         ('full_time', 'Full Time'),
         ('part_time', 'Part Time'),
         ('studying', 'Studying'),
@@ -795,11 +1027,28 @@ class EmploymentRecord(GenericProfessionalRelation):
         ('other', 'Other'),
     ]
     AREA_OF_EMPLOYMENT_CHOICES = [
+        ('public', 'Public'),
+        ('church', 'Church'),
+        ('ngo', 'NGO'),
+        ('overseas', 'Overseas'),
+        ('unknown', 'Unknown'),
         ('government', 'Government'),
         ('private', 'Private'),
-        ('church', 'Church'),
-        ('ngo', 'NGOs'),
         ('other', 'Other'),
+    ]
+    EMPLOYMENT_SECTOR_CHOICES = [
+        ('public', 'Public'),
+        ('church', 'Church'),
+        ('private', 'Private'),
+        ('ngo', 'NGO'),
+        ('overseas', 'Overseas'),
+        ('unknown', 'Unknown'),
+    ]
+    REVIEW_STATUS_CHOICES = [
+        ('staged', 'Staged'),
+        ('accepted', 'Accepted'),
+        ('promoted', 'Promoted'),
+        ('rejected', 'Rejected'),
     ]
 
     employer_name = models.CharField(max_length=255, blank=True)
@@ -808,9 +1057,25 @@ class EmploymentRecord(GenericProfessionalRelation):
     duration_of_employment = models.CharField(max_length=100, blank=True)
     employment_status = models.CharField(max_length=30, choices=EMPLOYMENT_STATUS_CHOICES, blank=True)
     area_of_employment = models.CharField(max_length=30, choices=AREA_OF_EMPLOYMENT_CHOICES, blank=True)
+    employment_sector = models.CharField(max_length=30, choices=EMPLOYMENT_SECTOR_CHOICES, blank=True)
     occupation = models.CharField(max_length=255, blank=True)
     function_type = models.CharField(max_length=255, blank=True)
     place_of_work = models.CharField(max_length=255, blank=True)
+    facility = models.ForeignKey(Facility, on_delete=models.SET_NULL, null=True, blank=True)
+    facility_name_raw = models.CharField(max_length=255, blank=True)
+    province = models.CharField(max_length=120, blank=True)
+    district = models.CharField(max_length=120, blank=True)
+    position_title = models.CharField(max_length=255, blank=True)
+    workforce_function = models.CharField(max_length=255, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    is_current = models.BooleanField(default=True)
+    source_type = models.CharField(max_length=80, blank=True)
+    source_submission = models.CharField(max_length=100, blank=True)
+    source_file = models.CharField(max_length=255, blank=True)
+    source_sheet = models.CharField(max_length=255, blank=True)
+    source_row = models.PositiveIntegerField(null=True, blank=True)
+    review_status = models.CharField(max_length=30, choices=REVIEW_STATUS_CHOICES, blank=True)
     business_address = models.TextField(blank=True)
     business_number = models.CharField(max_length=50, blank=True)
     reasons_for_unemployment = models.TextField(blank=True)
@@ -884,7 +1149,8 @@ class ImportedWorkbookSheet(models.Model):
 class PracticingLicenseRecord(models.Model):
     RECORD_TYPE_CHOICES = [
         ('provisional', 'Provisional Registration'),
-        ('full', 'Full Registration'),
+        ('full', 'Full-Licence Applicant'),
+        ('full_approved', 'Full-Licence Approved'),
         ('temporary', 'Temporary Certificate'),
         ('practicing_license', 'Practicing License'),
         ('payment', 'Payment'),
@@ -952,6 +1218,77 @@ class PracticingLicenseRecord(models.Model):
 
     def __str__(self):
         return f"{self.full_name} - {self.record_type} - {self.record_year or 'n/a'}"
+
+
+class IssuedLicenceDocument(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ('authority_to_practice', 'Authority to Practice'),
+        ('full_licence', 'Full Licence'),
+        ('provisional_licence', 'Provisional Licence'),
+        ('temporary_licence', 'Temporary Licence'),
+    ]
+    DELIVERY_CHOICES = [
+        ('mailbox', 'Platform mailbox'),
+        ('email', 'Direct email'),
+        ('both', 'Mailbox and email'),
+    ]
+    STATUS_CHOICES = [
+        ('generated', 'Generated'),
+        ('sent', 'Sent'),
+        ('failed', 'Failed'),
+    ]
+
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='issued_documents')
+    practicing_record = models.ForeignKey(
+        PracticingLicenseRecord,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='issued_documents',
+    )
+    document_type = models.CharField(max_length=40, choices=DOCUMENT_TYPE_CHOICES)
+    document_number = models.CharField(max_length=100, unique=True)
+    file = models.FileField(upload_to='issued_licence_documents/%Y/%m/')
+    issued_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='issued_licence_documents',
+    )
+    recipient_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='received_licence_documents',
+    )
+    recipient_name = models.CharField(max_length=255, blank=True)
+    recipient_email = models.EmailField(blank=True)
+    delivery_channel = models.CharField(max_length=20, choices=DELIVERY_CHOICES, default='both')
+    mailbox_thread = models.ForeignKey(
+        'notifications.EnquiryThread',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='issued_licence_documents',
+    )
+    email_sent = models.BooleanField(default=False)
+    mailbox_sent = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='generated')
+    notes = models.TextField(blank=True)
+    issued_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-issued_at']
+        indexes = [
+            models.Index(fields=['document_type', 'issued_at']),
+            models.Index(fields=['status', 'delivery_channel']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_document_type_display()} {self.document_number}"
 
 
 class MissingDataReview(models.Model):

@@ -288,7 +288,7 @@ def _imported_record_quality_issues(record):
         issues.append('Record year')
     if _is_missing(record.applicant_type) and _is_missing(record.nationality):
         issues.append('Applicant type or nationality')
-    if record.record_type in {'full', 'temporary', 'provisional'} and _is_missing(record.issued_date):
+    if record.record_type in {'full', 'full_approved', 'temporary', 'provisional'} and _is_missing(record.issued_date):
         issues.append('Issued date')
     if record.record_type in {'practicing_license', 'payment'} and _is_missing(record.payment_date):
         issues.append('Payment date')

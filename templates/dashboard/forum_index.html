@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Forum{% endblock %}
+{% block title_label %}Public and Staff Forum{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-0">Forum Categories</h3>
+            <div class="small text-muted">Public posts are moderated. Staff and practitioner categories appear only when your account can access them.</div>
+        </div>
+        <a href="{% url 'public_faqs' %}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-circle-question mr-1"></i> FAQs
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead>
+            <tr>
+                <th>Category</th>
+                <th>Audience</th>
+                <th>Topics</th>
+                <th>Latest</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in category_rows %}
+            <tr>
+                <td>
+                    <strong>{{ row.category.name }}</strong>
+                    <div class="small text-muted">{{ row.category.description }}</div>
+                </td>
+                <td>
+                    {{ row.category.get_visibility_display }}
+                    <div class="small text-muted">{{ row.category.get_office_scope_display }}</div>
+                </td>
+                <td>{{ row.topic_count }}</td>
+                <td>
+                    {% if row.latest_topic %}
+                    {{ row.latest_topic.title }}
+                    <div class="small text-muted">{{ row.latest_topic.last_post_at|default:row.latest_topic.created_at|date:"d M Y H:i" }}</div>
+                    {% else %}
+                    <span class="text-muted">No topics yet</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    <a href="{% url 'forum_category_detail' row.category.slug %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-arrow-right mr-1"></i> Open
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted">No forum categories are available for your current access.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

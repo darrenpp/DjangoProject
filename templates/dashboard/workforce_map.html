@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block title %}Institutions and Facilities Map{% endblock %}
+{% block title_label %}Institutions and Facilities Map{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-filter-bar {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .workforce-map-canvas {
+        background: #eef5f7;
+        border: 1px solid #d8e1e8;
+        border-radius: 8px;
+        min-height: 460px;
+        width: 100%;
+    }
+    .map-embed-frame {
+        border-radius: 8px;
+        min-height: 450px;
+        width: 100%;
+    }
+    .map-empty-state {
+        align-items: center;
+        color: #526172;
+        display: flex;
+        font-weight: 700;
+        justify-content: center;
+        min-height: 460px;
+        text-align: center;
+    }
+    .map-page-heading,
+    .map-card-heading {
+        margin: 0;
+        font-size: 1.45rem;
+        font-weight: 900;
+        line-height: 1.2;
+    }
+    .map-card-heading {
+        font-size: 1.25rem;
+    }
+    .map-header-copy {
+        color: rgba(255, 255, 255, 0.92);
+        margin-top: 6px;
+        max-width: 760px;
+    }
+    .map-status-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        margin-top: 14px;
+    }
+    .map-status-pill {
+        background: #f6fbfd;
+        border: 1px solid #d8e1e8;
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+    .map-status-label {
+        color: #526172;
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .map-status-value {
+        color: #08223a;
+        font-weight: 900;
+    }
+    .map-reference-list {
+        max-height: 540px;
+        overflow: auto;
+    }
+    .map-reference-item {
+        border-bottom: 1px solid #d8e1e8;
+        padding: 12px 14px;
+    }
+    .map-reference-item:nth-child(odd) {
+        background: #f6f8fa;
+    }
+    .map-reference-name {
+        font-weight: 900;
+        line-height: 1.25;
+        margin-bottom: 4px;
+    }
+    .map-reference-meta {
+        color: #526172;
+        font-size: 0.84rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="map-page-heading">Mapped Schools, Institutions and Facilities</h3>
+            <div class="map-header-copy">Coordinates are stored in the local database after staff verification. This page does not call Google geocoding on load.</div>
+        </div>
+        <div class="d-flex flex-wrap">
+            <a href="{% url 'public_nursing_register_search_root' %}" class="btn btn-sm btn-outline-primary mr-2 mb-2">
+                <i class="fas fa-search mr-1"></i> Nursing Verification
+            </a>
+            <a href="{% url 'public_medical_board_register_search_root' %}" class="btn btn-sm btn-outline-danger mr-2 mb-2">
+                <i class="fas fa-user-doctor mr-1"></i> Medical Board Verification
+            </a>
+            <a href="{% url 'public_faqs' %}" class="btn btn-sm btn-outline-primary mb-2">
+                <i class="fas fa-circle-question mr-1"></i> FAQs
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="map-filter-bar">
+            <div>
+                <label for="office">Board</label>
+                <select id="office" name="office" class="form-control">
+                    <option value="all" {% if selected_office == "all" %}selected{% endif %}>All Boards</option>
+                    <option value="nursing" {% if selected_office == "nursing" %}selected{% endif %}>Nursing Council</option>
+                    <option value="medical" {% if selected_office == "medical" %}selected{% endif %}>Medical Board</option>
+                    <option value="shared" {% if selected_office == "shared" %}selected{% endif %}>Shared</option>
+                </select>
+            </div>
+            <div>
+                <label for="type">Type</label>
+                <select id="type" name="type" class="form-control">
+                    <option value="all" {% if selected_type == "all" %}selected{% endif %}>All Types</option>
+                    {% for value, label in entity_type_choices %}
+                    <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="province">Province</label>
+                <select id="province" name="province" class="form-control">
+                    <option value="">All Provinces</option>
+                    {% for province in provinces %}
+                    <option value="{{ province }}" {% if selected_province == province %}selected{% endif %}>{{ province }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="q">Search</label>
+                <input id="q" name="q" value="{{ query }}" class="form-control" placeholder="Name, province, district">
+            </div>
+            <div class="d-flex align-items-end">
+                <button class="btn btn-primary btn-block" type="submit">
+                    <i class="fas fa-filter mr-1"></i> Apply
+                </button>
+            </div>
+        </form>
+        <div class="map-status-grid">
+            <div class="map-status-pill">
+                <div class="map-status-label">Google Maps API</div>
+                <div class="map-status-value">
+                    {% if google_maps_configured %}Configured{% else %}API key missing{% endif %}
+                </div>
+            </div>
+            <div class="map-status-pill">
+                <div class="map-status-label">Stored Coordinates</div>
+                <div class="map-status-value">{{ map_entity_count }} of {{ filtered_entity_count }} filtered records</div>
+            </div>
+            <div class="map-status-pill">
+                <div class="map-status-label">Embed Search</div>
+                <div class="map-status-value">{{ google_maps_embed_query }}</div>
+            </div>
+            <div class="map-status-pill">
+                <div class="map-status-label">Coordinate Refresh</div>
+                <div class="map-status-value"><code>manage.py geocode_mapped_entities --limit 100</code></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8 mb-4">
+        <div class="card card-outline card-success h-100">
+            <div class="card-header">
+                <h3 class="map-card-heading">Google Maps Embed Layer</h3>
+                <div class="small text-muted">Showing {{ google_maps_embed_query }} through the Google Maps Embed API.</div>
+            </div>
+            <div class="card-body">
+                {% if google_maps_embed_url %}
+                <iframe
+                    width="600"
+                    height="450"
+                    class="map-embed-frame"
+                    style="border:0"
+                    loading="lazy"
+                    allowfullscreen
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src="{{ google_maps_embed_url }}">
+                </iframe>
+                {% else %}
+                <div class="workforce-map-canvas map-empty-state">
+                    <div>
+                        {% if not google_maps_api_key %}
+                        Google Maps Embed is installed. Add <code>GOOGLE_MAPS_API_KEY</code> to <code>.env</code>, then restart Django.
+                        {% else %}
+                        No Google Maps embed target is available for these filters.
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if google_maps_api_key and map_entity_count %}
+                <div class="mt-4">
+                    <h4 class="map-card-heading">Verified Coordinate Marker Layer</h4>
+                    <div class="small text-muted mb-2">{{ map_entity_count }} mapped entities have stored coordinates.</div>
+                    <div id="workforceMap" class="workforce-map-canvas"></div>
+                </div>
+                {% elif google_maps_api_key %}
+                <div class="map-empty-state mt-4">
+                    <div>No filtered entities have stored coordinates yet. Run <code>manage.py geocode_mapped_entities --limit 100</code> or enter verified coordinates in admin.</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 mb-4">
+        <div class="card card-outline card-info h-100">
+            <div class="card-header"><h3 class="map-card-heading">Reference List</h3></div>
+            <div class="card-body p-0">
+                <div class="map-reference-list">
+                    {% for entity in entities %}
+                    <div class="map-reference-item">
+                        <div class="map-reference-name">
+                            {% if entity.detail_url %}
+                            <a href="{{ entity.detail_url }}">{{ entity.name }}</a>
+                            {% else %}
+                            {{ entity.name }}
+                            {% endif %}
+                        </div>
+                        <div class="map-reference-meta">
+                            {{ entity.get_entity_type_display }} | {{ entity.get_office_scope_display }} | {{ entity.get_verification_status_display }}
+                        </div>
+                        <div class="map-reference-meta">
+                            {% if entity.province %}{{ entity.province }}{% else %}Province not set{% endif %}
+                            {% if entity.district %} / {{ entity.district }}{% endif %}
+                        </div>
+                        <div class="map-reference-meta">
+                            {% if entity.has_coordinates %}Coordinates stored{% else %}Coordinates pending{% endif %}
+                            {% if entity.active_workforce_count %} | Workforce {{ entity.active_workforce_count }}{% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-3 text-center text-muted">No mapped entities match these filters.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if google_maps_api_key and map_entity_count %}
+<script>
+    window.ndohMappedEntities = {{ map_entities_json|safe }};
+    function initNdohWorkforceMap() {
+        const entities = window.ndohMappedEntities || [];
+        const first = entities[0] || { latitude: -6.314993, longitude: 143.95555 };
+        const map = new google.maps.Map(document.getElementById('workforceMap'), {
+            center: { lat: first.latitude, lng: first.longitude },
+            zoom: entities.length > 1 ? 6 : 12,
+            mapTypeControl: true,
+            streetViewControl: false
+        });
+        const bounds = new google.maps.LatLngBounds();
+        entities.forEach((entity) => {
+            if (entity.latitude === null || entity.longitude === null) {
+                return;
+            }
+            const position = { lat: entity.latitude, lng: entity.longitude };
+            const marker = new google.maps.Marker({
+                position,
+                map,
+                title: entity.name
+            });
+            const detailLink = entity.detail_url ? `<br><a href="${entity.detail_url}">Open details</a>` : '';
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<strong>${entity.name}</strong><br>${entity.entity_type}<br>${entity.office_scope}<br>${entity.province || ''}<br>Workforce: ${entity.active_workforce_count || 0}${detailLink}`
+            });
+            marker.addListener('click', () => infoWindow.open({ anchor: marker, map }));
+            bounds.extend(position);
+        });
+        if (entities.length > 1) {
+            map.fitBounds(bounds);
+        }
+    }
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initNdohWorkforceMap"></script>
+{% endif %}
+{% endblock %}

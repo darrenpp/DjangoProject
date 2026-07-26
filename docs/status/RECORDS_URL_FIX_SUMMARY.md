@@ -19,12 +19,12 @@ The common app had defined URL patterns in `apps/common/record_urls.py` with nam
 - `population_guide`
 - `record_list`, `record_create`, etc.
 
-However, these URLs were NOT included in the main URLconf (`ndoh_workforce_registry/urls.py`), so Django couldn't resolve the URL names in the template.
+However, these URLs were NOT included in the main URLconf (`NDOH_regulatory_bodies/urls.py`), so Django couldn't resolve the URL names in the template.
 
 ## Solution
 
 ### 1. Added Records URLs to Main URLconf
-**File:** `ndoh_workforce_registry/urls.py`
+**File:** `NDOH_regulatory_bodies/urls.py`
 
 Added the common app's record URLs to the main URL configuration:
 ```python

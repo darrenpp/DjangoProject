@@ -21,8 +21,11 @@ from apps.competency.models import CompetencyAssessment
 
 from .models import (
     Cadre,
+    ClinicalPrivilege,
+    CredentialVerification,
     Location,
     Facility,
+    FacilityAccreditation,
     TrainingInstitution,
     DocumentType,
     RegulatoryBody,
@@ -51,9 +54,11 @@ from .models import (
     DeclarationTemplate,
     FeeSchedule,
     ImportedWorkbookSheet,
+    IssuedLicenceDocument,
     MissingDataReview,
     PolicyDocument,
     PracticingLicenseRecord,
+    ProfessionalProfileUpdateRequest,
     SupervisorAssignment,
     WorkforceSnapshot,
 )
@@ -81,6 +86,16 @@ class PostingHistoryInline(GenericTabularInline):
 
 class CPDRecordInline(GenericTabularInline):
     model = CPDRecord
+    extra = 0
+
+
+class CredentialVerificationInline(GenericTabularInline):
+    model = CredentialVerification
+    extra = 0
+
+
+class ClinicalPrivilegeInline(GenericTabularInline):
+    model = ClinicalPrivilege
     extra = 0
 
 
@@ -237,7 +252,7 @@ class NursingProfessionalImportForm(forms.Form):
 
 
 class NursingFullRegistrationYearFilter(admin.SimpleListFilter):
-    title = "full registration year"
+    title = "full-licence applicant year"
     parameter_name = "full_registration_year"
 
     def lookups(self, request, model_admin):
@@ -425,11 +440,31 @@ class FacilityAdmin(admin.ModelAdmin):
     autocomplete_fields = ('location',)
 
 
+@admin.register(FacilityAccreditation)
+class FacilityAccreditationAdmin(admin.ModelAdmin):
+    list_display = (
+        'facility', 'accreditation_type', 'status', 'compliance_score',
+        'last_inspection_date', 'valid_until', 'reviewed_by', 'updated_at',
+    )
+    list_filter = ('status', 'accreditation_type', 'valid_until')
+    search_fields = ('facility__name', 'reference_number', 'conditions_summary')
+    autocomplete_fields = ('facility', 'reviewed_by')
+    readonly_fields = ('created_at', 'updated_at')
+
+
 @admin.register(TrainingInstitution)
 class TrainingInstitutionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', 'is_active')
-    list_filter = ('is_active',)
-    search_fields = ('name',)
+    list_display = (
+        'name',
+        'type',
+        'ownership',
+        'location_name',
+        'registration_status',
+        'regulatory_body_name',
+        'is_active',
+    )
+    list_filter = ('type', 'ownership', 'registration_status', 'regulatory_body_name', 'is_active')
+    search_fields = ('name', 'location_name', 'ownership', 'regulatory_body_name')
 
 
 @admin.register(DocumentType)
@@ -499,6 +534,8 @@ class BaseHealthProfessionalAdmin(admin.ModelAdmin):
         ProfessionalDocumentInline,
         PostingHistoryInline,
         CPDRecordInline,
+        CredentialVerificationInline,
+        ClinicalPrivilegeInline,
         ApplicationInline,
         CompetencyAssessmentInline,
     ]
@@ -774,6 +811,33 @@ class CPDRecordAdmin(admin.ModelAdmin):
     list_display = ('professional', 'training_type', 'provider', 'start_date', 'hours_credits')
 
 
+@admin.register(CredentialVerification)
+class CredentialVerificationAdmin(admin.ModelAdmin):
+    list_display = ('credential_title', 'credential_type', 'professional', 'status', 'issuing_institution', 'verified_by', 'verified_at')
+    list_filter = ('credential_type', 'status')
+    search_fields = ('credential_title', 'issuing_institution', 'reference_number')
+    autocomplete_fields = ('verified_by',)
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(ClinicalPrivilege)
+class ClinicalPrivilegeAdmin(admin.ModelAdmin):
+    list_display = ('privilege_name', 'professional', 'status', 'facility', 'effective_from', 'expiry_date', 'approved_by')
+    list_filter = ('status', 'facility')
+    search_fields = ('privilege_name', 'decision_reference')
+    autocomplete_fields = ('facility', 'approved_by')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(ProfessionalProfileUpdateRequest)
+class ProfessionalProfileUpdateRequestAdmin(admin.ModelAdmin):
+    list_display = ('professional', 'office_scope', 'update_type', 'status', 'requested_by', 'submitted_at', 'reviewer', 'reviewed_at')
+    list_filter = ('office_scope', 'update_type', 'status')
+    search_fields = ('reason', 'reviewer_note', 'requested_by__username')
+    autocomplete_fields = ('requested_by', 'reviewer')
+    readonly_fields = ('submitted_at', 'reviewed_at', 'applied_at')
+
+
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
     list_display = ('form_code', 'status', 'submitted_date', 'approved_date', 'professional')
@@ -914,6 +978,18 @@ class PracticingLicenseRecordAdmin(admin.ModelAdmin):
     search_fields = ('full_name', 'registration_no', 'practitioner_number', 'category', 'province')
     autocomplete_fields = ('batch', 'sheet')
     actions = [export_as_csv, export_as_xlsx, export_as_pdf]
+
+
+@admin.register(IssuedLicenceDocument)
+class IssuedLicenceDocumentAdmin(admin.ModelAdmin):
+    list_display = (
+        'document_number', 'document_type', 'application', 'recipient_name',
+        'delivery_channel', 'status', 'email_sent', 'mailbox_sent', 'issued_at'
+    )
+    list_filter = ('document_type', 'delivery_channel', 'status', 'email_sent', 'mailbox_sent', 'issued_at')
+    search_fields = ('document_number', 'recipient_name', 'recipient_email', 'application__form_code')
+    autocomplete_fields = ('application', 'practicing_record', 'issued_by', 'recipient_user', 'mailbox_thread')
+    readonly_fields = ('issued_at', 'sent_at')
 
 
 @admin.register(MissingDataReview)

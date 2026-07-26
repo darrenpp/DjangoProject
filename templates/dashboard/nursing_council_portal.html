@@ -1,11 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Nursing Council Portal{% endblock %}
+{% block title_label %}{{ dashboard_platform_title }}{% endblock %}
 
 {% block extra_css %}
 <style>
     .nursing-portal {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --nc-ink: #102033;
+        --nc-muted: #5c6b7a;
+        --nc-line: #d7e0ea;
+        --nc-green: #12624f;
+        --nc-blue: #0f4c81;
+        --nc-amber: #b45309;
+        --nc-red: #b42318;
+        background: #f7fafc;
+        color: var(--nc-ink);
         min-height: 100vh;
     }
     .nursing-portal .main-sidebar {
@@ -46,16 +55,16 @@
         box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
     }
     .nursing-portal .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #0f4c81;
         border: none;
         border-radius: 8px;
         padding: 10px 20px;
         transition: all 0.3s ease;
     }
     .nursing-portal .btn-primary:hover {
-        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        background: #0b3a62;
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 8px rgba(15, 76, 129, 0.25);
     }
     .nursing-portal .small-box {
         border-radius: 12px;
@@ -66,7 +75,7 @@
         padding: 20px;
     }
     .nursing-portal .small-box.bg-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        background: linear-gradient(135deg, #0f4c81 0%, #12624f 100%) !important;
     }
     .nursing-portal .small-box.bg-success {
         background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
@@ -82,7 +91,146 @@
         overflow: hidden;
     }
     .nursing-portal .table thead th {
-        background: #667eea;
+        background: #eef4fa;
+        color: #102033;
+        border: none;
+        font-weight: 700;
+    }
+    .nc-regulator-header {
+        background: #ffffff;
+        border: 1px solid var(--nc-line);
+        border-left: 5px solid var(--nc-green);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(16, 32, 51, .06);
+        padding: 18px;
+    }
+    .nc-kicker {
+        color: var(--nc-green);
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+    .nc-regulator-header h2 {
+        font-size: 1.35rem;
+        line-height: 1.2;
+        margin: .25rem 0 .35rem;
+    }
+    .nc-header-note {
+        color: var(--nc-muted);
+        margin: 0;
+    }
+    .nc-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        justify-content: flex-end;
+    }
+    .nc-meta-grid {
+        display: grid;
+        gap: .5rem;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        margin-top: .85rem;
+    }
+    .nc-meta-item {
+        background: #f8fafc;
+        border: 1px solid var(--nc-line);
+        border-radius: 6px;
+        padding: .6rem .7rem;
+    }
+    .nc-meta-label {
+        color: var(--nc-muted);
+        display: block;
+        font-size: .75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .nc-meta-value {
+        display: block;
+        font-weight: 800;
+        margin-top: .1rem;
+    }
+    .nc-lane-grid {
+        display: grid;
+        gap: .75rem;
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+        margin: 1rem 0;
+    }
+    .nc-lane {
+        background: #ffffff;
+        border: 1px solid var(--nc-line);
+        border-radius: 8px;
+        color: var(--nc-ink);
+        min-height: 108px;
+        padding: .85rem;
+        text-decoration: none;
+    }
+    .nc-lane:hover,
+    .nc-action:hover {
+        border-color: #9db4cc;
+        color: var(--nc-ink);
+        text-decoration: none;
+    }
+    .nc-lane strong {
+        display: block;
+        font-size: 1.55rem;
+        line-height: 1;
+        margin-bottom: .35rem;
+    }
+    .nc-lane span {
+        display: block;
+        font-weight: 800;
+    }
+    .nc-lane small {
+        color: var(--nc-muted);
+        display: block;
+        margin-top: .25rem;
+    }
+    .nc-action {
+        align-items: flex-start;
+        background: #ffffff;
+        border: 1px solid var(--nc-line);
+        border-radius: 8px;
+        color: var(--nc-ink);
+        display: flex;
+        gap: .7rem;
+        height: 100%;
+        padding: .75rem;
+        text-decoration: none;
+    }
+    .nc-action i {
+        color: var(--nc-green);
+        margin-top: .2rem;
+    }
+    .nc-action strong,
+    .nc-action span {
+        display: block;
+    }
+    .nc-action span {
+        color: var(--nc-muted);
+        font-size: .84rem;
+    }
+    .nc-standard-list {
+        display: grid;
+        gap: .6rem;
+    }
+    .nc-standard {
+        border-left: 3px solid var(--nc-green);
+        padding-left: .7rem;
+    }
+    .nc-standard strong,
+    .nc-standard span {
+        display: block;
+    }
+    .nc-standard span {
+        color: var(--nc-muted);
+        font-size: .88rem;
+    }
+    .nursing-portal .card-header.bg-primary,
+    .nursing-portal .card-header.bg-success,
+    .nursing-portal .card-header.bg-info,
+    .nursing-portal .card-header.bg-dark {
+        background: linear-gradient(90deg, #0f4c81 0%, #12624f 100%) !important;
         color: white;
         border: none;
         font-weight: 600;
@@ -110,8 +258,19 @@
     .nursing-portal .chart-panel {
         min-height: 320px;
     }
+    .nursing-portal .chart-panel .card-body {
+        height: 300px;
+        max-height: 300px;
+        min-height: 300px;
+        overflow: hidden;
+        position: relative;
+    }
     .nursing-portal .chart-panel canvas {
-        min-height: 260px;
+        display: block;
+        height: 260px !important;
+        max-height: 260px !important;
+        min-height: 0 !important;
+        width: 100% !important;
     }
     .nursing-portal .operation-guide-card {
         border: 1px solid #e2e8f0;
@@ -181,24 +340,218 @@
         color: #1f7a5a;
         width: 18px;
     }
+    .nursing-pathway-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+    .nursing-pathway-card {
+        background: #ffffff;
+        border: 1px solid #d8e1e8;
+        border-left: 5px solid #1f7a5a;
+        border-radius: 8px;
+        min-height: 170px;
+        padding: 16px;
+    }
+    .nursing-pathway-card h3 {
+        color: #102033;
+        font-size: 1.05rem;
+        font-weight: 900;
+        margin-bottom: 8px;
+    }
+    .nursing-pathway-card p {
+        color: #526172;
+        font-size: .9rem;
+        min-height: 44px;
+    }
+    .nursing-pathway-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .nursing-analytics-shell {
+        background: #ffffff;
+        border: 1px solid #d8e1e8;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(15, 32, 51, 0.08);
+    }
+    .nursing-analytics-kpis {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .nursing-analytics-kpi {
+        background: #f8fafc;
+        border: 1px solid #d8e1e8;
+        border-left: 4px solid #1f7a5a;
+        border-radius: 8px;
+        min-height: 108px;
+        padding: 14px;
+    }
+    .nursing-analytics-kpi .label {
+        color: #526172;
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+    .nursing-analytics-kpi .value {
+        color: #102033;
+        font-size: 1.7rem;
+        font-weight: 900;
+        line-height: 1.15;
+        margin-top: 8px;
+    }
+    .nursing-analytics-panel {
+        border: 1px solid #d8e1e8;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 340px;
+        padding: 14px;
+    }
+    .nursing-analytics-panel h4 {
+        color: #102033;
+        font-size: 1rem;
+        font-weight: 900;
+        margin-bottom: 12px;
+    }
+    .nursing-analytics-panel canvas {
+        display: block;
+        flex: 1 1 auto;
+        height: 260px !important;
+        max-height: 260px !important;
+        min-height: 0 !important;
+        width: 100% !important;
+    }
+    .nursing-portal #nursingFlowChart {
+        height: 300px !important;
+        max-height: 300px !important;
+    }
+    .nursing-portal #workforce-flow .chart-panel .card-body {
+        height: 340px;
+        max-height: 340px;
+        min-height: 340px;
+    }
+    .nursing-analytics-filter-pill {
+        align-items: center;
+        background: #e8f4f2;
+        border: 1px solid #bfdbd2;
+        border-radius: 999px;
+        color: #0f4f3d;
+        display: inline-flex;
+        font-size: .85rem;
+        font-weight: 800;
+        gap: 8px;
+        min-height: 34px;
+        padding: 6px 12px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="nursing-portal">
-    <!-- Welcome Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-primary text-white">
+    <div class="nc-regulator-header mb-3">
+        <div class="d-flex flex-wrap justify-content-between">
+            <div>
+                <div class="nc-kicker">PNG Nursing Council Regulatory Operations</div>
+                <h2>Register verification, provisional-to-full pathways, ATP renewal, schools, and fitness to practise</h2>
+                <p class="nc-header-note">Nursing Council work is separated from Medical Board records and kept aligned to the NC pathway, education, and public-protection model.</p>
+            </div>
+            <div class="nc-header-actions">
+                <a href="{% url 'nursing_forms_portal' %}" class="btn btn-primary btn-sm"><i class="fas fa-file-signature mr-1"></i> Forms</a>
+                <a href="{% url 'public_nursing_register_search_root' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-search mr-1"></i> Register Search</a>
+                <a href="{% url 'workforce_map' %}?office=nursing" class="btn btn-outline-info btn-sm"><i class="fas fa-map-location-dot mr-1"></i> Map</a>
+                <a href="{% url 'complaint_case_list' %}?office=nursing" class="btn btn-outline-danger btn-sm"><i class="fas fa-scale-balanced mr-1"></i> ICMS</a>
+                {% if can_manage_nursing_operations %}
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openNursingImportDialog('provisional')"><i class="fas fa-file-import mr-1"></i> Provisional Import</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openNursingImportDialog('full_licence')"><i class="fas fa-certificate mr-1"></i> Full-Licence Import</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openNursingImportDialog('atp')"><i class="fas fa-id-card mr-1"></i> ATP Import</button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="nc-meta-grid">
+            <div class="nc-meta-item"><span class="nc-meta-label">Legal office</span><span class="nc-meta-value">Nursing Council</span></div>
+            <div class="nc-meta-item"><span class="nc-meta-label">Public register</span><span class="nc-meta-value">{{ nursing_count|default:0 }} ATP rows / {{ pending_applications|default:0 }} pending</span></div>
+            <div class="nc-meta-item"><span class="nc-meta-label">Recognised schools</span><span class="nc-meta-value">{{ institutions_count|default:0 }}</span></div>
+            <div class="nc-meta-item"><span class="nc-meta-label">Formal decisions</span><span class="nc-meta-value">{{ nursing_formal_decision_count|default:0 }} final / {{ nursing_draft_decision_count|default:0 }} draft</span></div>
+        </div>
+    </div>
+
+    {% if can_manage_nursing_operations %}
+    <div class="modal fade" id="nursingWorkbookImportModal" tabindex="-1" aria-labelledby="nursingWorkbookImportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form id="nursingWorkbookImportForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="nursingWorkbookImportModalLabel">Select Nursing Council Workbook</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted mb-3" id="nursingWorkbookImportDescription">Choose the workbook received for this cycle. Leave the sheet tab blank to use the importer default.</p>
+                        <div class="form-group mb-3">
+                            <label for="nursingWorkbookInput" class="form-label" id="nursingWorkbookInputLabel">Workbook</label>
+                            <input type="file" class="form-control" id="nursingWorkbookInput" name="workbook" accept=".xlsx,.xlsm" required>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="nursingSheetNameInput" class="form-label">Exact sheet tab name <span class="text-muted">(optional)</span></label>
+                            <input type="text" class="form-control" id="nursingSheetNameInput" name="sheet_name" placeholder="Sheet tab name">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="nursingWorkbookImportSubmit"><i class="fas fa-file-import mr-1"></i> Start Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="nc-lane-grid">
+        {% for lane in nursing_assurance_lanes %}
+        <a class="nc-lane" href="{{ lane.href }}">
+            <i class="{{ lane.icon }} text-primary mb-2"></i>
+            <strong>{{ lane.count }}</strong>
+            <span>{{ lane.label }}</span>
+            <small>{{ lane.detail }}</small>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% include "dashboard/_nursing_workforce_intelligence.html" %}
+    {% include "dashboard/_nursing_workforce_forecast.html" %}
+
+    <div class="row mb-4" id="nursing-public-protection">
+        <div class="col-lg-8 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-light"><h3 class="card-title mb-0">Public Trust and e-Services</h3></div>
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h2 class="mb-1"><i class="fas fa-user-nurse mr-2"></i>Nursing Council Portal</h2>
-                            <p class="mb-0">Welcome to the National Nursing Council Management System</p>
+                    <div class="row">
+                        {% for action in nursing_public_trust_actions %}
+                        <div class="col-md-6 mb-2">
+                            <a href="{{ action.href }}" class="nc-action">
+                                <i class="{{ action.icon }}"></i>
+                                <span><strong>{{ action.label }}</strong><span>{{ action.detail }}</span></span>
+                            </a>
                         </div>
-                        <div class="col-md-4 text-right">
-                            <i class="fas fa-stethoscope fa-3x opacity-50"></i>
-                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-light"><h3 class="card-title mb-0">Nursing Assurance Standards</h3></div>
+                <div class="card-body">
+                    <div class="nc-standard-list">
+                        <div class="nc-standard"><strong>Registration evidence</strong><span>Identity, recognised education, competency, and registrar decision are checked before licence issue.</span></div>
+                        <div class="nc-standard"><strong>Pathway separation</strong><span>Provisional, full licence, and ATP renewal are handled as separate lifecycle stages.</span></div>
+                        <div class="nc-standard"><strong>Annual practice authority</strong><span>ATP/APC-style renewal evidence, payment, and workplace details are reviewed before current practice status is relied on.</span></div>
+                        <div class="nc-standard"><strong>Education assurance</strong><span>Recognised PNG nursing schools are counted from reviewed references, not raw workbook aliases.</span></div>
+                        <div class="nc-standard"><strong>Fitness to practise</strong><span>Complaints, discipline, conditions, and final decisions remain auditable and scoped to Nursing Council.</span></div>
                     </div>
                 </div>
             </div>
@@ -214,6 +567,15 @@
                 </div>
                 <div class="card-body">
                     <div class="nursing-shortcut-grid">
+                        <a class="nursing-shortcut-link" href="#nursing-analytics-executive"><i class="fas fa-chart-pie"></i> Analytics Engine</a>
+                        <a class="nursing-shortcut-link" href="#nursing-public-protection"><i class="fas fa-shield-alt"></i> Public Protection</a>
+                        <a class="nursing-shortcut-link" href="{% url 'public_nursing_register_search_root' %}"><i class="fas fa-search"></i> Register Search</a>
+                        <a class="nursing-shortcut-link" href="{% url 'workforce_map' %}?office=nursing"><i class="fas fa-map-location-dot"></i> Map</a>
+                        <a class="nursing-shortcut-link" href="{% url 'forum_index' %}"><i class="fas fa-comments"></i> Forum</a>
+                        <a class="nursing-shortcut-link" href="{% url 'public_faqs' %}"><i class="fas fa-circle-question"></i> FAQs</a>
+                        <a class="nursing-shortcut-link" href="{% url 'complaint_case_list' %}"><i class="fas fa-scale-balanced"></i> Complaints & ICMS</a>
+                        <a class="nursing-shortcut-link" href="{% url 'disciplinary_case_list' %}"><i class="fas fa-gavel"></i> Discipline</a>
+                        <a class="nursing-shortcut-link" href="{% url 'regulatory_decision_list' %}"><i class="fas fa-file-signature"></i> Decisions</a>
                         <a class="nursing-shortcut-link" href="#nursing-summary"><i class="fas fa-gauge-high"></i> Key Totals</a>
                         <a class="nursing-shortcut-link" href="#institution-facility-breakdown"><i class="fas fa-hospital"></i> Facilities & Institutions</a>
                         <a class="nursing-shortcut-link" href="#registrar-worker-origin-table"><i class="fas fa-plane-arrival"></i> National / Overseas Workers</a>
@@ -239,13 +601,395 @@
         </div>
     </div>
 
+    <div class="row mb-4" id="nursing-role-workspace">
+        <div class="col-12">
+            <div class="nursing-pathway-grid">
+                <div class="nursing-pathway-card">
+                    <h3><i class="fas fa-user-check mr-1"></i> Applicant / Practitioner</h3>
+                    <p>Access pathway status, ATP renewal, receipts, documents and practitioner-only forum categories.</p>
+                    <div class="nursing-pathway-actions">
+                        <a href="{% url 'user_profile' %}" class="btn btn-sm btn-outline-primary">My Profile</a>
+                        <a href="{% url 'forum_index' %}" class="btn btn-sm btn-outline-success">Practitioner Forum</a>
+                    </div>
+                </div>
+                <div class="nursing-pathway-card">
+                    <h3><i class="fas fa-chart-line mr-1"></i> Staff Analytics</h3>
+                    <p>Use the active cleansed snapshot for executive analytics, data quality, drilldowns and work queues.</p>
+                    <div class="nursing-pathway-actions">
+                        <a href="#nursing-analytics-executive" class="btn btn-sm btn-outline-primary">Analytics</a>
+                        <a href="{% url 'forum_index' %}" class="btn btn-sm btn-outline-success">Staff Forum</a>
+                        <a href="{% url 'complaint_case_list' %}" class="btn btn-sm btn-outline-danger">ICMS</a>
+                        <a href="{% url 'disciplinary_case_list' %}" class="btn btn-sm btn-outline-danger">Discipline</a>
+                    </div>
+                </div>
+                <div class="nursing-pathway-card">
+                    <h3><i class="fas fa-map-marked-alt mr-1"></i> Mapping</h3>
+                    <p>View Nursing Council and Medical Board schools, institutions and facilities using stored map references.</p>
+                    <div class="nursing-pathway-actions">
+                        <a href="{% url 'workforce_map' %}?office=nursing" class="btn btn-sm btn-outline-primary">Nursing Map</a>
+                        <a href="{% url 'workforce_map' %}?office=medical" class="btn btn-sm btn-outline-secondary">Medical Map</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4" id="nursing-analytics-executive">
+        <div class="col-12">
+            <div class="nursing-analytics-shell p-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+                    <div>
+                        <h3 class="mb-1"><i class="fas fa-chart-line mr-2"></i>Nursing Council Analytics Engine</h3>
+                        <p class="text-muted mb-0">
+                            The cleansed workbook snapshot drives these metrics. Operational registry records remain unchanged.
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        {% if nursing_analytics_has_snapshot %}
+                        <span class="badge badge-success">Active snapshot</span>
+                        <div class="small text-muted mt-1">
+                            {{ nursing_analytics_snapshot.source_file_name }}
+                            {% if nursing_analytics_snapshot.workbook_generated_on %}
+                            | {{ nursing_analytics_snapshot.workbook_generated_on|date:"d M Y" }}
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="badge badge-warning">No analytics snapshot loaded</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if nursing_analytics_has_snapshot %}
+                <div class="nursing-analytics-kpis mb-4">
+                    {% for card in nursing_analytics_kpi_cards %}
+                    <div class="nursing-analytics-kpi">
+                        <div class="label">{{ card.label }}</div>
+                        <div class="value">{{ card.value }}{% if card.suffix %}{{ card.suffix }}{% endif %}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if nursing_lapsed_has_snapshot %}
+                <div class="card mb-4" id="nursing-lapsed-renewal-review">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-start">
+                        <div>
+                            <h3 class="card-title mb-1">
+                                <i class="fas fa-user-clock mr-1"></i>
+                                Lapsed Renewal and Possible Deceased Review
+                            </h3>
+                            <div class="small text-muted">
+                                Source: {{ nursing_lapsed_source }}. 2026 ATP records are treated as current.
+                            </div>
+                            <div class="small text-muted" data-nursing-lapsed-active-filter>
+                                {% if nursing_lapsed_active_filter_label %}
+                                Active filter: {{ nursing_lapsed_active_filter_label }}
+                                {% else %}
+                                No active filter.
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-end gap-2 flex-wrap">
+                            <div>
+                                <label class="small text-muted mb-0" for="nursingLapsedAgeMinInput">Min age</label>
+                                <input type="number" class="form-control form-control-sm" id="nursingLapsedAgeMinInput" min="0" value="{{ nursing_lapsed_age_min|default:'' }}" placeholder="30">
+                            </div>
+                            <div>
+                                <label class="small text-muted mb-0" for="nursingLapsedAgeMaxInput">Max age</label>
+                                <input type="number" class="form-control form-control-sm" id="nursingLapsedAgeMaxInput" min="0" value="{{ nursing_lapsed_age_max|default:'' }}" placeholder="70">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-nursing-lapsed-apply-age-filter>
+                                <i class="fas fa-filter mr-1"></i> Apply
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-nursing-lapsed-clear-age-filter>
+                                <i class="fas fa-rotate-left mr-1"></i> Clear
+                            </button>
+                            <a href="{% url 'review_centre' %}?scope=nursing" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-clipboard-check mr-1"></i> Review Centre
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning py-2">
+                            {{ nursing_lapsed_review_note }}
+                        </div>
+                        <div class="row mb-3">
+                            {% for card in nursing_lapsed_cards %}
+                            <div class="col-xl-3 col-md-6 mb-2">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="small text-uppercase text-muted">{{ card.label }}</div>
+                                    <div class="h4 mb-0 text-{{ card.tone }}">{{ card.value }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4 mb-3">
+                                <h5 class="mb-2">First Record Decade</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped mb-0">
+                                        <thead><tr><th>Decade</th><th class="text-right">People</th></tr></thead>
+                                        <tbody>
+                                        {% for row in nursing_lapsed_decade_rows %}
+                                        <tr><td>{{ row.label }}</td><td class="text-right">{{ row.count }}</td></tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 mb-3">
+                                <h5 class="mb-2">Renewal / ATP Signal</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped mb-0">
+                                        <thead><tr><th>Signal</th><th class="text-right">People</th></tr></thead>
+                                        <tbody>
+                                        {% for row in nursing_lapsed_lapse_rows %}
+                                        <tr><td>{{ row.label }}</td><td class="text-right">{{ row.count }}</td></tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 mb-3">
+                                <h5 class="mb-2">Review Priority</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped mb-0">
+                                        <thead><tr><th>Priority</th><th class="text-right">People</th></tr></thead>
+                                        <tbody>
+                                        {% for row in nursing_lapsed_risk_rows %}
+                                        <tr><td>{{ row.label }}</td><td class="text-right">{{ row.count }}</td></tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <h5 class="mb-2">High Priority Candidate Preview</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Registration</th>
+                                    <th>First Year</th>
+                                    <th>Latest Year</th>
+                                    <th>Latest ATP</th>
+                                    <th>Cadre</th>
+                                    <th>Signal</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in nursing_lapsed_candidate_rows %}
+                                <tr>
+                                    <td>{{ row.name }}</td>
+                                    <td>{{ row.age|default:"-" }}</td>
+                                    <td>{{ row.registration_nos|default:"-" }}</td>
+                                    <td>{{ row.first_year|default:"-" }}</td>
+                                    <td>{{ row.latest_year|default:"-" }}</td>
+                                    <td>{{ row.latest_atp_year|default:"-" }}</td>
+                                    <td>{{ row.latest_cadre|default:"-" }}</td>
+                                    <td>
+                                        <div class="small font-weight-bold">{{ row.risk_bucket }}</div>
+                                        <div class="small text-muted">{{ row.lapse_bucket }}</div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="8" class="text-muted text-center py-3">No high priority lapsed-renewal candidates were found.</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="nursing-analytics-panel">
+                            <h4>Lifecycle Pipeline</h4>
+                            <canvas id="analyticsLifecycleChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="nursing-analytics-panel">
+                            <h4>Yearly Licence Volumes</h4>
+                            <canvas id="analyticsYearTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="nursing-analytics-panel">
+                            <h4>Cadre by Lifecycle Stage</h4>
+                            <canvas id="analyticsCadreStageChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="nursing-analytics-panel">
+                            <h4>Province Workforce Heatmap V1</h4>
+                            <canvas id="analyticsProvinceHeatmapChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="nursing-analytics-panel">
+                            <h4>Data Quality Health</h4>
+                            <canvas id="analyticsQualityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="nursing-analytics-panel">
+                            <h4>Top Active Facilities</h4>
+                            <canvas id="analyticsFacilityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                {% if nursing_licence_cleanse_overlay %}
+                <div class="card mt-2 mb-3">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                        <div>
+                            <h3 class="card-title mb-0">Provisional and Full-Licence Cleanse Verification</h3>
+                            <div class="small text-muted">
+                                Refreshable overlay from Catherine's cleaned licence and cadre workbooks. No duplicate lifecycle facts are inserted.
+                            </div>
+                        </div>
+                        <span class="badge badge-success">
+                            {{ nursing_licence_cleanse_overlay.comparison.status|default:"verification batch" }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-lg-4 mb-2">
+                                <div class="small text-uppercase text-muted">Cleaned licence workbook</div>
+                                <div class="font-weight-bold">{{ nursing_licence_cleanse_overlay.source_files.cleaned_licence.file_name }}</div>
+                            </div>
+                            <div class="col-lg-4 mb-2">
+                                <div class="small text-uppercase text-muted">Cadre workbook</div>
+                                <div class="font-weight-bold">{{ nursing_licence_cleanse_overlay.source_files.cadre_breakdown.file_name }}</div>
+                            </div>
+                            <div class="col-lg-4 mb-2">
+                                <div class="small text-uppercase text-muted">Database action</div>
+                                <div class="font-weight-bold">{{ nursing_licence_cleanse_overlay.comparison.database_action|default:"Verification overlay only" }}</div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Provisional</th>
+                                    <th>Full Licence</th>
+                                    <th>Combined</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in nursing_licence_cleanse_overlay.metric_rows %}
+                                <tr>
+                                    <td>{{ row.label }}</td>
+                                    <td>{{ row.provisional }}</td>
+                                    <td>{{ row.full_licence }}</td>
+                                    <td>{{ row.combined }}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-4 mb-2">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="small text-uppercase text-muted">Mapped clean rows</div>
+                                    <div class="h5 mb-0">{{ nursing_licence_cleanse_overlay.mapped_clean_rows }}</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 mb-2">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="small text-uppercase text-muted">Unclassified clean rows</div>
+                                    <div class="h5 mb-0">{{ nursing_licence_cleanse_overlay.unclassified_clean_rows }}</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 mb-2">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="small text-uppercase text-muted">Full licence ID match</div>
+                                    <div class="h5 mb-0">
+                                        {% if nursing_licence_cleanse_overlay.comparison.identity_matches.full_normalised %}Normalised match{% else %}Review needed{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="small text-muted mt-2">{{ nursing_licence_cleanse_overlay.logic }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="card mt-2 mb-0">
+                        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                            <div>
+                                <h3 class="card-title mb-0">Analytics Drilldown</h3>
+                                <div class="small text-muted">Click chart segments to filter the row-level lifecycle facts.</div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="nursing-analytics-filter-pill" data-analytics-active-filter>All lifecycle facts</span>
+                                <div class="d-flex align-items-end gap-2 flex-wrap">
+                                    <div>
+                                        <label class="small text-muted mb-0" for="analyticsAgeMinInput">Min age</label>
+                                        <input type="number" class="form-control form-control-sm" id="analyticsAgeMinInput" min="0" placeholder="18">
+                                    </div>
+                                    <div>
+                                        <label class="small text-muted mb-0" for="analyticsAgeMaxInput">Max age</label>
+                                        <input type="number" class="form-control form-control-sm" id="analyticsAgeMaxInput" min="0" placeholder="70">
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-analytics-apply-age-filter>
+                                        <i class="fas fa-filter mr-1"></i> Apply
+                                    </button>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary ml-2" data-analytics-clear-filter>
+                                    <i class="fas fa-rotate-left mr-1"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="nursing-analytics-drilldown-table"
+                                   class="table table-striped table-hover mb-0"
+                                   data-analytics-drilldown-url="{{ nursing_analytics_drilldown_url }}">
+                                <thead>
+                                    <tr>
+                                        <th>Record ID</th>
+                                        <th>Stage</th>
+                                        <th>Year</th>
+                                        <th>Age</th>
+                                        <th>Name</th>
+                                        <th>Cadre</th>
+                                        <th>Province</th>
+                                        <th>Facility</th>
+                                        <th>Institution</th>
+                                        <th>Registration No</th>
+                                        <th>Quality</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning mb-0">
+                    Import the cleansed workbook with
+                    <code>python manage.py import_nursing_analytics_snapshot</code>
+                    to activate the Nursing Council analytics engine.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Key Metrics -->
     <div class="row" id="nursing-summary">
         <div class="col-lg-3 col-6">
             <div class="small-box bg-primary">
                 <div class="inner">
                     <h3>{{ nursing_count|default:0 }}</h3>
-                    <p>Registered Nurses</p>
+                    <p>Clean ATP Records</p>
                 </div>
                 <div class="icon">
                     <i class="fas fa-user-nurse"></i>
@@ -278,7 +1022,7 @@
             <div class="small-box bg-info">
                 <div class="inner">
                     <h3>{{ institutions_count|default:0 }}</h3>
-                    <p>PNG Nursing Schools</p>
+                    <p>Recognised Schools</p>
                 </div>
                 <div class="icon">
                     <i class="fas fa-school"></i>
@@ -294,8 +1038,83 @@
                     <h3 class="card-title mb-0"><i class="fas fa-table mr-2"></i>Institution and Facility Breakdown</h3>
                 </div>
                 <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                        <div class="text-muted small">Map references are stored locally and reviewed separately from legal registry records.</div>
+                        <div>
+                            <a href="{% url 'workforce_map' %}?office=nursing&type=school" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-school mr-1"></i> Open Nursing Schools Map
+                            </a>
+                            <a href="{% url 'workforce_map' %}?office=nursing&type=facility" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-hospital mr-1"></i> Open Facilities Map
+                            </a>
+                        </div>
+                    </div>
                     <div class="alert alert-light border mb-4">
                         The training institution count shows recognised PNG nursing schools only. Graduands are people moving out of institutions into provisional licence pathways. Allied Health is not inferred from workplace ownership. Workplace address strings from imports are shown only as cleansing references; verified facilities must come from the Facility master register.
+                        CHW training references are handled in the Medical Board dashboard, not the Nursing Council school count.
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="h6 font-weight-bold mb-2">PHA Facility and Institution Breakdown</h4>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>PHA / Province</th>
+                                        <th>Facilities</th>
+                                        <th>Institutions</th>
+                                        <th>Cadre mapping</th>
+                                        <th>Licence status</th>
+                                        <th>Accreditation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in nursing_pha_breakdown_rows %}
+                                    <tr>
+                                        <td>
+                                            <div class="font-weight-bold">{{ row.pha }}</div>
+                                            <div class="small text-muted">{{ row.practitioner_count }} practitioner/workbook references</div>
+                                        </td>
+                                        <td>
+                                            <div>{{ row.facility_count }} verified / {{ row.imported_facility_count }} imported</div>
+                                            {% for facility in row.facility_examples %}
+                                            <div class="small">
+                                                {% if facility.detail_url %}<a href="{{ facility.detail_url }}">{{ facility.name }}</a>{% else %}{{ facility.name }}{% endif %}
+                                                <span class="text-muted">({{ facility.worker_count|default:"0" }})</span>
+                                            </div>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            <div>{{ row.institution_count }} recognised institution references</div>
+                                            {% for institution in row.institution_examples %}
+                                            <div class="small">
+                                                {% if institution.detail_url %}<a href="{{ institution.detail_url }}">{{ institution.name }}</a>{% else %}{{ institution.name }}{% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for item in row.cadre_summary %}
+                                            <span class="badge bg-primary mr-1 mb-1">{{ item.label }}: {{ item.count }}</span>
+                                            {% empty %}
+                                            <span class="text-muted">No cadre mapped</span>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            <div class="small">Current: {{ row.current_count }}</div>
+                                            <div class="small">Expired: {{ row.expired_count }}</div>
+                                            <div class="small">Under review: {{ row.under_review_count }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small">Captured: {{ row.accreditation_captured_count }}</div>
+                                            <div class="small">Needs evidence: {{ row.accreditation_review_count }}</div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="6" class="text-center text-muted">No PHA facility or institution breakdown is available yet.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="small text-muted mb-0">Open a facility or institution to view cadre mapping, Age Distribution, individual records, licence status, and accreditation details.</p>
                     </div>
                     <div class="row">
                         <div class="col-lg-6 mb-3">
@@ -305,7 +1124,6 @@
                                     <tr><th>Government nursing schools</th><td>{{ reference_breakdown.government_nursing_school_count }}</td></tr>
                                     <tr><th>Non-government nursing schools</th><td>{{ reference_breakdown.non_government_nursing_school_count }}</td></tr>
                                     <tr><th>Ownership review still needed</th><td>{{ reference_breakdown.review_nursing_school_count }}</td></tr>
-                                    <tr><th>CHW training references</th><td>{{ reference_breakdown.chw_training_reference_count }}</td></tr>
                                     <tr><th>Overseas institution references</th><td>{{ reference_breakdown.overseas_institution_reference_count }}</td></tr>
                                     <tr><th>Local nursing-like names needing cleansing</th><td>{{ reference_breakdown.unmapped_local_nursing_reference_count }}</td></tr>
                                     <tr><th>Raw institution rows in reference table</th><td>{{ reference_breakdown.raw_institution_total }}</td></tr>
@@ -326,6 +1144,113 @@
                                 {{ reference_breakdown.unmapped_local_examples|join:", " }}
                             </p>
                             {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-xl-6 mb-3">
+                            <h4 class="h6 font-weight-bold mb-2">Recognised Nursing Schools Detail</h4>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Institution</th>
+                                            <th>Province</th>
+                                            <th>Ownership</th>
+                                            <th>Accreditation</th>
+                                            <th class="text-right">References</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in nursing_school_reference_rows %}
+                                        <tr>
+                                            <td>
+                                                {% if row.detail_url %}
+                                                <a href="{{ row.detail_url }}">{{ row.name }}</a>
+                                                {% else %}
+                                                <a href="{{ row.map_url }}">{{ row.name }}</a>
+                                                {% endif %}
+                                                {% if row.examples %}
+                                                <div class="small text-muted">{{ row.examples|slice:":2"|join:", " }}</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ row.province }}</td>
+                                            <td>{{ row.ownership }}</td>
+                                            <td>{{ row.accreditation.status_label }}</td>
+                                            <td class="text-right">{{ row.raw_reference_count }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="5" class="text-center text-muted">No recognised school references are available.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="small text-muted mb-0">Click a matched institution name to view graduands and sort by year or cadre. Unmatched names open the map reference for cleanup.</p>
+                        </div>
+                        <div class="col-xl-6 mb-3">
+                            <h4 class="h6 font-weight-bold mb-2">Facility And Workplace Detail</h4>
+                            {% if facility_master_reference_rows %}
+                            <div class="table-responsive mb-3">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Facility master record</th>
+                                            <th>Location</th>
+                                            <th>Accreditation</th>
+                                            <th class="text-right">Workers</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in facility_master_reference_rows %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ row.detail_url }}">{{ row.name }}</a>
+                                                <div class="small text-muted">{{ row.type }}</div>
+                                            </td>
+                                            <td>{{ row.location }}</td>
+                                            <td>
+                                                <div>{{ row.accreditation.status_label }}</div>
+                                                <div class="small text-muted">{{ row.accreditation.detail }}</div>
+                                            </td>
+                                            <td class="text-right">{{ row.worker_count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-light border mb-3">No verified Facility master records are loaded yet. Use imported workplace references below until master facilities are populated.</div>
+                            {% endif %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Imported workplace reference</th>
+                                            <th>Province</th>
+                                            <th>Cadre examples</th>
+                                            <th class="text-right">Rows</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in imported_facility_reference_rows %}
+                                        <tr>
+                                            <td><a href="{{ row.detail_url }}">{{ row.facility_name }}</a></td>
+                                            <td>{{ row.province_summary }}</td>
+                                            <td>
+                                                {% for category in row.categories|slice:":2" %}
+                                                <span class="badge bg-primary mr-1 mb-1">{{ category.name }}: {{ category.count }}</span>
+                                                {% empty %}
+                                                <span class="text-muted">No category captured</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td class="text-right">{{ row.total }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="4" class="text-center text-muted">No imported workplace references are available.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="small text-muted mb-0">Click a facility or imported workplace name to view workers and the institutions they came from.</p>
                         </div>
                     </div>
                 </div>
@@ -359,12 +1284,22 @@
                             </button>
                         </div>
                         <div class="col-md-3">
-                            <button class="btn btn-primary btn-block mb-3" onclick="executeCommand('import_provisional_licenses')">
+                            <button class="btn btn-primary btn-block mb-3" onclick="executeCommand('seed_engagement_platform')">
+                                <i class="fas fa-map-location-dot"></i><br>Refresh FAQs, Forum & Map
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary btn-block mb-3" onclick="openNursingImportDialog('provisional')">
                                 <i class="fas fa-file-import"></i><br>Import Provisional
                             </button>
                         </div>
                         <div class="col-md-3">
-                            <button class="btn btn-primary btn-block mb-3" onclick="executeCommand('import_current_atp_workbook')">
+                            <button type="button" class="btn btn-primary btn-block mb-3" onclick="openNursingImportDialog('full_licence')">
+                                <i class="fas fa-certificate"></i><br>Import Full-Licence
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary btn-block mb-3" onclick="openNursingImportDialog('atp')">
                                 <i class="fas fa-id-card"></i><br>Import Current ATP Data
                             </button>
                         </div>
@@ -384,8 +1319,8 @@
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{% url 'report_csv' 'registered_nurses' %}" class="btn btn-success btn-block mb-3">
-                                <i class="fas fa-download"></i><br>Export Nurses
+                            <a href="{% url 'registered_nurses_excel' %}" class="btn btn-success btn-block mb-3" data-progress-link data-download-link data-success-redirect="{% url 'nursing_council_portal' %}" data-progress-text="Preparing registered nurses Excel analytics workbook with charts, tables, and guidance.">
+                                <i class="fas fa-file-excel"></i><br>Export Nurses
                             </a>
                         </div>
                         <div class="col-md-3">
@@ -426,6 +1361,14 @@
                         </div>
                         <div class="col-md-6 col-lg-3 mb-3">
                             <div class="operation-guide-card p-3">
+                                <span class="icon-badge"><i class="fas fa-certificate"></i></span>
+                                <h4>Import Full-Licence</h4>
+                                <p>Loads full-licence records for NC2 registration, qualifications, and approved professional profile updates.</p>
+                                <p><strong>Use it when:</strong> new full-licence spreadsheets are received or the full-registration sheet has been corrected.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="operation-guide-card p-3">
                                 <span class="icon-badge"><i class="fas fa-id-card"></i></span>
                                 <h4>Import Current ATP Data</h4>
                                 <p>Loads the latest Authority To Practice workbook, including current-year renewals, workplace data, gender, and payment-linked ATP rows.</p>
@@ -452,8 +1395,8 @@
                             <div class="operation-guide-card p-3">
                                 <span class="icon-badge"><i class="fas fa-download"></i></span>
                                 <h4>Export Nurses</h4>
-                                <p>Downloads the current nurse register dataset for offline review, sharing, or additional checking.</p>
-                                <p><strong>Use it when:</strong> staff need the current registry in spreadsheet form.</p>
+                                <p>Downloads an Excel analytics workbook with the current nurse register, charts, summary tables, and data-quality guidance.</p>
+                                <p><strong>Use it when:</strong> staff need a formatted registry report for review, meetings, or controlled sharing.</p>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4 mb-3">
@@ -522,8 +1465,8 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="border rounded p-3 h-100">
-                                <h4 class="h6 font-weight-bold">Current Registry Totals</h4>
-                                <p class="small text-muted mb-0">These are live person counts from the main registry tables and should be used for current workforce headcounts.</p>
+                                <h4 class="h6 font-weight-bold">Cleansed Snapshot Totals</h4>
+                                <p class="small text-muted mb-0">These statistics come from the active cleansed Nursing Council workbook snapshot. Analytical group counts are not legal practitioner identifiers.</p>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -570,9 +1513,9 @@
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="card analytics-card h-100">
                 <div class="card-body">
-                    <div class="metric-label">Current ATP People</div>
+                    <div class="metric-label">Current ATP Groups</div>
                     <div class="metric-value">{{ atp_current_person_total|default:0 }}</div>
-                    <div class="text-muted small">Distinct practitioners in the latest ATP year</div>
+                    <div class="text-muted small">Distinct analytics groups in the latest ATP year</div>
                 </div>
             </div>
         </div>
@@ -824,23 +1767,23 @@
         </div>
     </div>
 
-    <!-- Full Registration and Licence Analytics -->
+    <!-- Full-Licence and ATP Analytics -->
     <div class="row mt-4" id="licence-registration-summary">
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="card analytics-card h-100">
                 <div class="card-body">
-                    <div class="metric-label">Full Registrations</div>
+                    <div class="metric-label">Full-Licence Applicants</div>
                     <div class="metric-value">{{ nursing_full_registration_total|default:0 }}</div>
-                    <div class="text-muted small">Unique nursing full-registration records</div>
+                    <div class="text-muted small">Screened applicants, not approved licences</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="card analytics-card h-100">
                 <div class="card-body">
-                    <div class="metric-label">Practising Licences</div>
-                    <div class="metric-value">{{ nursing_practicing_license_total|default:0 }}</div>
-                    <div class="text-muted small">Unique annual licence records</div>
+                    <div class="metric-label">Full-Licence Approved</div>
+                    <div class="metric-value">{{ nursing_full_approved_total|default:0 }}</div>
+                    <div class="text-muted small">Registrar-approved full licences</div>
                 </div>
             </div>
         </div>
@@ -858,7 +1801,7 @@
                 <div class="card-body">
                     <div class="metric-label">Latest Year {{ nursing_latest_year|default:"-" }}</div>
                     <div class="metric-value">{{ nursing_latest_practicing_count|default:0 }}</div>
-                    <div class="text-muted small">{{ nursing_latest_full_count|default:0 }} full registrations, {{ nursing_latest_practicing_count|default:0 }} practising licences</div>
+                    <div class="text-muted small">{{ nursing_latest_full_count|default:0 }} full applicants, {{ nursing_latest_full_approved_count|default:0 }} approved, {{ nursing_latest_practicing_count|default:0 }} ATP records</div>
                 </div>
             </div>
         </div>
@@ -905,12 +1848,12 @@
         </div>
     </div>
 
-    <!-- Full Registration and Licence by Year -->
+    <!-- Full-Licence and ATP by Year -->
     <div class="row mt-4" id="licence-year-summary">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-info text-white">
-                    <h3 class="card-title mb-0"><i class="fas fa-calendar-alt mr-2"></i>Full Registration and Practising Licence by Year</h3>
+                    <h3 class="card-title mb-0"><i class="fas fa-calendar-alt mr-2"></i>Full-Licence Applicant, Approved Licence and ATP by Year</h3>
                 </div>
                 <div class="card-body">
                     {% if nursing_analytics_batch %}
@@ -921,9 +1864,10 @@
                             <tr>
                                 <th>Year</th>
                                 <th>Graduands / Provisional</th>
-                                <th>Full Registrations</th>
+                                <th>Full Applicants</th>
+                                <th>Full Approved</th>
                                 <th>Temporary Licences</th>
-                                <th>Practising Licences</th>
+                                <th>ATP Records</th>
                                 <th>Active Workforce Listing</th>
                             </tr>
                         </thead>
@@ -933,13 +1877,14 @@
                                 <td>{{ row.year }}</td>
                                 <td>{{ row.graduand_count }}</td>
                                 <td>{{ row.full_registration_count }}</td>
+                                <td>{{ row.full_approved_count }}</td>
                                 <td>{{ row.temporary_license_count }}</td>
                                 <td>{{ row.practicing_license_count }}</td>
                                 <td>{{ row.active_listing_count }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="6" class="text-center text-muted">No yearly Nursing Council licence records found.</td>
+                                <td colspan="7" class="text-center text-muted">No yearly Nursing Council licence records found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -1042,7 +1987,15 @@
                             <tr>
                                 <td>{{ app.id }}</td>
                                 <td>{{ app.professional|default:"Applicant record not linked" }}</td>
-                                <td>{{ app.payload.license_no|default:app.professional.registration_no|default:"-" }}</td>
+                                <td>
+                                    {% if app.payload.license_no %}
+                                        {{ app.payload.license_no }}
+                                    {% elif app.professional %}
+                                        {{ app.professional.registration_no|default:"-" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if app.approved_date %}
                                         {{ app.approved_date|date:'Y' }}
@@ -1222,20 +2175,6 @@ const commandGuidance = {
         loadingText: 'The system is loading official Nursing Council registration pathway rules and checklist configuration.',
         loadingMeta: 'Use this after deployment or when Nursing Council forms and workflow rules are updated.'
     },
-    import_provisional_licenses: {
-        name: 'Import Provisional',
-        confirmMessage: 'This will import provisional and graduand records into the Nursing Council workflow. Continue?',
-        loadingTitle: 'Importing provisional records',
-        loadingText: 'The system is processing provisional and graduand source records for tracking and review.',
-        loadingMeta: 'Keep this page open until the import completes.'
-    },
-    import_current_atp_workbook: {
-        name: 'Import Current ATP Data',
-        confirmMessage: 'This will import the latest ATP workbook, including current-year renewal, workplace, gender, and payment-linked records. Continue?',
-        loadingTitle: 'Importing current ATP workbook',
-        loadingText: 'The system is loading Authority To Practice history and current-year ATP rows for Nursing Council dashboards.',
-        loadingMeta: 'This import runs in the background so you can continue using the dashboard while the ATP data is loaded.'
-    },
     generate_snapshot: {
         name: 'Generate Report',
         confirmMessage: 'This will refresh the reporting snapshot for the Nursing Council dashboard and exports. Continue?',
@@ -1251,6 +2190,146 @@ const commandGuidance = {
         loadingMeta: 'Use this before exports or review to catch data quality issues early.'
     }
 };
+
+const nursingWorkbookImportOptions = {
+    provisional: {
+        endpoint: '{% url "upload_provisional_workbook_import" %}',
+        title: 'Select Provisional Workbook',
+        fileLabel: 'Provisional workbook',
+        description: 'Choose the provisional or graduand workbook received from the Nursing Council office. Leave the sheet tab blank to use the default Provisional_License_Data2009_26 worksheet.',
+        placeholder: 'Provisional_License_Data2009_26',
+        loadingTitle: 'Starting provisional import',
+        loadingText: 'The selected provisional workbook is being uploaded and queued for import.',
+        successTitle: 'Provisional import started',
+        fallbackMessage: 'Provisional import started.'
+    },
+    full_licence: {
+        endpoint: '{% url "upload_full_licence_workbook_import" %}',
+        title: 'Select Full-Licence Workbook',
+        fileLabel: 'Full-licence workbook',
+        description: 'Choose the full-licence workbook received for NC2 registration. Leave the sheet tab blank to use the default FULL REGO 2009 - current worksheet.',
+        placeholder: 'FULL REGO 2009 - current',
+        loadingTitle: 'Starting full-licence import',
+        loadingText: 'The selected full-licence workbook is being uploaded and queued for import.',
+        successTitle: 'Full-licence import started',
+        fallbackMessage: 'Full-licence import started.'
+    },
+    atp: {
+        endpoint: '{% url "upload_atp_workbook_import" %}',
+        title: 'Select ATP Workbook',
+        fileLabel: 'ATP workbook',
+        description: 'Choose the ATP workbook received for this cycle. Leave the sheet tab blank to import every supported ATP record and payment worksheet detected in the workbook.',
+        placeholder: 'ATP RECORD 2026',
+        loadingTitle: 'Starting ATP import',
+        loadingText: 'The selected ATP workbook is being uploaded and queued for import.',
+        successTitle: 'ATP import started',
+        fallbackMessage: 'ATP import started.'
+    }
+};
+
+let activeNursingWorkbookImport = nursingWorkbookImportOptions.atp;
+
+function openNursingImportDialog(importType) {
+    const option = nursingWorkbookImportOptions[importType] || nursingWorkbookImportOptions.atp;
+    activeNursingWorkbookImport = option;
+    const modalElement = document.getElementById('nursingWorkbookImportModal');
+    const form = document.getElementById('nursingWorkbookImportForm');
+    const title = document.getElementById('nursingWorkbookImportModalLabel');
+    const description = document.getElementById('nursingWorkbookImportDescription');
+    const fileLabel = document.getElementById('nursingWorkbookInputLabel');
+    const sheetInput = document.getElementById('nursingSheetNameInput');
+    const submitButton = document.getElementById('nursingWorkbookImportSubmit');
+    if (form) {
+        form.reset();
+    }
+    if (title) {
+        title.textContent = option.title;
+    }
+    if (description) {
+        description.textContent = option.description;
+    }
+    if (fileLabel) {
+        fileLabel.textContent = option.fileLabel;
+    }
+    if (sheetInput) {
+        sheetInput.placeholder = option.placeholder;
+    }
+    if (submitButton) {
+        submitButton.innerHTML = '<i class="fas fa-file-import mr-1"></i> Start ' + option.title.replace('Select ', '').replace(' Workbook', '') + ' Import';
+    }
+    if (modalElement && window.bootstrap && window.bootstrap.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(modalElement).show();
+        return;
+    }
+    const fileInput = document.getElementById('nursingWorkbookInput');
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+function openAtpImportDialog() {
+    openNursingImportDialog('atp');
+}
+
+function submitNursingWorkbookImport(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    const form = document.getElementById('nursingWorkbookImportForm');
+    const fileInput = document.getElementById('nursingWorkbookInput');
+    if (!form || !fileInput || !fileInput.files || !fileInput.files.length) {
+        alert('Select the workbook to import.');
+        return;
+    }
+
+    const formData = new FormData(form);
+    if (window.showAppLoading) {
+        window.showAppLoading(
+            activeNursingWorkbookImport.loadingTitle,
+            activeNursingWorkbookImport.loadingText,
+            'You can continue using the dashboard after the background import starts.'
+        );
+    }
+
+    axios.post(activeNursingWorkbookImport.endpoint, formData, {
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    }).then(response => {
+        const modalElement = document.getElementById('nursingWorkbookImportModal');
+        if (modalElement && window.bootstrap && window.bootstrap.Modal) {
+            const modal = window.bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+        }
+        const message = response.data && response.data.message ? response.data.message : activeNursingWorkbookImport.fallbackMessage;
+        const detail = response.data && response.data.log_file
+            ? 'Background processing has started. Log file: ' + response.data.log_file
+            : 'Background processing has started.';
+        if (window.showAppSuccess) {
+            window.showAppSuccess(activeNursingWorkbookImport.successTitle, message, detail, null, 2200);
+        } else {
+            alert(message);
+        }
+    }).catch(error => {
+        if (window.hideAppLoading) window.hideAppLoading();
+        alert('Error: ' + (error.response?.data?.error || error.message));
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const nursingWorkbookImportForm = document.getElementById('nursingWorkbookImportForm');
+    if (nursingWorkbookImportForm) {
+        nursingWorkbookImportForm.addEventListener('submit', submitNursingWorkbookImport);
+    }
+    const requestedImportType = new URLSearchParams(window.location.search).get('import');
+    if (requestedImportType && nursingWorkbookImportOptions[requestedImportType]) {
+        window.setTimeout(function () {
+            openNursingImportDialog(requestedImportType);
+        }, 300);
+    }
+});
 
 function executeCommand(command) {
     const guidance = commandGuidance[command] || {
@@ -1292,6 +2371,434 @@ function executeCommand(command) {
 
 // Initialize nursing chart
 document.addEventListener('DOMContentLoaded', function() {
+    const analyticsPayload = JSON.parse('{{ nursing_analytics_payload_json|escapejs }}');
+    const analyticsCharts = analyticsPayload.charts || {};
+    const analyticsFilters = {};
+    let analyticsTable = null;
+    const lapsedAgeMinInput = document.getElementById('nursingLapsedAgeMinInput');
+    const lapsedAgeMaxInput = document.getElementById('nursingLapsedAgeMaxInput');
+    let analyticsPrimaryFilterLabel = '';
+    const analyticsActiveFilterElement = document.querySelector('[data-analytics-active-filter]');
+    const analyticsAgeMinInput = document.getElementById('analyticsAgeMinInput');
+    const analyticsAgeMaxInput = document.getElementById('analyticsAgeMaxInput');
+    const lapsedActiveFilterElement = document.querySelector('[data-nursing-lapsed-active-filter]');
+
+    function _lapsedAgeParams() {
+        const params = new URLSearchParams(window.location.search);
+        const ageMin = (lapsedAgeMinInput && lapsedAgeMinInput.value.trim()) || "";
+        const ageMax = (lapsedAgeMaxInput && lapsedAgeMaxInput.value.trim()) || "";
+        if (ageMin) {
+            params.set('lapsed_age_min', ageMin);
+        } else {
+            params.delete('lapsed_age_min');
+        }
+        if (ageMax) {
+            params.set('lapsed_age_max', ageMax);
+        } else {
+            params.delete('lapsed_age_max');
+        }
+        params.delete('page');
+        return params.toString();
+    }
+
+    function _lapsedAgeLabel(ageMin, ageMax) {
+        const minValue = Number.parseInt(ageMin, 10);
+        const maxValue = Number.parseInt(ageMax, 10);
+        if (Number.isFinite(minValue) && minValue >= 0 && Number.isFinite(maxValue) && maxValue >= 0) {
+            return `Age ${minValue}-${maxValue}`;
+        }
+        if (Number.isFinite(minValue) && minValue >= 0) {
+            return `Age >= ${minValue}`;
+        }
+        if (Number.isFinite(maxValue) && maxValue >= 0) {
+            return `Age <= ${maxValue}`;
+        }
+        return 'No active filter.';
+    }
+
+    function _updateLapsedFilterLabel() {
+        if (!lapsedActiveFilterElement) {
+            return;
+        }
+        const ageMin = (lapsedAgeMinInput && lapsedAgeMinInput.value.trim()) || '';
+        const ageMax = (lapsedAgeMaxInput && lapsedAgeMaxInput.value.trim()) || '';
+        lapsedActiveFilterElement.textContent = `Active filter: ${_lapsedAgeLabel(ageMin, ageMax)}`;
+    }
+
+    function _normalizeAgeInput(value) {
+        const parsed = parseInt((value || '').trim(), 10);
+        if (!Number.isFinite(parsed) || parsed < 0) {
+            return null;
+        }
+        return parsed;
+    }
+
+    function _syncAnalyticsAgeFilters() {
+        const ageMin = _normalizeAgeInput(analyticsAgeMinInput && analyticsAgeMinInput.value);
+        const ageMax = _normalizeAgeInput(analyticsAgeMaxInput && analyticsAgeMaxInput.value);
+        if (ageMin === null) {
+            delete analyticsFilters.age_min;
+        } else {
+            analyticsFilters.age_min = ageMin;
+        }
+        if (ageMax === null) {
+            delete analyticsFilters.age_max;
+        } else {
+            analyticsFilters.age_max = ageMax;
+        }
+    }
+
+    function _analyticsAgeFilterLabel() {
+        const ageMin = analyticsFilters.age_min;
+        const ageMax = analyticsFilters.age_max;
+        if (ageMin === undefined && ageMax === undefined) {
+            return '';
+        }
+        if (ageMin !== undefined && ageMax !== undefined) {
+            return `Age: ${ageMin} to ${ageMax}`;
+        }
+        if (ageMin !== undefined) {
+            return `Age >= ${ageMin}`;
+        }
+        return `Age <= ${ageMax}`;
+    }
+
+    function _updateAnalyticsActiveFilterLabel() {
+        const labels = [];
+        if (analyticsPrimaryFilterLabel) {
+            labels.push(analyticsPrimaryFilterLabel);
+        }
+        const ageLabel = _analyticsAgeFilterLabel();
+        if (ageLabel) {
+            labels.push(ageLabel);
+        }
+        if (analyticsActiveFilterElement) {
+            analyticsActiveFilterElement.textContent = labels.length ? labels.join(' / ') : 'All lifecycle facts';
+        }
+    }
+
+    function setAnalyticsFilter(key, value, label) {
+        _syncAnalyticsAgeFilters();
+        Object.keys(analyticsFilters).forEach(function (filterKey) {
+            if (filterKey === 'age_min' || filterKey === 'age_max') {
+                return;
+            }
+            delete analyticsFilters[filterKey];
+        });
+        if (key && value !== undefined && value !== null && value !== '') {
+            analyticsFilters[key] = value;
+            analyticsPrimaryFilterLabel = label || (key + ': ' + value);
+        } else {
+            analyticsPrimaryFilterLabel = '';
+        }
+        _updateAnalyticsActiveFilterLabel();
+        if (analyticsTable) {
+            analyticsTable.ajax.reload();
+        }
+    }
+
+    function analyticsBarClick(chart, event, filterKey, labels) {
+        const points = chart.getElementsAtEventForMode(event, 'nearest', {intersect: true}, true);
+        if (!points.length) {
+            return;
+        }
+        const index = points[0].index;
+        const value = labels[index];
+        const readable = filterKey.charAt(0).toUpperCase() + filterKey.slice(1);
+        setAnalyticsFilter(filterKey, value, readable + ': ' + value);
+    }
+
+    if (analyticsPayload.has_snapshot && window.Chart) {
+        const lifecycleCanvas = document.getElementById('analyticsLifecycleChart');
+        if (lifecycleCanvas) {
+            const labels = analyticsCharts.stage.labels || [];
+            const chart = new Chart(lifecycleCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Clean records',
+                        data: analyticsCharts.stage.values || [],
+                        backgroundColor: ['#0f766e', '#1d4ed8', '#ca8a04']
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                    onClick: function (event) {
+                        analyticsBarClick(chart, event, 'stage', labels);
+                    }
+                }
+            });
+        }
+
+        const yearCanvas = document.getElementById('analyticsYearTrendChart');
+        if (yearCanvas) {
+            const labels = analyticsCharts.year.labels || [];
+            const chart = new Chart(yearCanvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Provisional',
+                            data: analyticsCharts.year.provisional || [],
+                            borderColor: '#0ea5e9',
+                            backgroundColor: 'rgba(14, 165, 233, 0.12)',
+                            tension: 0.25,
+                            fill: true
+                        },
+                        {
+                            label: 'Full Licence',
+                            data: analyticsCharts.year.full_licence || [],
+                            borderColor: '#1d4ed8',
+                            backgroundColor: 'rgba(29, 78, 216, 0.10)',
+                            tension: 0.25,
+                            fill: true
+                        },
+                        {
+                            label: 'ATP',
+                            data: analyticsCharts.year.authority_to_practice || [],
+                            borderColor: '#ca8a04',
+                            backgroundColor: 'rgba(202, 138, 4, 0.12)',
+                            tension: 0.25,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                    onClick: function (event) {
+                        analyticsBarClick(chart, event, 'year', labels);
+                    }
+                }
+            });
+        }
+
+        const cadreCanvas = document.getElementById('analyticsCadreStageChart');
+        if (cadreCanvas) {
+            const labels = analyticsCharts.cadre.labels || [];
+            const chart = new Chart(cadreCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Provisional', data: analyticsCharts.cadre.provisional || [], backgroundColor: '#0ea5e9' },
+                        { label: 'Full Licence', data: analyticsCharts.cadre.full_licence || [], backgroundColor: '#1d4ed8' },
+                        { label: 'ATP', data: analyticsCharts.cadre.authority_to_practice || [], backgroundColor: '#ca8a04' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        x: { stacked: true, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } },
+                        y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+                    },
+                    onClick: function (event) {
+                        analyticsBarClick(chart, event, 'cadre', labels);
+                    }
+                }
+            });
+        }
+
+        const provinceCanvas = document.getElementById('analyticsProvinceHeatmapChart');
+        if (provinceCanvas) {
+            const labels = analyticsCharts.province.labels || [];
+            const chart = new Chart(provinceCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ATP-linked records',
+                        data: analyticsCharts.province.values || [],
+                        backgroundColor: '#1f7a5a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { autoSkip: false, maxRotation: 60, minRotation: 45, font: { size: 10 } } },
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    },
+                    onClick: function (event) {
+                        analyticsBarClick(chart, event, 'province', labels);
+                    }
+                }
+            });
+        }
+
+        const qualityCanvas = document.getElementById('analyticsQualityChart');
+        if (qualityCanvas) {
+            new Chart(qualityCanvas, {
+                type: 'bar',
+                data: {
+                    labels: analyticsCharts.quality.labels || [],
+                    datasets: [
+                        { label: 'High', data: analyticsCharts.quality.high || [], backgroundColor: '#16a34a' },
+                        { label: 'Medium', data: analyticsCharts.quality.medium || [], backgroundColor: '#f59e0b' },
+                        { label: 'Needs Review', data: analyticsCharts.quality.needs_review || [], backgroundColor: '#dc2626' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }
+
+        const facilityCanvas = document.getElementById('analyticsFacilityChart');
+        if (facilityCanvas) {
+            const labels = analyticsCharts.facility.labels || [];
+            const chart = new Chart(facilityCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Records', data: analyticsCharts.facility.values || [], backgroundColor: '#4f46e5' }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                    onClick: function (event) {
+                        analyticsBarClick(chart, event, 'facility', labels);
+                    }
+                }
+            });
+        }
+    }
+
+    const analyticsTableElement = document.getElementById('nursing-analytics-drilldown-table');
+    if (analyticsTableElement && window.jQuery && jQuery.fn && jQuery.fn.DataTable) {
+        analyticsTable = jQuery(analyticsTableElement).DataTable({
+            processing: true,
+            serverSide: true,
+            deferRender: true,
+            searchDelay: 450,
+            pageLength: 25,
+            ajax: {
+                url: analyticsTableElement.dataset.analyticsDrilldownUrl,
+                data: function (payload) {
+                Object.keys(analyticsFilters).forEach(function (key) {
+                    payload[key] = analyticsFilters[key];
+                });
+            }
+            },
+            columns: [
+                { data: 'record_id', name: 'record_id' },
+                { data: 'lifecycle_stage', name: 'lifecycle_stage' },
+                { data: 'cycle_year', name: 'cycle_year' },
+                { data: 'age', name: 'age' },
+                { data: 'full_name', name: 'full_name' },
+                { data: 'cadre', name: 'cadre' },
+                { data: 'province', name: 'province' },
+                { data: 'facility', name: 'facility', orderable: false },
+                { data: 'institution', name: 'institution', orderable: false },
+                { data: 'registration_no', name: 'registration_no' },
+                { data: 'record_quality', name: 'record_quality' }
+            ],
+            order: [[2, 'desc']],
+            autoWidth: false
+        });
+
+        const clearFilterButton = document.querySelector('[data-analytics-clear-filter]');
+        if (clearFilterButton) {
+            clearFilterButton.addEventListener('click', function () {
+                if (analyticsAgeMinInput) {
+                    analyticsAgeMinInput.value = '';
+                }
+                if (analyticsAgeMaxInput) {
+                    analyticsAgeMaxInput.value = '';
+                }
+                setAnalyticsFilter('', '', '');
+            });
+        }
+
+        const applyAgeFilterButton = document.querySelector('[data-analytics-apply-age-filter]');
+        if (applyAgeFilterButton) {
+            applyAgeFilterButton.addEventListener('click', function () {
+                _syncAnalyticsAgeFilters();
+                _updateAnalyticsActiveFilterLabel();
+                if (analyticsTable) {
+                    analyticsTable.ajax.reload();
+                }
+            });
+        }
+
+        [analyticsAgeMinInput, analyticsAgeMaxInput].forEach(function (input) {
+            if (!input) {
+                return;
+            }
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    if (applyAgeFilterButton) {
+                        applyAgeFilterButton.click();
+                    }
+                }
+            });
+        });
+
+        const applyLapsedAgeFilterButton = document.querySelector('[data-nursing-lapsed-apply-age-filter]');
+        if (applyLapsedAgeFilterButton) {
+            applyLapsedAgeFilterButton.addEventListener('click', function () {
+                const queryString = _lapsedAgeParams();
+                const target = window.location.pathname + (queryString ? `?${queryString}` : '');
+                window.location.href = target;
+            });
+        }
+
+        const clearLapsedAgeFilterButton = document.querySelector('[data-nursing-lapsed-clear-age-filter]');
+        if (clearLapsedAgeFilterButton) {
+            clearLapsedAgeFilterButton.addEventListener('click', function () {
+                if (lapsedAgeMinInput) {
+                    lapsedAgeMinInput.value = '';
+                }
+                if (lapsedAgeMaxInput) {
+                    lapsedAgeMaxInput.value = '';
+                }
+                _updateLapsedFilterLabel();
+                const queryString = _lapsedAgeParams();
+                const target = window.location.pathname + (queryString ? `?${queryString}` : '');
+                window.location.href = target;
+            });
+        }
+
+        [lapsedAgeMinInput, lapsedAgeMaxInput].forEach(function (input) {
+            if (!input) {
+                return;
+            }
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    if (applyLapsedAgeFilterButton) {
+                        applyLapsedAgeFilterButton.click();
+                    }
+                }
+            });
+            input.addEventListener('input', _updateLapsedFilterLabel);
+        });
+
+        _updateLapsedFilterLabel();
+    }
+
     const flowChart = document.getElementById('nursingFlowChart');
     if (flowChart && window.Chart) {
         new Chart(flowChart, {
@@ -1308,7 +2815,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         fill: true
                     },
                     {
-                        label: 'Full Registrations',
+                        label: 'Full-Licence Applicants',
                         data: {{ nursing_flow_full_values|safe }},
                         borderColor: '#16a34a',
                         backgroundColor: 'rgba(22, 163, 74, 0.12)',
@@ -1316,7 +2823,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         fill: true
                     },
                     {
-                        label: 'Practising Licences',
+                        label: 'Full-Licence Approved',
+                        data: {{ nursing_flow_full_approved_values|safe }},
+                        borderColor: '#0f766e',
+                        backgroundColor: 'rgba(15, 118, 110, 0.12)',
+                        tension: 0.28,
+                        fill: true
+                    },
+                    {
+                        label: 'ATP Records',
                         data: {{ nursing_flow_practicing_values|safe }},
                         borderColor: '#ca8a04',
                         backgroundColor: 'rgba(202, 138, 4, 0.12)',
@@ -1360,7 +2875,7 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(nursingChart, {
         type: 'bar',
         data: {
-            labels: ['Registered Nurses', 'Midwives', 'Provisional Records', 'Expiring Soon'],
+            labels: ['Clean ATP Records', 'Midwife ATP Cadre', 'Provisional Records', 'Expiring Soon'],
             datasets: [{
                 label: 'Count',
                 data: [{{ nursing_count|default:0 }}, midwifeCount, provisionalCount, expiringSoon],
@@ -1384,7 +2899,7 @@ document.addEventListener('DOMContentLoaded', function() {
             data: {
                 labels: {{ province_labels|safe }},
                 datasets: [{
-                    label: 'Professionals',
+                    label: 'ATP records',
                     data: {{ province_values|safe }},
                     backgroundColor: [
                         '#0f766e', '#1d4ed8', '#7c3aed', '#ea580c', '#059669',
@@ -1429,7 +2944,7 @@ document.addEventListener('DOMContentLoaded', function() {
             data: {
                 labels: {{ atp_year_labels|safe }},
                 datasets: [{
-                    label: 'Distinct ATP practitioners',
+                    label: 'ATP analytics groups',
                     data: {{ atp_year_values|safe }},
                     borderColor: '#0f766e',
                     backgroundColor: 'rgba(15, 118, 110, 0.12)',

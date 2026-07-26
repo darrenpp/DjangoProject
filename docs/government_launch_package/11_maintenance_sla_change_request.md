@@ -14,6 +14,13 @@ Maintenance keeps the platform stable, secure, updated, backed up, and aligned w
 - Perform backup restore drill.
 - Run missing-data audit.
 - Run duplicate audit.
+- Run Nursing Council analytics snapshot validation after each snapshot refresh.
+- Run receipt-owner linking and review unmatched/high-value receipts.
+- Review open ICMS complaints by risk and age.
+- Review disciplinary cases by stage and due date.
+- Review regulatory decision records for missing authority/SOP references.
+- Review NHWA workbook sign-off readiness.
+- Review mapped entities without verified coordinates.
 - Review finance date errors and suspicious receipt rows.
 - Confirm reports generate correctly.
 - Review document repository metadata gaps.
@@ -26,6 +33,8 @@ Maintenance keeps the platform stable, secure, updated, backed up, and aligned w
 |---|---|
 | Critical production outage | Same-day emergency response |
 | High-impact workflow failure | Same business day investigation |
+| High-risk complaint/discipline workflow defect | Same business day investigation |
+| Decision-register or document-signoff defect | Same business day investigation |
 | Medium issue | 2-3 business days |
 | Low issue / wording / UI adjustment | Planned maintenance release |
 | Monthly health check | Once per month |
@@ -84,7 +93,10 @@ Recommended commercial structure:
 | Data correction | Cleansing duplicate or correcting institution | Registrar/data owner |
 | Report update | New ministerial table or finance breakdown | Registrar/finance owner |
 | Security change | MFA, access restriction, audit expansion | System Admin and NDOH ICT |
-| New workflow | New pathway, new licence type, new approval step | Registrar and project owner |
+| New workflow | New pathway, new licence type, new approval step, new ICMS/discipline stage | Registrar and project owner |
+| NHWA/reporting change | New NHWA sheet/cell mapping or submission pack | Registrar, data-quality owner, finance owner where relevant |
+| Map/reference change | New entity type, verification rule, Google Maps setting | System Admin and data owner |
+| Receipt-linking rule | New matching rule or review threshold | Finance owner, data-quality owner, registrar |
 | Infrastructure | Server, database, backup, domain, email | NDOH ICT |
 
 ## Release Notes
@@ -96,6 +108,8 @@ Every production release should record:
 - Database migrations.
 - Settings changed.
 - Tests run.
+- Migrations and management commands run.
+- Documentation and presentation packs regenerated where affected.
 - Known issues.
 - Rollback plan.
 - Approved by.

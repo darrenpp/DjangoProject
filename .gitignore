@@ -30,6 +30,7 @@ db.sqlite3
 media/
 staticfiles/
 logs/
+backups/
 *.log
 
 # IDE and OS metadata
@@ -41,6 +42,8 @@ Thumbs.db
 
 # Generated reports, command output, and local data extracts
 docs/command_logs/
+docs/platform_screenshots/
+docs/management_brief_assets/
 docs/reports/
 notebooks/*.xlsx
 notebooks/*.xls
@@ -55,3 +58,12 @@ notebooks/cleaned_combined_*.csv
 # Accidental shell artifacts
 -p/
 .codex_tmp/
+
+# Local AI runtime state and generated operational evidence
+my_agent/.adk/
+generated_reports/*
+!generated_reports/*.py
+docs/presentation/assets/html/
+~$*.docx
+~$*.xlsx
+~$*.pptx

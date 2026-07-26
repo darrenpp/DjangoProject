@@ -101,6 +101,34 @@
                         </tbody>
                     </table>
                 </div>
+
+                <h5 class="mt-4">Approvals and Sign-Off</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Version</th>
+                                <th>Officer</th>
+                                <th>Date</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for approval in approvals %}
+                            <tr>
+                                <td><span class="badge badge-{% if approval.status == 'approved' %}success{% elif approval.status == 'rejected' %}danger{% else %}secondary{% endif %}">{{ approval.get_status_display }}</span></td>
+                                <td>{% if approval.version %}v{{ approval.version.version_number }}{% else %}-{% endif %}</td>
+                                <td>{% if approval.approved_by %}{{ approval.approved_by.get_full_name|default:approval.approved_by.username }}{% else %}System{% endif %}</td>
+                                <td>{{ approval.approved_at|date:"d M Y H:i" }}</td>
+                                <td>{{ approval.note|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-muted">No approval or rejection decisions have been recorded.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="card-footer">
                 <a href="{% url 'repository_search' %}" class="btn btn-outline-secondary">Back to Repository</a>
@@ -205,6 +233,28 @@
                     <button type="submit" class="btn btn-success btn-block">Upload Version</button>
                 </div>
             </form>
+        </div>
+
+        <div class="card card-outline card-primary">
+            <div class="card-header"><h3 class="card-title mb-0">Document Sign-Off</h3></div>
+            <div class="card-body">
+                <form method="post" action="{% url 'repository_approval_action' document.pk 'approve' %}" class="mb-3">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Approval Note</label>
+                        <textarea name="approval_note" rows="3" class="form-control" placeholder="Record authority, meeting, SOP, or approval reference."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">Approve Current Version</button>
+                </form>
+                <form method="post" action="{% url 'repository_approval_action' document.pk 'reject' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Rejection Note</label>
+                        <textarea name="approval_note" rows="3" class="form-control" placeholder="Record why this version is rejected or returned for correction."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-outline-danger btn-block">Reject / Return for Correction</button>
+                </form>
+            </div>
         </div>
         {% else %}
         <div class="alert alert-info">

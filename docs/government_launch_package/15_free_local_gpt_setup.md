@@ -55,6 +55,25 @@ Ollama is reachable. Installed models:
 
 If Ollama is not running, the command will warn staff and the platform will keep using the local rule-based fallback assistant.
 
+## Local Knowledge Search
+
+For better answers, build a local retrieval index from the platform's approved knowledge records:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe manage.py build_ai_knowledge_index
+```
+
+Enable it with:
+
+```text
+AI_ASSISTANT_RAG_ENABLED=True
+AI_ASSISTANT_RAG_VECTOR_BACKEND=local_json
+AI_ASSISTANT_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+```
+
+Use `AI_ASSISTANT_RAG_VECTOR_BACKEND=chroma` only if ICT wants the Chroma persistent vector store. The assistant will keep working without the vector index, but answers will rely on the existing local rules and keyword search.
+
 ## Import Cleansing
 
 Model-assisted import cleansing is deliberately separated from staff chat.
@@ -100,3 +119,31 @@ Any option must be reviewed for licensing, hardware requirements, security patch
 - Ollama API reference: https://docs.ollama.com/api
 - Ollama OpenAI-compatible local API: https://docs.ollama.com/openai
 - llama.cpp OpenAI-compatible server: https://www.mintlify.com/ggml-org/llama.cpp/inference/server
+# Optional Free/Private Option: LocalAI (OpenAI-compatible)
+
+If the environment already uses LocalAI, switch the assistant provider to `localai`:
+
+```text
+AI_ASSISTANT_PROVIDER=localai
+AI_ASSISTANT_LOCALAI_ENABLED=True
+AI_LOCALAI_BASE_URL=http://127.0.0.1:8080
+AI_LOCALAI_MODEL=<installed model id>
+AI_LOCALAI_API_KEY=<if auth required>
+```
+
+Then run the normal health check:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py ai_model_status
+```
+
+Expected output (example):
+
+```text
+Configured provider: localai
+Active mode: localai
+LocalAI is reachable. Installed models:
+- gpt-4
+```
+
+Keep this in the same scope boundary and human-approval controls as other staff AI modes.

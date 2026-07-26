@@ -1,0 +1,53 @@
+{% if medical_intelligence %}
+<section class="mb-4" id="medical-workforce-intelligence" aria-labelledby="medical-workforce-intelligence-heading">
+    <div class="card mb-panel">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-start">
+            <div>
+                <h3 id="medical-workforce-intelligence-heading" class="card-title mb-1"><i class="fas fa-brain mr-2"></i>Clinical Regulation Intelligence</h3>
+                <div class="small text-muted">{{ medical_intelligence.status }}</div>
+            </div>
+            <div class="mt-2 mt-md-0">
+                {% if can_manage_medical_operations %}<a href="{{ professional_profile_update_queue_url }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-user-check mr-1"></i>Profile update queue</a>{% endif %}
+                <a href="{% url 'medical_board_portal' %}" class="btn btn-sm btn-outline-secondary">Clear filters</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="border rounded bg-light p-2 mb-3" aria-label="Medical Board intelligence filters">
+                <div class="form-row align-items-end">
+                    <div class="col-md-3 mb-2"><label class="small font-weight-bold mb-1" for="medical-specialty">Specialty</label><select class="form-control form-control-sm" id="medical-specialty" name="medical_specialty"><option value="">All specialties</option>{% for value in medical_intelligence_filter_options.specialty %}<option value="{{ value }}"{% if medical_intelligence.filters.specialty == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></div>
+                    <div class="col-md-2 mb-2"><label class="small font-weight-bold mb-1" for="medical-province">Province</label><select class="form-control form-control-sm" id="medical-province" name="medical_province"><option value="">All provinces</option>{% for value in medical_intelligence_filter_options.province %}<option value="{{ value }}"{% if medical_intelligence.filters.province == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></div>
+                    <div class="col-md-2 mb-2"><label class="small font-weight-bold mb-1" for="medical-district">District</label><select class="form-control form-control-sm" id="medical-district" name="medical_district"><option value="">All districts</option>{% for value in medical_intelligence_filter_options.district %}<option value="{{ value }}"{% if medical_intelligence.filters.district == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></div>
+                    <div class="col-md-2 mb-2"><label class="small font-weight-bold mb-1" for="medical-facility">Facility</label><select class="form-control form-control-sm" id="medical-facility" name="medical_facility"><option value="">All facilities</option>{% for value in medical_intelligence_filter_options.facility %}<option value="{{ value }}"{% if medical_intelligence.filters.facility == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></div>
+                    <div class="col-md-2 mb-2"><label class="small font-weight-bold mb-1" for="medical-sector">Sector</label><select class="form-control form-control-sm" id="medical-sector" name="medical_sector"><option value="">All sectors</option>{% for value in medical_intelligence_filter_options.sector %}<option value="{{ value }}"{% if medical_intelligence.filters.sector == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></div>
+                    <div class="col-md-1 mb-2"><button class="btn btn-primary btn-sm btn-block">Apply</button></div>
+                </div>
+                <div class="form-row"><div class="col-md-2"><label class="small font-weight-bold mb-1" for="medical-gender">Gender</label><select class="form-control form-control-sm" id="medical-gender" name="medical_gender"><option value="">All</option>{% for value in medical_intelligence_filter_options.gender %}<option value="{{ value }}"{% if medical_intelligence.filters.gender == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></div></div>
+            </form>
+
+            <div class="row mb-3">
+                <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-2"><div class="border rounded p-2 h-100"><span class="mb-flow-label">Registered doctors</span><div class="mb-flow-value">{{ medical_executive_metrics.registered_doctors }}</div></div></div>
+                <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-2"><div class="border rounded p-2 h-100"><span class="mb-flow-label">Active practitioners</span><div class="mb-flow-value">{{ medical_executive_metrics.active_practitioners }}</div></div></div>
+                <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-2"><div class="border rounded p-2 h-100"><span class="mb-flow-label">Specialists</span><div class="mb-flow-value">{{ medical_executive_metrics.specialists }}</div></div></div>
+                <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-2"><div class="border rounded p-2 h-100"><span class="mb-flow-label">Expired licences</span><div class="mb-flow-value">{{ medical_executive_metrics.expired_licences }}</div></div></div>
+                <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-2"><div class="border rounded p-2 h-100"><span class="mb-flow-label">Pending renewals</span><div class="mb-flow-value">{{ medical_executive_metrics.pending_renewals }}</div></div></div>
+                <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-2"><div class="border rounded p-2 h-100"><span class="mb-flow-label">Discipline cases</span><div class="mb-flow-value">{{ medical_executive_metrics.open_disciplinary_cases }}</div></div></div>
+                <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-2"><div class="border rounded p-2 h-100"><span class="mb-flow-label">Accredited facilities</span><div class="mb-flow-value">{{ medical_executive_metrics.accredited_facilities }}</div></div></div>
+                <div class="col-xl col-lg-3 col-md-4 col-sm-6 mb-2"><div class="border rounded p-2 h-100"><span class="mb-flow-label">Overseas doctors</span><div class="mb-flow-value">{{ medical_executive_metrics.overseas_practitioners }}</div></div></div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 mb-3"><h4 class="h6 font-weight-bold">Specialist distribution</h4><div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Specialty</th><th class="text-right">Doctors</th></tr></thead><tbody>{% for row in medical_specialty_distribution %}<tr><td>{{ row.label }}</td><td class="text-right">{{ row.practitioner_count }}</td></tr>{% empty %}<tr><td colspan="2" class="text-muted">No specialist profile evidence matches the filter.</td></tr>{% endfor %}</tbody></table></div></div>
+                <div class="col-lg-4 mb-3"><h4 class="h6 font-weight-bold">Province coverage</h4><div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Province</th><th class="text-right">Doctors</th></tr></thead><tbody>{% for row in medical_province_distribution %}<tr><td>{{ row.label }}</td><td class="text-right">{{ row.practitioner_count }}</td></tr>{% empty %}<tr><td colspan="2" class="text-muted">No province evidence matches the filter.</td></tr>{% endfor %}</tbody></table></div></div>
+                <div class="col-lg-4 mb-3"><h4 class="h6 font-weight-bold">Practice settings</h4><div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Facility / sector</th><th class="text-right">Doctors</th></tr></thead><tbody>{% for row in medical_facility_distribution|slice:":6" %}<tr><td>{{ row.label }}</td><td class="text-right">{{ row.practitioner_count }}</td></tr>{% empty %}{% for row in medical_sector_distribution %}<tr><td>{{ row.label }}</td><td class="text-right">{{ row.practitioner_count }}</td></tr>{% empty %}<tr><td colspan="2" class="text-muted">No current workplace evidence matches the filter.</td></tr>{% endfor %}{% endfor %}</tbody></table></div></div>
+            </div>
+
+            <div class="row border-top pt-3">
+                <div class="col-lg-4 mb-3"><h4 class="h6 font-weight-bold">Facility accreditation</h4><p class="mb-1"><strong>{{ medical_facility_accreditation.registered_facility_count }}</strong> current accredited or conditional facility record{{ medical_facility_accreditation.registered_facility_count|pluralize }}.</p><small class="text-muted">{{ medical_facility_accreditation.metric_definition }}</small>{% if medical_facility_accreditation.average_compliance_score is not None %}<div class="small mt-1">Average compliance: {{ medical_facility_accreditation.average_compliance_score|floatformat:0 }}%</div>{% endif %}</div>
+                <div class="col-lg-4 mb-3"><h4 class="h6 font-weight-bold">Credential verification</h4><p class="mb-1"><strong>{{ medical_credential_evidence.verified_credential_records }}</strong> verified credential record{{ medical_credential_evidence.verified_credential_records|pluralize }}; <strong>{{ medical_credential_evidence.pending_credential_records }}</strong> pending.</p><small class="text-muted">{{ medical_credential_evidence.note }}</small></div>
+                <div class="col-lg-4 mb-3"><h4 class="h6 font-weight-bold">Approved clinical privileges</h4><p class="mb-1"><strong>{{ medical_clinical_privileges.active_privilege_count }}</strong> current dedicated privilege record{{ medical_clinical_privileges.active_privilege_count|pluralize }}.</p><small class="text-muted">{{ medical_clinical_privileges.note }}</small></div>
+            </div>
+            <div class="alert alert-light border small py-2 mb-0">{{ medical_intelligence.privacy_notice }} Treat all outputs as decision support—never as an automatic registration, credential, licence, disciplinary, or clinical decision.</div>
+        </div>
+    </div>
+</section>
+{% endif %}

@@ -5,6 +5,143 @@
 {% block title_label %}{{ records_hub_title|default:"All Records Hub" }}{% endblock %}
 
 {% block content %}
+{% if nursing_records_panels %}
+<div class="card card-outline card-success mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">Nursing Council Register Cockpit</h3>
+            <div class="text-muted small">Regulator view for public verification, ATP/practising authority, CPD, education pathways, conditions, and ICMS.</div>
+        </div>
+        <div class="mt-2 mt-md-0">
+            {% for action in nursing_records_actions %}
+            <a href="{{ action.href }}" class="btn btn-sm btn-outline-primary mb-1">
+                <i class="{{ action.icon }} mr-1"></i>{{ action.label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for panel in nursing_records_panels %}
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <a href="{{ panel.href }}" class="small-box bg-{{ panel.theme }} d-block text-white mb-0">
+                    <div class="inner">
+                        <h3>{{ panel.count }}</h3>
+                        <p>{{ panel.label }}</p>
+                        <small>{{ panel.detail }}</small>
+                    </div>
+                    <div class="icon"><i class="{{ panel.icon }}"></i></div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="alert alert-light border mb-0">
+            <strong>{{ nursing_records_pending_applications|default:0 }}</strong> Nursing Council applications pending,
+            <strong>{{ nursing_records_school_count|default:0 }}</strong> recognised PNG nursing schools, and
+            <strong>{{ nursing_records_facility_count|default:0 }}</strong> facility records are visible in this scoped hub.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if medical_records_panels %}
+<div class="card card-outline card-danger mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">Medical Board Register Cockpit</h3>
+            <div class="text-muted small">Regulator view for public verification, practising certificates, CPD/CME, conditions, facilities, training institutions, and ICMS.</div>
+        </div>
+        <div class="mt-2 mt-md-0">
+            {% for action in medical_records_actions %}
+            <a href="{{ action.href }}" class="btn btn-sm btn-outline-primary mb-1">
+                <i class="{{ action.icon }} mr-1"></i>{{ action.label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for panel in medical_records_panels %}
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <a href="{{ panel.href }}" class="small-box bg-{{ panel.theme }} d-block text-white mb-0">
+                    <div class="inner">
+                        <h3>{{ panel.count }}</h3>
+                        <p>{{ panel.label }}</p>
+                        <small>{{ panel.detail }}</small>
+                    </div>
+                    <div class="icon"><i class="{{ panel.icon }}"></i></div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="alert alert-light border mb-0">
+            <strong>{{ medical_records_pending_applications|default:0 }}</strong> Medical Board applications pending,
+            <strong>{{ medical_records_facility_count|default:0 }}</strong> facilities, and
+            <strong>{{ medical_records_training_count|default:0 }}</strong> training institutions are visible in this scoped hub.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card card-outline card-warning mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">Registry Archives</h3>
+            <div class="text-muted small">Outdated, old-age, lapsed-renewal, retired, inactive, and deceased-review records excluded from active totals.</div>
+        </div>
+        <a href="{% url 'registry_archive' %}" class="btn btn-sm btn-outline-primary mt-2 mt-md-0">
+            <i class="fas fa-box-archive mr-1"></i>Open Archives
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="small-box bg-warning mb-0">
+                    <div class="inner">
+                        <h3>{{ registry_archive_total|default:0 }}</h3>
+                        <p>Archived from active totals</p>
+                        <small>Current {{ registry_archive_scope|default:"all" }} scope</small>
+                    </div>
+                    <div class="icon"><i class="fas fa-box-archive"></i></div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                        <tr>
+                            <th>Name / source</th>
+                            <th>Reason</th>
+                            <th>Year</th>
+                            <th>Age</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in registry_archive_rows %}
+                            <tr>
+                                <td>
+                                    <strong>{{ row.source_label|default:row.source_reference }}</strong><br>
+                                    <small class="text-muted">{{ row.cadre|default:"Cadre not captured" }}{% if row.province %} - {{ row.province }}{% endif %}</small>
+                                </td>
+                                <td>{{ row.get_archive_reason_display }}</td>
+                                <td>{{ row.latest_renewal_year|default:row.record_year|default:"-" }}</td>
+                                <td>{{ row.age|default:"-" }}</td>
+                                <td>{{ row.get_archive_status_display }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-muted">No archive records match this scope yet.</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title mb-0">{{ records_hub_title|default:"All Records Hub" }}</h3>

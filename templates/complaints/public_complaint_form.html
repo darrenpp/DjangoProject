@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Submit a Complaint{% endblock %}
+{% block title_label %}Submit a Complaint{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-danger">
+    <div class="card-header">
+        <h3 class="card-title mb-1">Public Complaint and Incident Submission</h3>
+        <div class="text-muted small">Submissions enter the formal ICMS queue for triage. They do not alter registry records.</div>
+    </div>
+    <div class="card-body">
+        {% if submitted_case %}
+        <div class="alert alert-success">
+            Your complaint was submitted. Reference number: <strong>{{ submitted_case.case_number }}</strong>.
+        </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="row">
+                {% for field in form %}
+                <div class="col-md-{% if field.name == 'description' %}12{% elif field.name == 'title' %}8{% else %}4{% endif %} mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label for="attachments">Supporting files</label>
+                <input type="file" id="attachments" name="attachments" class="form-control-file" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.txt">
+                <div class="small text-muted">Maximum 8 files, 15 MB each.</div>
+            </div>
+            <button type="submit" class="btn btn-danger">Submit Complaint</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

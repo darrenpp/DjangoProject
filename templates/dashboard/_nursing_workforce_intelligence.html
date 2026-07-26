@@ -1,0 +1,86 @@
+{% if nursing_workforce_intelligence %}
+{% with intelligence=nursing_workforce_intelligence %}
+<section class="row mb-4" id="nursing-workforce-intelligence" aria-labelledby="nursing-workforce-intelligence-heading">
+    <div class="col-12">
+        <div class="card border-success">
+            <div class="card-header bg-success d-flex flex-wrap justify-content-between align-items-start">
+                <div>
+                    <h3 id="nursing-workforce-intelligence-heading" class="card-title mb-1"><i class="fas fa-chart-area mr-2"></i>Nursing Workforce Intelligence</h3>
+                    <div class="small">Aggregate-only decision support from governed Nursing Council sources. It never exposes individual dates of birth or cross-office records.</div>
+                </div>
+                <div class="mt-2 mt-md-0">
+                    {% if can_manage_nursing_operations %}<a href="{{ professional_profile_update_queue_url }}" class="btn btn-sm btn-light"><i class="fas fa-user-check mr-1"></i>Profile update queue</a>{% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" action="#nursing-workforce-intelligence" class="border rounded bg-light p-3 mb-3" aria-label="Filter Nursing workforce intelligence">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong class="d-block">Aggregate filters</strong>
+                            <small class="text-muted">Province, cadre, and year apply only where the governed source carries that dimension. Individual records are never returned.</small>
+                        </div>
+                        {% if intelligence.filter_state.active %}<a href="{% url 'nursing_council_portal' %}#nursing-workforce-intelligence" class="btn btn-sm btn-outline-secondary mt-2 mt-md-0">Clear filters</a>{% endif %}
+                    </div>
+                    <div class="form-row align-items-end">
+                        <div class="col-md-4 mb-2">
+                            <label for="nursing-workforce-province" class="small font-weight-bold mb-1">Province</label>
+                            <select id="nursing-workforce-province" name="nursing_province" class="form-control form-control-sm">
+                                <option value="">All governed provinces</option>
+                                {% for value in intelligence.filter_dimensions.geography.provinces %}<option value="{{ value }}"{% if intelligence.filter_state.selected.province == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="nursing-workforce-cadre" class="small font-weight-bold mb-1">Cadre</label>
+                            <select id="nursing-workforce-cadre" name="nursing_cadre" class="form-control form-control-sm">
+                                <option value="">All governed cadres</option>
+                                {% for value in intelligence.filter_dimensions.workforce.cadres %}<option value="{{ value }}"{% if intelligence.filter_state.selected.cadre == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <label for="nursing-workforce-year" class="small font-weight-bold mb-1">Year</label>
+                            <select id="nursing-workforce-year" name="nursing_year" class="form-control form-control-sm">
+                                <option value="">Latest</option>
+                                {% for value in intelligence.filter_dimensions.time.years %}<option value="{{ value }}"{% if intelligence.filter_state.selected.year == value %} selected{% endif %}>{{ value }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2"><button type="submit" class="btn btn-sm btn-success btn-block">Apply</button></div>
+                    </div>
+                    {% if intelligence.filter_state.active %}<small class="text-muted d-block mt-1">Current selection: province {{ intelligence.filter_state.selected.province|default:"all" }}, cadre {{ intelligence.filter_state.selected.cadre|default:"all" }}, year {{ intelligence.filter_state.selected.year|default:"latest" }}.</small>{% endif %}
+                </form>
+                <div class="row mb-3">
+                    <div class="col-xl-3 col-md-6 mb-2"><div class="border rounded p-3 h-100"><div class="metric-label">Active Nursing Records</div><div class="metric-value">{{ intelligence.practitioner_status.active_practitioner_count }}</div><small class="text-muted">Registry profiles in Nursing scope</small></div></div>
+                    <div class="col-xl-3 col-md-6 mb-2"><div class="border rounded p-3 h-100"><div class="metric-label">Current ATP People</div><div class="metric-value">{{ intelligence.practitioner_status.atp_current_person_count }}</div><small class="text-muted">{{ intelligence.practitioner_status.atp_current_year|default:"No current ATP cycle" }}</small></div></div>
+                    <div class="col-xl-3 col-md-6 mb-2"><div class="border rounded p-3 h-100"><div class="metric-label">Renewal Due</div><div class="metric-value">{{ intelligence.practitioner_status.renewal_due_count }}</div><small class="text-muted">Within {{ intelligence.practitioner_status.renewal_due_within_days }} days where expiry is captured</small></div></div>
+                    <div class="col-xl-3 col-md-6 mb-2"><div class="border rounded p-3 h-100"><div class="metric-label">Near Retirement</div><div class="metric-value">{{ intelligence.age_and_retirement.retirement_within_five_years_count }}</div><small class="text-muted">Aggregate age evidence only</small></div></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4 mb-3">
+                        <h4 class="h6 font-weight-bold">Province distribution</h4>
+                        <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Province</th><th class="text-right">People</th></tr></thead><tbody>{% for row in intelligence.province_distribution.rows|slice:":8" %}<tr><td>{{ row.province }}</td><td class="text-right">{{ row.count }}</td></tr>{% empty %}<tr><td colspan="2" class="text-muted">No governed province data is available.</td></tr>{% endfor %}</tbody></table></div>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <h4 class="h6 font-weight-bold">Age and retirement outlook</h4>
+                        <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Age band</th><th class="text-right">People</th></tr></thead><tbody>{% for row in intelligence.age_and_retirement.age_band_rows %}<tr><td>{{ row.band }}</td><td class="text-right">{{ row.count }}</td></tr>{% empty %}<tr><td colspan="2" class="text-muted">Age data is not available.</td></tr>{% endfor %}</tbody></table></div>
+                        <small class="text-muted d-block mt-2">{{ intelligence.age_and_retirement.note }}</small>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <h4 class="h6 font-weight-bold">Facility staffing signal</h4>
+                        <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Facility</th><th class="text-right">Observed</th><th class="text-right">Gap</th></tr></thead><tbody>{% for row in intelligence.facility_staffing.rows|slice:":6" %}<tr><td>{{ row.facility }}<small class="d-block text-muted">{{ row.province }}</small></td><td class="text-right">{{ row.observed_staff_count }}</td><td class="text-right">{% if row.gap_status == 'reported' %}<span class="badge badge-{% if row.gap %}danger{% else %}success{% endif %}">{{ row.gap }}</span>{% else %}<span class="text-muted">Target not configured</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="3" class="text-muted">No facility staffing source is available.</td></tr>{% endfor %}</tbody></table></div>
+                        <small class="text-muted d-block mt-2">{{ intelligence.facility_staffing.note }}</small>
+                    </div>
+                </div>
+
+                <div class="border-top pt-3 mt-1 small">
+                    <strong>Governed dimensions:</strong>
+                    Time (year, quarter, month) &middot; Geography (province, district{% if intelligence.filter_dimensions.geography.llg_note %}; LLG when governed data is loaded{% endif %}) &middot; Workforce (cadre, age, gender) &middot; Employment (sector, facility) &middot; Registration (lifecycle stage, status).
+                    {% if intelligence.pathway_and_education.recognised_institution_count %}<span class="ml-2"><strong>Recognised nursing institutions:</strong> {{ intelligence.pathway_and_education.recognised_institution_count }}.</span>{% endif %}
+                </div>
+                {% if intelligence.filter_state.active %}<div class="small text-muted mb-2">{% for note in intelligence.filter_state.section_notes %}<span class="d-block">{{ note }}</span>{% endfor %}</div>{% endif %}
+                {% for notice in intelligence.notices %}<div class="alert alert-light border small py-2 mt-2 mb-0">{{ notice }}</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endwith %}
+{% endif %}

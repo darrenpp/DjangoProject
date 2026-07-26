@@ -335,7 +335,7 @@ def local_cleanse_import_row(row, *, row_number=None, source_label="", scope="nu
             )
 
     requires_review = any(issue["requires_human_review"] for issue in issues)
-    return {
+    result = {
         "provider": "local",
         "mode": "offline_rules",
         "source_label": source_label,
@@ -346,13 +346,36 @@ def local_cleanse_import_row(row, *, row_number=None, source_label="", scope="nu
         "ready_for_staging": has_name and bool(normalized),
         "requires_human_review": requires_review,
     }
+    # The ML assessment is a second, fully local review signal over the
+    # normalized staging row.  It has no ORM access and deliberately returns
+    # field-group labels and reason codes rather than names, identifiers, or
+    # source values.  It can request human review, but never clears or
+    # promotes a record and does not change the ordinary staging decision.
+    try:
+        if bool(getattr(settings, "REGULATORY_ML_ENABLED", True)):
+            from apps.workforce.services.ml_data_quality import assess_staged_record
+
+            assessment = assess_staged_record(normalized, today=today)
+        else:
+            assessment = None
+    except Exception:
+        # Import cleansing must remain available if the optional ML module is
+        # disabled or temporarily unavailable.  Do not expose an exception
+        # that may contain raw workbook data.
+        assessment = None
+    if assessment:
+        result["ml_data_quality_advisory"] = assessment
+        result["requires_human_review"] = bool(
+            result["requires_human_review"] or assessment.get("requires_human_review")
+        )
+    return result
 
 
 def cleanse_import_row(row, *, row_number=None, source_label="", scope="nursing"):
     local_result = local_cleanse_import_row(row, row_number=row_number, source_label=source_label, scope=scope)
     status = ai_provider_status()
     model_cleansing_enabled = bool(getattr(settings, "AI_IMPORT_CLEANSING_MODEL_ENABLED", False)) or bool(getattr(settings, "AI_IMPORT_CLEANSING_EXTERNAL_ENABLED", False))
-    if status["mode"] not in {"openai", "ollama", "local_llm"} or not model_cleansing_enabled:
+    if status["mode"] not in {"google_adk", "openai", "ollama", "local_llm"} or not model_cleansing_enabled:
         local_result["ai_provider"] = status
         return local_result
 
@@ -388,6 +411,14 @@ def cleanse_import_row(row, *, row_number=None, source_label="", scope="nursing"
     live_result["row_number"] = row_number
     live_result["scope"] = scope
     live_result["ai_provider"] = status
+    # Preserve the bounded local advisory even if an optional model returns a
+    # different suggestion.  It remains an advisory review signal only.
+    advisory = local_result.get("ml_data_quality_advisory")
+    if advisory:
+        live_result["ml_data_quality_advisory"] = advisory
+        live_result["requires_human_review"] = bool(
+            live_result.get("requires_human_review") or advisory.get("requires_human_review")
+        )
     return live_result
 
 

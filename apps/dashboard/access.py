@@ -1,6 +1,9 @@
 def _profile_text(user):
     values = [
         getattr(user, 'department', ''),
+        getattr(user, 'job_title', ''),
+        getattr(user, 'cadre_name', ''),
+        getattr(user, 'employee_details', ''),
         getattr(user, 'username', ''),
         getattr(user, 'first_name', ''),
         getattr(user, 'last_name', ''),
@@ -39,6 +42,9 @@ def can_manage_regulatory_operations(user):
         return False
     if is_system_admin(user):
         return True
+    has_staff_login_approvals = getattr(user, 'has_required_staff_login_approvals', lambda: True)()
+    if not has_staff_login_approvals:
+        return False
     if getattr(user, 'role', '') == 'reviewer' and getattr(user, 'operations_approved', False):
         return True
     return getattr(user, 'role', '') == 'registrar' and getattr(user, 'role_approved', False)
@@ -55,6 +61,8 @@ MEDICAL_BOARD_FORM_CODES = {
     'MD1',
     'MD2',
     'CHW1',
+    'CHWP',
+    'CHWF',
     'MBSP',
     'MBRN',
     'MBAC',
@@ -109,6 +117,19 @@ def is_nursing_council_staff(user):
         profile = _profile_text(user)
         return 'nursing' in profile or 'nurse' in profile
     return not _profile_matches_medical_board(user)
+
+
+def is_nursing_council_board_member(user):
+    return (
+        getattr(user, 'is_authenticated', False)
+        and getattr(user, 'is_active', False)
+        and getattr(user, 'role', '') == 'board_member'
+        and bool(getattr(user, 'has_required_staff_login_approvals', lambda: True)())
+    )
+
+
+def can_access_nursing_board_portal(user):
+    return is_system_admin(user) or is_nursing_council_board_member(user)
 
 
 def is_medical_board_user(user):

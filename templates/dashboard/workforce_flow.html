@@ -3,7 +3,332 @@
 {% block page_title %}{{ workforce_flow_title|default:"Workforce Flow & Planning" }}{% endblock %}
 {% block title_label %}{{ workforce_flow_title|default:"Workforce Flow & Planning" }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .workflow-ops-panel {
+        background: #ffffff;
+        border: 1px solid #d7e2ef;
+        border-left: 4px solid #0f766e;
+        border-radius: 6px;
+        padding: 1rem;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    }
+    .workflow-title {
+        font-size: 1.35rem;
+        line-height: 1.2;
+        margin: 0;
+    }
+    .workflow-subtitle {
+        color: #52647a;
+        margin: .35rem 0 0;
+    }
+    .workflow-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        justify-content: flex-end;
+    }
+    .workflow-actions .btn,
+    .workflow-filter-form .form-control {
+        border-radius: 6px;
+    }
+    .workflow-scope-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        margin-top: .9rem;
+    }
+    .workflow-scope-tabs a {
+        border: 1px solid #c7d4e5;
+        border-radius: 999px;
+        color: #24415f;
+        padding: .35rem .7rem;
+        font-weight: 600;
+    }
+    .workflow-scope-tabs a.active {
+        background: #0f766e;
+        border-color: #0f766e;
+        color: #ffffff;
+    }
+    .workflow-metrics {
+        display: grid;
+        gap: .75rem;
+        grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+        margin: 1rem 0;
+    }
+    .workflow-metric {
+        background: #ffffff;
+        border: 1px solid #d7e2ef;
+        border-radius: 6px;
+        min-height: 82px;
+        padding: .85rem;
+    }
+    .workflow-metric strong {
+        display: block;
+        font-size: 1.45rem;
+        line-height: 1;
+        color: #111827;
+    }
+    .workflow-metric span {
+        color: #52647a;
+        display: block;
+        font-size: .85rem;
+        margin-top: .35rem;
+    }
+    .workflow-filter-form {
+        align-items: end;
+        background: #f8fafc;
+        border: 1px solid #dbe4ef;
+        border-radius: 6px;
+        display: grid;
+        gap: .75rem;
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+        margin-bottom: 1rem;
+        padding: .75rem;
+    }
+    .workflow-filter-form label {
+        color: #334155;
+        font-size: .78rem;
+        font-weight: 700;
+        margin-bottom: .25rem;
+        text-transform: uppercase;
+    }
+    .workflow-priority {
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: .78rem;
+        font-weight: 700;
+        min-width: 72px;
+        justify-content: center;
+        padding: .25rem .55rem;
+    }
+    .workflow-priority-high {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    .workflow-priority-medium {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    .workflow-priority-low {
+        background: #dcfce7;
+        color: #166534;
+    }
+    .workflow-table td,
+    .workflow-table th {
+        vertical-align: middle;
+    }
+    .workflow-table .task-title {
+        color: #111827;
+        font-weight: 700;
+    }
+    .workflow-table .task-detail {
+        color: #52647a;
+        display: block;
+        font-size: .86rem;
+        margin-top: .15rem;
+    }
+    .workflow-pathway-table td,
+    .workflow-pathway-table th {
+        vertical-align: middle;
+    }
+    .workflow-section-heading {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin: 1.25rem 0 .75rem;
+    }
+    .workflow-section-heading h3 {
+        font-size: 1.15rem;
+        margin: 0;
+    }
+    @media (max-width: 767.98px) {
+        .workflow-actions {
+            justify-content: flex-start;
+            margin-top: .75rem;
+        }
+        .workflow-table {
+            min-width: 760px;
+        }
+        .workflow-pathway-table {
+            min-width: 820px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="workflow-ops-panel mb-3">
+    <div class="d-flex flex-wrap justify-content-between">
+        <div>
+            <h2 class="workflow-title">Operational Task Inbox</h2>
+            <p class="workflow-subtitle">{{ workflow_scope_label }} · {{ workflow_task_total_count|default:0 }} open workflow items</p>
+        </div>
+        <div class="workflow-actions">
+            {% for link in workflow_quick_links %}
+            <a href="{{ link.url }}" class="btn btn-outline-primary btn-sm">
+                <i class="{{ link.icon }} mr-1"></i>{{ link.label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% if workflow_scope_options|length > 1 %}
+    <div class="workflow-scope-tabs">
+        {% for option in workflow_scope_options %}
+        <a href="{{ option.url }}" class="{% if option.selected %}active{% endif %}">{{ option.label }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<div class="workflow-metrics">
+    <div class="workflow-metric">
+        <strong>{{ workflow_filtered_task_count|default:0 }}</strong>
+        <span>Visible tasks</span>
+    </div>
+    <div class="workflow-metric">
+        <strong>{{ workflow_high_priority_count|default:0 }}</strong>
+        <span>High priority</span>
+    </div>
+    <div class="workflow-metric">
+        <strong>{{ workflow_pending_application_count|default:0 }}</strong>
+        <span>Pending applications</span>
+    </div>
+    <div class="workflow-metric">
+        <strong>{{ workflow_missing_data_count|default:0 }}</strong>
+        <span>Missing data reviews</span>
+    </div>
+</div>
+
+<div class="card card-outline card-primary">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Task Queue</h3>
+    </div>
+    <div class="card-body">
+        <form method="get" class="workflow-filter-form">
+            {% if workflow_scope != 'all' %}
+            <input type="hidden" name="scope" value="{{ workflow_scope }}">
+            {% endif %}
+            <div>
+                <label for="workflow-task-type">Task type</label>
+                <select id="workflow-task-type" name="task_type" class="form-control form-control-sm">
+                    {% for option in workflow_task_type_options %}
+                    <option value="{{ option.key }}" {% if workflow_task_filters.task_type == option.key %}selected{% endif %}>{{ option.label }} ({{ option.count }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="workflow-priority">Priority</label>
+                <select id="workflow-priority" name="priority" class="form-control form-control-sm">
+                    {% for option in workflow_priority_options %}
+                    <option value="{{ option.key }}" {% if workflow_task_filters.priority == option.key %}selected{% endif %}>{{ option.label }} ({{ option.count }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="workflow-pathway">Pathway</label>
+                <select id="workflow-pathway" name="pathway" class="form-control form-control-sm">
+                    {% for option in workflow_pathway_options %}
+                    <option value="{{ option.key }}" {% if workflow_task_filters.pathway == option.key %}selected{% endif %}>{{ option.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="d-flex">
+                <button type="submit" class="btn btn-primary btn-sm mr-2"><i class="fas fa-filter mr-1"></i>Apply</button>
+                <a href="{% url 'workforce_flow' %}{% if workflow_scope != 'all' %}?scope={{ workflow_scope }}{% endif %}" class="btn btn-outline-secondary btn-sm">Reset</a>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-hover workflow-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Priority</th>
+                        <th>Task</th>
+                        <th>Pathway</th>
+                        <th>Age</th>
+                        <th>Status</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in workflow_task_rows %}
+                    <tr>
+                        <td><span class="workflow-priority workflow-priority-{{ row.priority }}">{{ row.priority_label }}</span></td>
+                        <td>
+                            <span class="task-title">{{ row.title }}</span>
+                            <span class="task-detail">{{ row.detail }}</span>
+                        </td>
+                        <td>
+                            {{ row.pathway }}
+                            {% if row.source %}<span class="task-detail">{{ row.source }}</span>{% endif %}
+                        </td>
+                        <td>{{ row.age_label }}</td>
+                        <td>{{ row.status }}</td>
+                        <td class="text-right">
+                            <a href="{{ row.action_url }}" class="btn btn-sm btn-primary">{{ row.action_label }}</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No workflow tasks match the current filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card card-outline card-success mt-3">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Workflow Pipeline</h3>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover workflow-pathway-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Pathway</th>
+                        <th>Forms</th>
+                        <th>Pending</th>
+                        <th>14+ Days</th>
+                        <th>Approved</th>
+                        <th>Rejected</th>
+                        <th>Open Tasks</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in workflow_pathway_rows %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.label }}</strong>
+                            <span class="task-detail">{{ row.description }}</span>
+                        </td>
+                        <td>{{ row.form_codes_label }}</td>
+                        <td>{{ row.pending_count }}</td>
+                        <td>{{ row.aged_pending_count }}</td>
+                        <td>{{ row.approved_count }}</td>
+                        <td>{{ row.rejected_count }}</td>
+                        <td>{{ row.task_count }}</td>
+                        <td class="text-right"><a href="{{ row.action_url }}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No workflow pathways are configured for this scope.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="workflow-section-heading">
+    <h3>Planning Analytics</h3>
+    <span class="text-muted small">{{ import_record_label|default:"Imported Workbook Rows" }}</span>
+</div>
+
 <div class="row">
     <div class="col-lg-3 col-6">
         <div class="small-box bg-primary">
@@ -193,7 +518,7 @@
                             <tbody>
                                 {% for item in facilities %}
                                 <tr>
-                                    <td>{{ item.name }}</td>
+                                    <td><a href="{% url 'facility_worker_detail' item.pk %}">{{ item.name }}</a></td>
                                     <td>{{ item.code|default:"-" }}</td>
                                     <td>{{ item.location|default:"-" }}</td>
                                 </tr>
@@ -211,7 +536,7 @@
                             <tbody>
                                 {% for item in institutions %}
                                 <tr>
-                                    <td>{{ item.name }}</td>
+                                    <td><a href="{% url 'institution_graduand_detail' item.pk %}">{{ item.name }}</a></td>
                                     <td>{{ item.type|default:"-" }}</td>
                                     <td>{{ item.is_active|yesno:"Yes,No" }}</td>
                                 </tr>

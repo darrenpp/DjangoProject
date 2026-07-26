@@ -844,6 +844,16 @@ class CouncilApplicationForm(SectionedFormMixin, forms.Form):
             ("institute_certification", "Institute Certification"),
             ("dual_qualification_evidence", "Dual Qualification Evidence"),
             ("dual_major_competency_evidence", "Competency Evidence for Both Majors"),
+            ("png_contract_or_employment_letter", "PNG Contract or Employment Letter"),
+            ("nc8_application_form", "Form NC8 Temporary Licence Application"),
+            ("home_registration_license", "Current Registration Licence from Regulatory Authority"),
+            ("curriculum_vitae", "Curriculum Vitae"),
+            ("professional_references", "Two Professional References"),
+            ("police_clearance_report", "Police Clearance Report"),
+            ("medical_report", "Medical Report"),
+            ("name_change_evidence", "Evidence of Name Change"),
+            ("english_language_evidence", "Evidence of Knowledge of English"),
+            ("temporary_licence_receipt", "Original Receipt or Waiver Fee Evidence"),
         ]:
             uploaded = self.cleaned_data.get(field_name)
             if not uploaded:
@@ -977,6 +987,9 @@ class ChwPublicRegistrationForm(ApplicantMediaRequiredMixin, forms.ModelForm):
 
 
 class MedicalDoctorPublicRegistrationForm(ApplicantMediaRequiredMixin, forms.ModelForm):
+    form_code = "MD1"
+    form_title = "Medical Board Initial Medical Practitioner Registration"
+
     class Meta:
         model = MedicalDoctor
         fields = [
@@ -1445,18 +1458,49 @@ class NC8TemporaryLicenceForm(EmploymentFieldsForm):
 
 class NC9TemporaryChecklistForm(QualificationFieldsForm):
     form_code = "NC9"
-    form_title = "Checklist for Temporary Licence"
+    form_title = "Temporary Licence to Practise Criteria for Overseas Nurses Checklist"
     pathway = "overseas_nurse"
     profession_track = "temporary"
     professional_model = NursingProfessional
     form_sections = [
-        ("Required Attachments", ["passport_copy", "qualification_certificates", "employer_reference", "competency_evidence"]),
+        ("Applicant Details", ["full_name", "gender", "date_of_birth", "organisation_name", "place_of_work", "full_address"]),
+        ("Temporary Registration Criteria", [
+            "png_contract_or_employment_letter",
+            "nc8_application_form",
+            "home_registration_license",
+            "qualification_certificates",
+            "curriculum_vitae",
+            "professional_references",
+            "passport_copy",
+            "police_clearance_report",
+            "medical_report",
+            "name_change_evidence",
+            "english_language_evidence",
+            "temporary_licence_receipt",
+        ]),
+        ("Office Use", ["action_officer", "action_date", "verification_signature", "declaration_acceptance"]),
     ]
 
-    passport_copy = forms.FileField(required=True)
-    qualification_certificates = forms.FileField(required=True)
-    employer_reference = forms.FileField(required=True)
-    competency_evidence = forms.FileField(required=True)
+    organisation_name = forms.CharField(max_length=200, label="Name of Organisation")
+    place_of_work = forms.CharField(max_length=200, label="Place of Work")
+    full_address = forms.CharField(label="Postal Address", widget=forms.Textarea(attrs={"rows": 3}))
+    png_contract_or_employment_letter = forms.FileField(label="PNG contract or employment letter")
+    nc8_application_form = forms.FileField(label="Form NC8 - applicant form for nursing temporary licence")
+    home_registration_license = forms.FileField(label="Current registration licence issued by regulatory authority")
+    qualification_certificates = forms.FileField(label="Institution awards - academic and professional awards")
+    curriculum_vitae = forms.FileField(label="Curriculum vitae")
+    professional_references = forms.FileField(
+        label="Two professional references",
+        help_text="Upload a combined file containing both references where possible.",
+    )
+    passport_copy = forms.FileField(label="Copy of passport bio-page verified by recognised authority")
+    police_clearance_report = forms.FileField(label="Current police clearance report from country of origin")
+    medical_report = forms.FileField(label="Full medical report signed and certified by examining doctor")
+    name_change_evidence = forms.FileField(label="Evidence of name change, if applicable", required=False)
+    english_language_evidence = forms.FileField(label="Evidence of knowledge of English; IELTS report score 4 or more")
+    temporary_licence_receipt = forms.FileField(label="Original receipt payment K50.00 or approved waiver fee")
+    action_officer = forms.CharField(max_length=150, required=False)
+    action_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
 
 
 class NC10ChildNursingCompetencyForm(CompetencyFieldsForm):

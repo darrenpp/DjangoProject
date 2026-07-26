@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Nursing Analytics Pathway{% endblock %}
+{% block title_label %}Nursing Analytics Pathway{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-0">
+                {{ pathway_stats.representative_name|default:selected_fact.full_name|default:selected_fact.person_group_key }}
+            </h3>
+            <div class="small text-muted">
+                {{ pathway_stats.stage_summary }}
+                {% if pathway_stats.record_count %} &middot; {{ pathway_stats.record_count }} linked records{% endif %}
+            </div>
+        </div>
+        <a href="{{ back_url }}" class="btn btn-sm btn-light">
+            <i class="fas fa-arrow-left mr-1"></i> Back
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info mb-0">
+            This is a read-only Nursing Council analytics pathway. It links cleansed workbook facts for review and does not change the legal operational registry.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-7 mb-4">
+        <div class="card card-outline card-info h-100">
+            <div class="card-header"><h4 class="card-title mb-0">Linked Individual Summary</h4></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <tbody>
+                    {% for label, value in summary_fields %}
+                        <tr>
+                            <th style="width: 240px;">{{ label }}</th>
+                            <td>{{ value|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5 mb-4">
+        <div class="card card-outline card-secondary h-100">
+            <div class="card-header"><h4 class="card-title mb-0">Snapshot Source</h4></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <tbody>
+                    {% for label, value in source_fields %}
+                        <tr>
+                            <th style="width: 190px;">{{ label }}</th>
+                            <td>{{ value|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-outline card-primary">
+    <div class="card-header"><h4 class="card-title mb-0">Linked Lifecycle Records</h4></div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Stage</th>
+                    <th>Year</th>
+                    <th>Registration</th>
+                    <th>Cadre</th>
+                    <th>Training / Facility</th>
+                    <th>Province</th>
+                    <th>Source</th>
+                    <th class="text-right">Open</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for fact in pathway_facts %}
+                <tr>
+                    <td>
+                        <strong>{{ fact.stage }}</strong>
+                        <div class="small text-muted">{{ fact.status }}</div>
+                    </td>
+                    <td>
+                        {{ fact.year }}
+                        {% if fact.event_date %}<div class="small text-muted">{{ fact.event_date|date:"d M Y" }}</div>{% endif %}
+                    </td>
+                    <td>{{ fact.registration }}</td>
+                    <td>
+                        {{ fact.cadre }}
+                        <div class="small text-muted">{{ fact.quality }} quality</div>
+                    </td>
+                    <td>
+                        <div>{{ fact.institution }}</div>
+                        <div class="small text-muted">{{ fact.facility }}</div>
+                    </td>
+                    <td>{{ fact.province }}</td>
+                    <td>
+                        {{ fact.source }}
+                        <div class="small text-muted">{{ fact.record_id }}</div>
+                    </td>
+                    <td class="text-right">
+                        <a href="{{ fact.detail_url }}" class="btn btn-sm btn-outline-primary" title="Open source fact">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="8" class="text-muted text-center">No linked lifecycle records found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

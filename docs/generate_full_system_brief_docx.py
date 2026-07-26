@@ -11,7 +11,7 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
 
 
-PROJECT_NAME = "The National Department Of Health Regulatory Bodies Nursing Council & The Medical Board Online Workforce System"
+PROJECT_NAME = "PNG Nursing Council and Medical Board Online Regulatory Workforce Platform"
 SUBJECT = f"User Management Brief for {PROJECT_NAME}."
 BASE_DIR = Path(__file__).resolve().parent.parent
 DOCS_DIR = BASE_DIR / "docs"
@@ -292,8 +292,8 @@ def build_document():
 
     role_rows = [
         ("Admin", "Full system oversight", "Can access both Nursing Council and Medical Board functions, reports, dashboards, and records.", "Cross-domain access is allowed because this is the top supervisory role."),
-        ("Nursing Council registrar / staff", "Nursing Council staff dashboards", "Can view nursing dashboards, nursing applications, nursing forms, nursing records, nursing reports, and nursing data quality work.", "Should not view Medical Board doctor or CHW data."),
-        ("Medical Board registrar / staff", "Medical Board staff dashboards", "Can view medical dashboards, medical forms, medical applications, doctor and CHW records, and medical reporting.", "Should not view Nursing Council data."),
+        ("Nursing Council registrar / staff", "Nursing Council staff dashboards", "Can view nursing dashboards, analytics snapshots, applications, forms, records, reports, ICMS cases, discipline cases, decisions, and data quality work.", "Should not view Medical Board doctor or CHW data unless authorised."),
+        ("Medical Board registrar / staff", "Medical Board staff dashboards", "Can view medical dashboards, forms, applications, doctor and CHW records, ICMS cases, discipline cases, decisions, and medical reporting.", "Should not view Nursing Council data unless authorised."),
         ("Nurse / Nurse Aide / Doctor / CHW", "Personal portal", "Can view their own records, applications, and personal tasks relevant to their role.", "Should not view another professional’s record."),
         ("Graduand", "Student / graduand portal", "Can view graduand information, application status, receipts, and related pathway actions.", "Should only see their own personal pipeline data."),
         ("Viewer / Reviewer", "Limited support access", "Can be assigned controlled access for review or viewing purposes depending on configuration.", "Should stay within assigned workflow only."),
@@ -321,6 +321,16 @@ def build_document():
         "Show dashboards for staffing, workflow, yearly trends, province distribution, and licence movement.",
         "Import historical workbook records and convert them into structured electronic records.",
         "Flag incomplete or suspicious records for data quality review and follow-up.",
+        "Show notification history, unread badge clearing, and opened/read message status.",
+        "Provide table functions for Nursing Professionals and Duplicate Review Queue review work.",
+        "Import the cleansed Nursing Council analytics snapshot and provide server-side dashboard drilldowns.",
+        "Support formal ICMS complaint, incident, and enquiry case-management.",
+        "Support disciplinary case workflow and formal regulatory decision records.",
+        "Approve or reject controlled document versions with audit history.",
+        "Support NHWA workbook reporting without overwriting registry records.",
+        "Show mapped institutions and facilities from locally stored verified coordinates.",
+        "Link receipts to owner records where evidence is strong and send unmatched receipts to review.",
+        "Route public registration through controlled Role/Cadre dropdowns.",
         "Support management reporting through dashboards and export functions.",
     ]:
         add_bullet(doc, item)
@@ -338,6 +348,9 @@ def build_document():
         ("Supporting records", "Certificates, transcripts, ID documents, uploaded files, receipt images, photos."),
         ("Applications", "Form code, pathway, status, submitted date, review notes."),
         ("Historical workforce records", "Imported workbook licence rows, yearly statistics, payment-linked records."),
+        ("Analytics snapshots", "Cleansed Nursing Council lifecycle facts, metric tables, snapshot provenance, and source lineage."),
+        ("Case management", "ICMS complaint cases, disciplinary cases, decision records, events, attachments, and closure notes."),
+        ("Mapped references", "Schools, institutions, facilities, province, district, source, verification status, and stored coordinates."),
         ("Data quality tracking", "Missing fields, severity level, review status, notifications."),
     ]
     for left, right in capture_rows:
@@ -389,7 +402,10 @@ def build_document():
         "Make critical fields mandatory before approval: name, registration number, pathway, institution, issue date, and province.",
         "Use dropdown lists for provinces, institutions, cadres, and document types instead of free typing whenever possible.",
         "Run duplicate checks against registration number, practitioner number, name, and email before approval.",
+        "Run receipt-owner matching and review unmatched or suspicious receipts before finance reporting.",
         "Require registrar review against the source scan before moving a record into the official register.",
+        "Use ICMS, discipline, and decision records for complaints, conduct matters, and defensible outcomes.",
+        "Use NHWA workbooks as reporting outputs only, not as a source to overwrite registry records.",
         "Use the missing-data review tools regularly so incomplete records are corrected quickly.",
         "Carry out routine monthly or quarterly quality audits instead of waiting for one large cleanup exercise.",
     ]

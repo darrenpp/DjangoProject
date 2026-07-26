@@ -67,6 +67,51 @@
         </div>
     </section>
 
+    <section class="standards-section" id="png-ndoh-standards">
+        <div class="section-heading">
+            <h3>PNG Department of Health Standards</h3>
+            <p>These are the PNG NDoH policy, quality, data, workforce, service-delivery, and governance standards this registry must support for official reporting and regulatory accountability.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Standard Area</th>
+                        <th>PNG NDoH Source</th>
+                        <th>Standard Expectation</th>
+                        <th>Platform Alignment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in png_ndoh_standard_rows %}
+                    <tr>
+                        <th>{{ row.standard_area }}</th>
+                        <td>{{ row.source }}</td>
+                        <td>{{ row.expectation }}</td>
+                        <td>{{ row.platform_alignment }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="standards-section" id="pngnc-situational-analysis">
+        <div class="section-heading">
+            <h3>PNGNC Situational Analysis Requirements</h3>
+            <p>These internal regulatory requirements come from the Office of the Registrar situational analysis dated 30 January 2026 and are shown as platform controls for legal defensibility.</p>
+        </div>
+        <div class="standards-blueprint-grid">
+            {% for row in pngnc_situational_analysis_rows %}
+            <article class="standards-blueprint standards-blueprint-control">
+                <h4>{{ row.domain }}</h4>
+                <p><strong>Finding:</strong> {{ row.finding }}</p>
+                <p><strong>System control:</strong> {{ row.platform_action }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
     <section class="standards-section">
         <div class="section-heading">
             <h3>Data Standards</h3>
@@ -126,7 +171,13 @@
                 <tbody>
                     {% for source in standard_sources %}
                     <tr>
-                        <td><a href="{{ source.url }}" target="_blank" rel="noopener">{{ source.name }}</a></td>
+                        <td>
+                            {% if source.url %}
+                            <a href="{{ source.url }}" target="_blank" rel="noopener">{{ source.name }}</a>
+                            {% else %}
+                            {{ source.name }}
+                            {% endif %}
+                        </td>
                         <td>{{ source.use }}</td>
                     </tr>
                     {% endfor %}

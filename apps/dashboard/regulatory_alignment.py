@@ -1,11 +1,10 @@
 from collections import Counter, defaultdict
-from datetime import date
 
 from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 
+from apps.dashboard.nursing_analytics import active_nursing_analytics_snapshot
 from apps.documents.models import Document, DocumentAuditEvent
 from apps.notifications.models import EnquiryThread
 from apps.workforce.models import (
@@ -232,36 +231,55 @@ SITUATIONAL_SWOT = {
 
 GAP_ANALYSIS_ROWS = [
     ["Legal Framework", "Medical Act / Medical Registration framework", "PNG Nursing Act", "External / policy-led", "A software platform cannot replace the need for a dedicated Act."],
-    ["Policies", "Limited", "Full regulatory policies", "Partial", "The platform can store and control documents, but policy content still needs formal approval."],
-    ["SOPs", "Inconsistent", "Standard SOPs", "Partial", "The system can host versioned SOPs; drafting and enforcement remain operational tasks."],
-    ["Complaints", "Ad-hoc", "Formal ICMS", "Partial", "Enquiries and staff inbox workflows exist, but a full incident and complaints case module is still needed."],
-    ["Discipline", "Variable", "Standard pathway", "Pending", "No dedicated disciplinary case workflow has been implemented yet."],
-    ["Documentation", "Weak control", "Versioned and approved", "Improving", "The document repository now supports versioning, access policy, and audit events."],
-    ["Records", "Manual", "Digital systems", "Improving", "The registry, OCR imports, role-based dashboards, and repository search have digitised core records."],
-    ["Audit Trail", "Weak", "Strong tracking", "Partial", "Document audit events exist; broader end-to-end regulatory audit coverage is still incomplete."],
-    ["Governance", "Partial", "Strengthened frameworks", "Operational", "Board governance and ethics frameworks sit outside the software build and need governance action."],
+    ["Policies", "Limited", "Full regulatory policies", "Platform-ready / content pending", "The repository now supports controlled policy storage, versioning, access rules, approval or rejection sign-off, and audit history. Policy drafting and formal adoption remain governance actions."],
+    ["SOPs", "Inconsistent", "Standard SOPs", "Platform-ready / content pending", "SOPs can now be stored as controlled records, versioned, approved, linked to cases or decisions, and audited. Staff still need approved SOP content and training."],
+    ["Complaints", "Ad-hoc", "Formal ICMS", "Implemented / needs SOP adoption", "A formal ICMS case module now tracks public submissions, escalated enquiries, case assignment, status history, evidence, and closure summaries."],
+    ["Discipline", "Variable", "Standard pathway", "Implemented / needs SOP adoption", "A dedicated disciplinary workflow now supports preliminary assessment, investigation, committee review, notice, hearing, decision, appeal monitoring, sanctions, and closure."],
+    ["Documentation", "Weak control", "Versioned and approved", "Operational", "The repository supports versioning, access policy, approval or rejection sign-off, current-version tracking, and audit events."],
+    ["Records", "Manual", "Digital systems", "Operational / improving", "The registry, OCR imports, mobile intake, analytics snapshots, role dashboards, repository search, and server-side drilldowns digitise core records while preserving legal source boundaries."],
+    ["Audit Trail", "Weak", "Strong tracking", "Improving", "Document approvals, ICMS events, discipline events, formal decision records, import batches, receipt links, and security audit events now cover the major regulatory workflows."],
+    ["Governance", "Partial", "Strengthened frameworks", "Platform-supported / governance-led", "The platform provides registers, approvals, role controls, forums, reports, and audit trails; Board governance and ethics decisions still require formal institutional action."],
 ]
 
 
 RISK_ALIGNMENT_ROWS = [
-    ["Regulatory decisions not defensible in court", "Very High", "High", "Partial", "Role-scoped workflows and document trails help, but full SOP-backed legal defensibility still needs policy and case-management work."],
-    ["Weak documentation control", "High", "High", "Improving", "Document repository, versioning, and audit events address part of this risk."],
-    ["Inconsistent complaints handling", "High", "High", "Partial", "Inbox and enquiry tools exist, but a formal ICMS workflow is still required."],
+    ["Regulatory decisions not defensible in court", "Very High", "High", "Improving", "Formal decision records now capture decision text, rationale, authority, evidence, conditions, appeal rights, decision maker, and effective dates; legal defensibility still depends on approved SOPs and lawful authority."],
+    ["Weak documentation control", "High", "High", "Operational", "Document repository, versioning, approval or rejection sign-off, current-version tracking, permissions, and audit events now address the platform side of this risk."],
+    ["Inconsistent complaints handling", "High", "High", "Implemented", "Inbox enquiries can be escalated into formal ICMS cases with status history, ownership, evidence, closure notes, and disciplinary escalation where required."],
     ["Manual systems", "Medium", "High", "Improving", "Digital registration, search, OCR, repository, and analytics reduce manual handling."],
     ["Outdated legislation", "Very High", "Medium", "External", "This remains a legislative reform issue rather than an application defect."],
-    ["Staff capacity gaps", "Medium", "Medium", "Operational", "Training, SOP adoption, and change-management are still required."],
-    ["Unauthorised editing of documents", "High", "Medium", "Partial", "Repository permissions and version history help, but formal document-control policy is still needed."],
-    ["Reputational damage", "High", "Medium", "Partial", "Privacy separation, live reporting, and better traceability reduce risk but do not remove it entirely."],
+    ["Staff capacity gaps", "Medium", "Medium", "Platform-supported / training required", "Guided workflows, standard queues, case registers, decision records, and controlled documents support staff practice; training and change management remain operational requirements."],
+    ["Unauthorised editing of documents", "High", "Medium", "Improving", "Repository permissions, version history, approval sign-off, and audit events reduce unauthorised editing risk; final enforcement still depends on policy and staff roles."],
+    ["Reputational damage", "High", "Medium", "Improving", "Privacy separation, scoped access, formal complaint handling, decision records, live reporting, and traceability reduce risk but do not remove governance or legal exposure."],
 ]
 
 
 ROADMAP_ROWS = [
-    ["Phase 1: Institutional Strengthening", "Foundation governance, documentation management, and SOP control.", "Partially supported", "The platform can now host controlled documents, version history, and registrar-facing intelligence."],
-    ["Phase 2: Systems Modernisation and Regulatory Oversight", "Digital registration, oversight, and data systems.", "Supported / in progress", "The registry, dashboards, search, OCR intake, and repository modules support this phase."],
+    ["Phase 1: Institutional Strengthening", "Foundation governance, documentation management, and SOP control.", "Supported / governance content pending", "The platform now hosts controlled documents, approvals, version history, case workflows, decision registers, and registrar-facing intelligence; formal policy content still needs institutional adoption."],
+    ["Phase 2: Systems Modernisation and Regulatory Oversight", "Digital registration, oversight, and data systems.", "Supported / in progress", "The registry, dashboards, search, OCR intake, mobile intake, analytics snapshots, repository, ICMS, discipline workflow, and decision register support this phase."],
     ["Phase 3: Legislative Reform and Regulatory Maturity", "PNG Nursing Act and statutory autonomy.", "External / pending", "Legislative reform must be handled through policy and government processes, not software alone."],
 ]
 
-REGULATORY_ALIGNMENT_CACHE_TIMEOUT = 300
+NURSING_SOURCE_KINDS = {
+    "ndata_workbook",
+    "nursing_analytics_snapshot",
+    "nursing_catherine_licence_breakdown",
+    "nursing_full_registration_2026",
+    "nursing_license_workbook",
+    "nursing_live_workflow",
+}
+
+REGISTERED_NURSE_ATP_CADRES = {
+    "registered nurse",
+    "nursing",
+    "enrolled nurse",
+    "maternal & child health nurse",
+    "mental health nurse",
+    "paediatric nurse",
+}
+
+MIDWIFE_ATP_CADRES = {"midwife", "midwifery"}
+NURSE_AIDE_ATP_CADRES = {"nurse aide", "nurse aides"}
 
 
 def _format_datetime(value):
@@ -272,6 +290,32 @@ def _format_datetime(value):
     return value.strftime("%d %b %Y %H:%M")
 
 
+def _safe_int(value):
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _normalise_cadre(value):
+    return " ".join(str(value or "").strip().lower().replace("/", " ").split())
+
+
+def _snapshot_completed_at(snapshot):
+    if not snapshot:
+        return None
+    source_batch = snapshot.source_batch
+    if source_batch:
+        return source_batch.completed_at or source_batch.started_at or snapshot.activated_at or snapshot.created_at
+    return snapshot.activated_at or snapshot.created_at
+
+
+def _active_snapshot_source_kind(snapshot):
+    if snapshot and snapshot.source_batch and snapshot.source_batch.source_kind:
+        return snapshot.source_batch.source_kind
+    return "nursing_analytics_snapshot"
+
+
 def _person_key(row):
     return row.get("registration_no") or row.get("practitioner_number") or row.get("full_name")
 
@@ -279,12 +323,38 @@ def _person_key(row):
 def _latest_nursing_batch():
     return (
         DataImportBatch.objects.filter(
-            source_kind__in=["ndata_workbook", "nursing_full_registration_2026"],
+            source_kind__in=NURSING_SOURCE_KINDS,
             status="completed",
         )
         .order_by("-completed_at", "-started_at")
         .first()
     )
+
+
+def _latest_source_row(snapshot=None):
+    snapshot = snapshot or active_nursing_analytics_snapshot()
+    if snapshot:
+        source_batch = snapshot.source_batch
+        return {
+            "source_file_name": snapshot.source_file_name,
+            "source_kind": _active_snapshot_source_kind(snapshot),
+            "completed_at": _format_datetime(_snapshot_completed_at(snapshot)),
+            "processed_rows": snapshot.imported_rows or (source_batch.processed_rows if source_batch else 0),
+            "total_rows": snapshot.total_rows or (source_batch.total_rows if source_batch else 0),
+            "summary": snapshot.import_summary or (source_batch.summary if source_batch else {}),
+        }
+
+    latest_batch = _latest_nursing_batch()
+    if not latest_batch:
+        return None
+    return {
+        "source_file_name": latest_batch.source_file_name,
+        "source_kind": latest_batch.source_kind,
+        "completed_at": _format_datetime(latest_batch.completed_at),
+        "processed_rows": latest_batch.processed_rows,
+        "total_rows": latest_batch.total_rows,
+        "summary": latest_batch.summary,
+    }
 
 
 def _safe_ratio(report_value, live_value):
@@ -326,6 +396,24 @@ def _year_count_map(queryset, year_field):
     counts = defaultdict(int)
     for row in queryset.values(year_field).annotate(total=Count("id")).order_by(year_field):
         counts[row[year_field]] = row["total"]
+    return counts
+
+
+def _snapshot_institution_year_counts(lifecycle_stage, cadre, start_year, end_year):
+    snapshot = active_nursing_analytics_snapshot()
+    if not snapshot:
+        return None
+    queryset = snapshot.institution_cadre_year_metrics.filter(
+        lifecycle_stage=lifecycle_stage,
+        cadre=cadre,
+        year__gte=start_year,
+        year__lte=end_year,
+    )
+    if not queryset.exists():
+        return None
+    counts = {year: 0 for year in range(start_year, end_year + 1)}
+    for row in queryset.values("year").annotate(total=Sum("count")).order_by("year"):
+        counts[row["year"]] = _safe_int(row["total"])
     return counts
 
 
@@ -374,7 +462,37 @@ def _qualification_scheme_counts_2022_2023():
     return counts
 
 
-def _specialisation_counts():
+def _specialisation_counts(snapshot=None):
+    if snapshot:
+        counts = Counter()
+        for row in snapshot.cadre_stage_metrics.values("cadre").annotate(total=Sum("authority_to_practice_count")):
+            cadre = row["cadre"] or "Unspecified"
+            count = _safe_int(row["total"])
+            normalised = _normalise_cadre(cadre)
+            if normalised == "registered nurse":
+                counts["General Nurses"] += count
+            elif normalised == "nursing":
+                counts["General Nurses"] += count
+            elif normalised == "midwife":
+                counts["Midwives"] += count
+            elif normalised == "nurse aide":
+                counts["Nurse Aides"] += count
+            elif normalised == "mental health nurse":
+                counts["Mental Health Nurses"] += count
+            elif normalised == "paediatric nurse":
+                counts["Paediatric / Child Health Nurse"] += count
+            elif normalised == "maternal & child health nurse":
+                counts["Maternal & Child Health Nurse"] += count
+            elif normalised == "enrolled nurse":
+                counts["Enrolled Nurse"] += count
+            elif "community health" in normalised:
+                counts["Community Health Nurses"] += count
+            elif "unclassified" in normalised or "missing" in normalised:
+                counts["Unidentified Specialty Nurse"] += count
+            elif "nurse" in normalised:
+                counts["General Nurses"] += count
+        return counts
+
     counts = Counter()
     for qualification_level in NursingProfessional.objects.values_list("qualification_level", flat=True):
         text = (qualification_level or "").strip().lower()
@@ -407,21 +525,23 @@ def _specialisation_counts():
 
 
 def _table_1_comparison():
-    student_ct = ContentType.objects.get_for_model(HealthStudent)
-    live_years = _year_count_map(
-        Qualification.objects.filter(
-            content_type=student_ct,
-            completion_year__gte=2017,
-            completion_year__lte=2024,
-        ).filter(
-            Q(qualification_name__icontains="nursing") | Q(program_completed__icontains="nursing")
-        ).exclude(
-            Q(qualification_name__icontains="midwif")
-            | Q(program_completed__icontains="midwif")
-            | Q(institution_name__icontains="overseas")
-        ),
-        "completion_year",
-    )
+    live_years = _snapshot_institution_year_counts("Provisional Licence", "Nursing Graduand", 2017, 2024)
+    if live_years is None:
+        student_ct = ContentType.objects.get_for_model(HealthStudent)
+        live_years = _year_count_map(
+            Qualification.objects.filter(
+                content_type=student_ct,
+                completion_year__gte=2017,
+                completion_year__lte=2024,
+            ).filter(
+                Q(qualification_name__icontains="nursing") | Q(program_completed__icontains="nursing")
+            ).exclude(
+                Q(qualification_name__icontains="midwif")
+                | Q(program_completed__icontains="midwif")
+                | Q(institution_name__icontains="overseas")
+            ),
+            "completion_year",
+        )
     report_totals = dict(zip(range(2017, 2025), [397, 388, 379, 646, 454, 635, 686, 624]))
     rows = []
     for year in range(2017, 2025):
@@ -447,17 +567,19 @@ def _table_1_comparison():
 
 
 def _table_2_comparison():
-    live_years = _year_count_map(
-        Qualification.objects.filter(
-            completion_year__gte=2016,
-            completion_year__lte=2024,
-        ).filter(
-            Q(qualification_name__icontains="midwif") | Q(program_completed__icontains="midwif")
-        ).exclude(
-            Q(institution_name__icontains="overseas")
-        ),
-        "completion_year",
-    )
+    live_years = _snapshot_institution_year_counts("Full Licence", "Midwifery", 2016, 2024)
+    if live_years is None:
+        live_years = _year_count_map(
+            Qualification.objects.filter(
+                completion_year__gte=2016,
+                completion_year__lte=2024,
+            ).filter(
+                Q(qualification_name__icontains="midwif") | Q(program_completed__icontains="midwif")
+            ).exclude(
+                Q(institution_name__icontains="overseas")
+            ),
+            "completion_year",
+        )
     report_totals = dict(zip(range(2016, 2025), [66, 48, 69, 57, 66, 89, 57, 68, 52]))
     rows = []
     for year in range(2016, 2025):
@@ -483,14 +605,19 @@ def _table_2_comparison():
 
 
 def _table_2_1_comparison():
-    queryset = PracticingLicenseRecord.objects.filter(
-        target_model="midwife",
-        record_type="full",
-        record_year__gte=2021,
-        record_year__lte=2025,
-    )
-    live_distinct = _distinct_year_counts(queryset, 2021, 2025)
-    live_raw = _year_count_map(queryset, "record_year")
+    snapshot_years = _snapshot_institution_year_counts("Full Licence", "Midwifery", 2021, 2025)
+    if snapshot_years is not None:
+        live_distinct = snapshot_years
+        live_raw = snapshot_years
+    else:
+        queryset = PracticingLicenseRecord.objects.filter(
+            target_model="midwife",
+            record_type="full",
+            record_year__gte=2021,
+            record_year__lte=2025,
+        )
+        live_distinct = _distinct_year_counts(queryset, 2021, 2025)
+        live_raw = _year_count_map(queryset, "record_year")
     report_values = {
         2021: 54,
         2022: 59,
@@ -524,6 +651,81 @@ def _table_2_1_comparison():
 
 
 def _table_3_comparison():
+    snapshot = active_nursing_analytics_snapshot()
+    if snapshot:
+        kpis = snapshot.kpi_summary or {}
+        provisional_total = _safe_int(kpis.get("clean_provisional_records"))
+        full_total = _safe_int(kpis.get("clean_full_licence_records"))
+        atp_total = _safe_int(kpis.get("clean_atp_records"))
+        lifecycle_total = _safe_int(kpis.get("total_lifecycle_records")) or provisional_total + full_total + atp_total
+        not_split = "Not separated in cleaned snapshot"
+        table_rows = [
+            [
+                "PNG Provisional",
+                3118,
+                provisional_total,
+                provisional_total,
+                _variance_text(3118, provisional_total),
+                _alignment_status(3118, provisional_total),
+                "Cleaned provisional total from the active analytics snapshot; national/overseas split is not authoritative for this stage.",
+            ],
+            [
+                "PNG Full License",
+                3571,
+                full_total,
+                full_total,
+                _variance_text(3571, full_total),
+                _alignment_status(3571, full_total),
+                "Cleaned full-licence total from the active analytics snapshot; national/overseas split is not authoritative for this stage.",
+            ],
+            [
+                "Overseas Provisional",
+                217,
+                not_split,
+                not_split,
+                "Reference comparison only",
+                "Not captured",
+                "The cleaned snapshot keeps the provisional stage total but does not expose a trusted overseas provisional split.",
+            ],
+            [
+                "Overseas Full License",
+                109,
+                not_split,
+                not_split,
+                "Reference comparison only",
+                "Not captured",
+                "The cleaned snapshot keeps the full-licence stage total but does not expose a trusted overseas full-licence split.",
+            ],
+            [
+                "Overseas Temporary",
+                426,
+                not_split,
+                not_split,
+                "Reference comparison only",
+                "Not captured",
+                "Temporary overseas rows are not separated from the cleaned lifecycle snapshot in V1.",
+            ],
+            [
+                "Authority to Practice",
+                14987,
+                atp_total,
+                atp_total,
+                _variance_text(14987, atp_total),
+                _alignment_status(14987, atp_total),
+                "Clean ATP total from the active analytics snapshot.",
+            ],
+            [
+                "TOTAL",
+                22428,
+                lifecycle_total,
+                lifecycle_total,
+                _variance_text(22428, lifecycle_total),
+                _alignment_status(22428, lifecycle_total),
+                "Total cleaned lifecycle rows in the active analytics snapshot.",
+            ],
+        ]
+        return table_rows, 22428, lifecycle_total
+
     table_rows = []
     config = [
         ("PNG Provisional", 3118, {"target_model": "healthstudent", "record_type": "provisional", "applicant_type": "national"}, "Distinct provisional practitioners in the import history."),
@@ -647,7 +849,7 @@ def _table_7_comparison():
 
 
 def _table_8_comparison():
-    live_counts = _specialisation_counts()
+    live_counts = _specialisation_counts(active_nursing_analytics_snapshot())
     rows = []
     comparable_rows = []
     for source_row in MINISTERIAL_TABLE_8["rows"]:
@@ -689,7 +891,58 @@ def _comparison_summary(reference_tables):
     return rows
 
 
-def _live_snapshot():
+def _analytics_atp_cadre_totals(snapshot):
+    rows = (
+        snapshot.cadre_stage_metrics
+        .values("cadre")
+        .annotate(total=Sum("authority_to_practice_count"))
+    )
+    registered_nurse_total = 0
+    midwife_total = 0
+    nurse_aide_total = 0
+
+    for row in rows:
+        cadre = _normalise_cadre(row["cadre"])
+        count = _safe_int(row["total"])
+        if cadre in MIDWIFE_ATP_CADRES:
+            midwife_total += count
+        elif cadre in NURSE_AIDE_ATP_CADRES:
+            nurse_aide_total += count
+        elif cadre in REGISTERED_NURSE_ATP_CADRES or (
+            "nurse" in cadre and "aide" not in cadre and "midwife" not in cadre and "graduand" not in cadre
+        ):
+            registered_nurse_total += count
+
+    return registered_nurse_total, midwife_total, nurse_aide_total
+
+
+def _analytics_live_snapshot(snapshot):
+    kpis = snapshot.kpi_summary or {}
+    total_lifecycle = _safe_int(kpis.get("total_lifecycle_records")) or snapshot.lifecycle_facts.count()
+    clean_atp = _safe_int(kpis.get("clean_atp_records"))
+    clean_provisional = _safe_int(kpis.get("clean_provisional_records"))
+    clean_full = _safe_int(kpis.get("clean_full_licence_records"))
+    registered_nurse_total, midwife_total, nurse_aide_total = _analytics_atp_cadre_totals(snapshot)
+    other_atp = max(clean_atp - registered_nurse_total - midwife_total - nurse_aide_total, 0)
+
+    rows = [
+        ["Total Lifecycle Records", total_lifecycle, "All cleaned Provisional, Full Licence, and ATP records"],
+        ["Clean ATP Records", clean_atp, "Authority to Practice"],
+        ["Clean Provisional Records", clean_provisional, "Provisional Licence / graduands"],
+        ["Clean Full-Licence Records", clean_full, "Full Licence"],
+        ["Registered Nurse ATP Cadre", registered_nurse_total, "Active ATP cadre grouping"],
+        ["Midwife ATP Cadre", midwife_total, "Active ATP cadre grouping"],
+        ["Nurse Aide ATP Cadre", nurse_aide_total, "Active ATP cadre grouping"],
+    ]
+    if other_atp:
+        rows.append(["Other / Unclassified ATP Cadre", other_atp, "Active ATP records needing cadre review"])
+    return rows
+
+
+def _live_snapshot(snapshot=None):
+    snapshot = snapshot or active_nursing_analytics_snapshot()
+    if snapshot:
+        return _analytics_live_snapshot(snapshot)
     return [
         ["Registered Nurses", NursingProfessional.objects.count(), NursingProfessional.objects.filter(is_active=True).count()],
         ["Midwives", Midwife.objects.count(), Midwife.objects.filter(is_active=True).count()],
@@ -698,10 +951,17 @@ def _live_snapshot():
     ]
 
 
-def _platform_alignment_snapshot():
-    latest_batch = _latest_nursing_batch()
-    latest_source_name = latest_batch.source_file_name if latest_batch else "Not captured"
-    latest_completed = _format_datetime(latest_batch.completed_at) if latest_batch else "Not captured"
+def _live_registry_total(snapshot, live_snapshot_rows):
+    if snapshot:
+        return _safe_int((snapshot.kpi_summary or {}).get("total_lifecycle_records"))
+    return sum(row[1] for row in live_snapshot_rows)
+
+
+def _platform_alignment_snapshot(snapshot=None):
+    snapshot = snapshot or active_nursing_analytics_snapshot()
+    latest_source = _latest_source_row(snapshot)
+    latest_source_name = latest_source["source_file_name"] if latest_source else "Not captured"
+    latest_completed = latest_source["completed_at"] if latest_source else "Not captured"
     return {
         "applications": Application.objects.filter(form_code__startswith="N").count() + Application.objects.filter(form_code__startswith="G").count(),
         "documents": Document.objects.filter(office_scope__in=["nursing", "general"]).count(),
@@ -713,11 +973,7 @@ def _platform_alignment_snapshot():
 
 
 def build_nursing_regulatory_alignment_context():
-    cache_key = "nursing-regulatory-alignment:full"
-    cached = cache.get(cache_key)
-    if cached:
-        return cached
-
+    analytics_snapshot = active_nursing_analytics_snapshot()
     table_1_rows, table_1_report_total, table_1_live_total = _table_1_comparison()
     table_2_rows, table_2_report_total, table_2_live_total = _table_2_comparison()
     table_2_1_rows, table_2_1_report_total, table_2_1_live_total = _table_2_1_comparison()
@@ -735,7 +991,7 @@ def build_nursing_regulatory_alignment_context():
             "source_note": MINISTERIAL_TABLE_1["source_note"],
             "comparison_headers": ["Year", "Report Total", "Live Database Total", "Variance", "Alignment"],
             "comparison_rows": table_1_rows,
-            "comparison_note": "Compared against live qualification records for nursing graduands (2017-2024).",
+            "comparison_note": "Compared against active cleaned Nursing analytics institution-year rows for nursing graduands (2017-2024), falling back to live qualification records if no snapshot is active.",
             "report_total": table_1_report_total,
             "live_total": table_1_live_total,
         },
@@ -747,7 +1003,7 @@ def build_nursing_regulatory_alignment_context():
             "source_note": MINISTERIAL_TABLE_2["source_note"],
             "comparison_headers": ["Year", "Report Total", "Live Database Total", "Variance", "Alignment"],
             "comparison_rows": table_2_rows,
-            "comparison_note": "Compared against live midwifery qualification records (2016-2024).",
+            "comparison_note": "Compared against active cleaned Nursing analytics full-licence midwifery rows (2016-2024), falling back to live qualification records if no snapshot is active.",
             "report_total": table_2_report_total,
             "live_total": table_2_live_total,
         },
@@ -759,7 +1015,7 @@ def build_nursing_regulatory_alignment_context():
             "source_note": MINISTERIAL_TABLE_2_1["source_note"],
             "comparison_headers": ["Year", "Report Value", "Live Distinct Practitioners", "Live Raw Rows", "Variance", "Alignment"],
             "comparison_rows": table_2_1_rows,
-            "comparison_note": "Compared against live midwife full-registration rows in PracticingLicenseRecord (2021-2025).",
+            "comparison_note": "Compared against active cleaned Nursing analytics midwifery full-licence rows (2021-2025), falling back to PracticingLicenseRecord if no snapshot is active.",
             "report_total": table_2_1_report_total,
             "live_total": table_2_1_live_total,
         },
@@ -771,7 +1027,7 @@ def build_nursing_regulatory_alignment_context():
             "source_note": MINISTERIAL_TABLE_3["source_note"],
             "comparison_headers": ["Registration Element", "Report Total", "Live Raw Rows", "Live Distinct Practitioners", "Variance", "Alignment", "Live Comparison Basis"],
             "comparison_rows": table_3_rows,
-            "comparison_note": "Compared against imported registration records from 2019-2026 using raw rows and distinct practitioner counts.",
+            "comparison_note": "Compared against active cleaned Nursing analytics lifecycle totals when available, falling back to imported registration records from 2019-2026.",
             "report_total": table_3_report_total,
             "live_total": table_3_live_total,
         },
@@ -783,7 +1039,10 @@ def build_nursing_regulatory_alignment_context():
             "source_note": MINISTERIAL_TABLE_6["source_note"],
             "comparison_headers": ["Employment Type", "Report Value", "Live Database Value", "Variance", "Alignment"],
             "comparison_rows": table_6_rows,
-            "comparison_note": "Compared against EmploymentRecord rows. The live database currently has no captured employment records.",
+            "comparison_note": (
+                "Compared against live EmploymentRecord rows. "
+                f"Current employment rows in the database: {table_6_live_total:,}."
+            ),
             "report_total": table_6_report_total,
             "live_total": table_6_live_total,
         },
@@ -807,30 +1066,26 @@ def build_nursing_regulatory_alignment_context():
             "source_note": MINISTERIAL_TABLE_8["source_note"],
             "comparison_headers": ["Cadre / Specialisation", "Latest Report Value", "Live Database Value", "Variance", "Alignment"],
             "comparison_rows": table_8_rows,
-            "comparison_note": "Compared against current live qualification-level and register counts. Blank source cells were not forced into numeric comparisons.",
+            "comparison_note": "Compared against active cleaned Nursing analytics ATP cadre rows when available. Blank source cells were not forced into numeric comparisons.",
             "report_total": table_8_report_total,
             "live_total": table_8_live_total,
         },
     ]
 
-    latest_batch = _latest_nursing_batch()
-    latest_batch_row = None
-    if latest_batch:
-        latest_batch_row = {
-            "source_file_name": latest_batch.source_file_name,
-            "source_kind": latest_batch.source_kind,
-            "completed_at": _format_datetime(latest_batch.completed_at),
-            "processed_rows": latest_batch.processed_rows,
-            "total_rows": latest_batch.total_rows,
-            "summary": latest_batch.summary,
-        }
+    latest_batch_row = _latest_source_row(analytics_snapshot)
+    live_snapshot_rows = _live_snapshot(analytics_snapshot)
+    source_file_name = latest_batch_row["source_file_name"] if latest_batch_row else "the live operational database"
 
     context = {
-        "generated_on": date.today().strftime("%d %b %Y"),
+        "generated_on": _format_datetime(timezone.now()),
+        "live_refresh_note": (
+            f"These figures are read from the active cleansed Nursing analytics snapshot ({source_file_name}) on every page load. "
+            "The operational legal registry is unchanged; accepted imports and promoted records are reflected after the next analytics snapshot import."
+        ),
         "statutory_context": STATUTORY_CONTEXT,
-        "live_snapshot_rows": _live_snapshot(),
+        "live_snapshot_rows": live_snapshot_rows,
         "latest_batch_row": latest_batch_row,
-        "platform_alignment": _platform_alignment_snapshot(),
+        "platform_alignment": _platform_alignment_snapshot(analytics_snapshot),
         "comparison_summary_headers": ["Source Table", "Report Total", "Live Database Total", "Variance", "Alignment", "Note"],
         "comparison_summary_rows": _comparison_summary(reference_tables),
         "reference_tables": reference_tables,
@@ -842,31 +1097,23 @@ def build_nursing_regulatory_alignment_context():
         "roadmap_headers": ["Roadmap Phase", "Source Focus", "Platform Readiness", "Alignment Note"],
         "roadmap_rows": ROADMAP_ROWS,
     }
-    cache.set(cache_key, context, REGULATORY_ALIGNMENT_CACHE_TIMEOUT)
     return context
 
 
 def build_nursing_regulatory_alignment_summary_context():
-    cache_key = "nursing-regulatory-alignment:summary"
-    cached = cache.get(cache_key)
-    if cached:
-        return cached
-
-    latest_batch = _latest_nursing_batch()
-    live_snapshot_rows = _live_snapshot()
+    analytics_snapshot = active_nursing_analytics_snapshot()
+    latest_batch_row = _latest_source_row(analytics_snapshot)
+    live_snapshot_rows = _live_snapshot(analytics_snapshot)
+    source_file_name = latest_batch_row["source_file_name"] if latest_batch_row else "the live operational database"
     summary = {
-        "generated_on": date.today().strftime("%d %b %Y"),
+        "generated_on": _format_datetime(timezone.now()),
+        "live_refresh_note": (
+            f"These figures are read from the active cleansed Nursing analytics snapshot ({source_file_name}) on every page load."
+        ),
         "statutory_context": STATUTORY_CONTEXT,
         "live_snapshot_rows": live_snapshot_rows,
-        "latest_batch_row": {
-            "source_file_name": latest_batch.source_file_name,
-            "source_kind": latest_batch.source_kind,
-            "completed_at": _format_datetime(latest_batch.completed_at),
-            "processed_rows": latest_batch.processed_rows,
-            "total_rows": latest_batch.total_rows,
-        } if latest_batch else None,
-        "platform_alignment": _platform_alignment_snapshot(),
-        "live_registry_total": sum(row[1] for row in live_snapshot_rows),
+        "latest_batch_row": latest_batch_row,
+        "platform_alignment": _platform_alignment_snapshot(analytics_snapshot),
+        "live_registry_total": _live_registry_total(analytics_snapshot, live_snapshot_rows),
     }
-    cache.set(cache_key, summary, REGULATORY_ALIGNMENT_CACHE_TIMEOUT)
     return summary

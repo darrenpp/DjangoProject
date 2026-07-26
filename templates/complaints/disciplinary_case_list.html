@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Disciplinary Cases{% endblock %}
+{% block title_label %}Disciplinary Cases{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-danger mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">{% if selected_office == "medical" %}Medical Board Fitness to Practise Discipline Workflow{% elif selected_office == "nursing" %}Nursing Council Fitness to Practise Discipline Workflow{% else %}Disciplinary Case Workflow{% endif %}</h3>
+            <div class="text-muted small">
+                {% if selected_office == "medical" %}
+                    Medical Board pathway for preliminary assessment, investigation, committee review, hearing, decision, conditions, appeal monitoring, and public-register assurance.
+                {% elif selected_office == "nursing" %}
+                    Nursing Council pathway for preliminary assessment, investigation, professional conduct review, hearing, licence decision, conditions, appeal monitoring, and public-register assurance.
+                {% else %}
+                    Standard pathway for preliminary assessment, investigation, committee review, hearing, decision, appeal monitoring, and closure.
+                {% endif %}
+            </div>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a href="{% url 'disciplinary_case_create' %}" class="btn btn-danger"><i class="fas fa-gavel mr-1"></i> New Discipline Case</a>
+            <a href="{% url 'regulatory_decision_list' %}" class="btn btn-outline-secondary"><i class="fas fa-scale-balanced mr-1"></i> Decision Register</a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if selected_office == "medical" %}
+        <div class="alert alert-light border mb-4">
+            <strong>Medical Board discipline stages:</strong>
+            intake, preliminary assessment, investigation, committee review, notice issued, hearing, decision, and appeal / monitoring.
+        </div>
+        {% elif selected_office == "nursing" %}
+        <div class="alert alert-light border mb-4">
+            <strong>Nursing Council discipline stages:</strong>
+            intake, preliminary assessment, investigation, conduct review, notice issued, hearing, licence decision, and appeal / monitoring.
+        </div>
+        {% endif %}
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3"><div class="small-box bg-danger mb-0"><div class="inner"><h3>{{ summary.open_discipline_count }}</h3><p>Open Discipline Cases</p></div><div class="icon"><i class="fas fa-gavel"></i></div></div></div>
+            <div class="col-md-3 mb-3"><div class="small-box bg-warning mb-0"><div class="inner"><h3>{{ summary.high_severity_count }}</h3><p>High Severity</p></div><div class="icon"><i class="fas fa-triangle-exclamation"></i></div></div></div>
+            <div class="col-md-3 mb-3"><div class="small-box bg-info mb-0"><div class="inner"><h3>{{ summary.hearing_count }}</h3><p>Hearing Stage</p></div><div class="icon"><i class="fas fa-users"></i></div></div></div>
+            <div class="col-md-3 mb-3"><div class="small-box bg-dark mb-0"><div class="inner"><h3>{{ summary.decision_stage_count }}</h3><p>Decision Stage</p></div><div class="icon"><i class="fas fa-file-signature"></i></div></div></div>
+        </div>
+
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label for="office">Office</label>
+                <select id="office" name="office" class="form-control">
+                    {% for value, label in office_options %}
+                    <option value="{{ value }}" {% if selected_office == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="stage">Stage</label>
+                <select id="stage" name="stage" class="form-control">
+                    <option value="open" {% if selected_stage == "open" %}selected{% endif %}>Open cases</option>
+                    <option value="all" {% if selected_stage == "all" %}selected{% endif %}>All stages</option>
+                    {% for value, label in stage_choices %}
+                    <option value="{{ value }}" {% if selected_stage == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="q">Search</label>
+                <input id="q" type="search" name="q" value="{{ query }}" class="form-control" placeholder="Case number, practitioner, registration">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-block">Apply</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0">Discipline Queue</h3>
+        <span class="badge bg-primary">{{ cases.paginator.count }} cases</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Case</th>
+                        <th>Subject</th>
+                        <th>Office</th>
+                        <th>Stage</th>
+                        <th>Status</th>
+                        <th>Severity</th>
+                        <th>Assigned</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in cases %}
+                    <tr>
+                        <td><strong>{{ case.discipline_number }}</strong><div class="small text-muted">{{ case.created_at|date:"d M Y" }}</div></td>
+                        <td>{{ case.subject_name }}<div class="small text-muted">{{ case.subject_identifier|default:"No identifier" }}</div></td>
+                        <td>{{ case.get_office_scope_display }}</td>
+                        <td>{{ case.get_stage_display }}</td>
+                        <td><span class="badge bg-info">{{ case.get_status_display }}</span></td>
+                        <td><span class="badge bg-danger">{{ case.get_severity_display }}</span></td>
+                        <td>{% if case.assigned_to %}{{ case.assigned_to.get_full_name|default:case.assigned_to.username }}{% else %}Unassigned{% endif %}</td>
+                        <td class="text-right"><a href="{% url 'disciplinary_case_detail' case.discipline_uuid %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-muted">No disciplinary cases matched the current filters.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

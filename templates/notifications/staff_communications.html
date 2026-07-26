@@ -12,13 +12,16 @@
                     <div class="text-muted small">Review applications, monitor draft documents, and reply to enquiries from one workspace.</div>
                 </div>
                 <div class="d-flex">
-                    <a href="{% url 'enquiry_create' %}" class="btn btn-primary mr-2"><i class="fas fa-plus mr-1"></i> New Enquiry</a>
+                    <a href="{% url 'enquiry_inbox' %}" class="btn btn-outline-primary mr-2"><i class="fas fa-inbox mr-1"></i> Open Mailbox</a>
+                    <a href="{% url 'enquiry_create' %}" class="btn btn-primary mr-2"><i class="fas fa-plus mr-1"></i> New Message</a>
+                    <a href="{% url 'complaint_case_list' %}" class="btn btn-outline-danger mr-2"><i class="fas fa-scale-balanced mr-1"></i> ICMS Cases</a>
+                    <a href="{% url 'disciplinary_case_list' %}" class="btn btn-outline-danger mr-2"><i class="fas fa-gavel mr-1"></i> Discipline</a>
                     <a href="{% url 'repository_search' %}" class="btn btn-outline-secondary"><i class="fas fa-folder-open mr-1"></i> Repository Search</a>
                 </div>
             </div>
             <div class="card-body">
                 <div class="row mb-4">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-xl-2 col-md-4 mb-3">
                         <div class="small-box bg-warning mb-0">
                             <div class="inner">
                                 <h3>{{ staff_summary.pending_application_count }}</h3>
@@ -27,7 +30,7 @@
                             <div class="icon"><i class="fas fa-file-signature"></i></div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-xl-2 col-md-4 mb-3">
                         <div class="small-box bg-info mb-0">
                             <div class="inner">
                                 <h3>{{ staff_summary.open_thread_count }}</h3>
@@ -36,7 +39,7 @@
                             <div class="icon"><i class="fas fa-comments"></i></div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-xl-2 col-md-4 mb-3">
                         <div class="small-box bg-secondary mb-0">
                             <div class="inner">
                                 <h3>{{ staff_summary.document_review_count }}</h3>
@@ -45,14 +48,89 @@
                             <div class="icon"><i class="fas fa-folder"></i></div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-xl-2 col-md-4 mb-3">
                         <div class="small-box bg-danger mb-0">
                             <div class="inner">
-                                <h3>{{ staff_summary.pending_access_request_count }}</h3>
-                                <p>Access Requests</p>
+                                <h3>{{ staff_summary.pending_staff_account_count }}</h3>
+                                <p>Staff Account Approvals</p>
                             </div>
                             <div class="icon"><i class="fas fa-user-shield"></i></div>
                         </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 mb-3">
+                        <div class="small-box bg-dark mb-0">
+                            <div class="inner">
+                                <h3>{{ staff_summary.complaint_case_count }}</h3>
+                                <p>Open ICMS Cases</p>
+                            </div>
+                            <div class="icon"><i class="fas fa-scale-balanced"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 mb-3">
+                        <div class="small-box bg-danger mb-0">
+                            <div class="inner">
+                                <h3>{{ staff_summary.open_discipline_count }}</h3>
+                                <p>Discipline Cases</p>
+                            </div>
+                            <div class="icon"><i class="fas fa-gavel"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-outline card-danger mb-4">
+                    <div class="card-header"><strong>Staff Account Approval Requests</strong></div>
+                    <div class="card-body">
+                        <p class="text-muted small">
+                            Newly-created staff accounts cannot log in until both approvals are recorded. Registrars approve the office role; System Admin approves platform access.
+                        </p>
+                        {% for account_request in staff_summary.pending_staff_account_requests %}
+                            {% with pending_user=account_request.user %}
+                                <div class="border rounded p-3 mb-3">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ pending_user.get_full_name|default:pending_user.username }}</strong>
+                                            <div class="small text-muted">
+                                                Username: {{ pending_user.username }} &middot;
+                                                Role: {{ pending_user.get_role_display }} &middot;
+                                                Scope: {{ account_request.scope_label }} &middot;
+                                                Requested: {{ pending_user.date_joined|date:"d M Y H:i" }}
+                                            </div>
+                                            <div class="small mt-1">
+                                                Department: {{ pending_user.department|default:"-" }} &middot;
+                                                Job title: {{ pending_user.job_title|default:"-" }}
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge {% if pending_user.role_approved %}badge-success{% else %}badge-warning{% endif %}">Registrar {% if pending_user.role_approved %}approved{% else %}pending{% endif %}</span>
+                                            <span class="badge {% if pending_user.system_admin_approved %}badge-success{% else %}badge-warning{% endif %}">System Admin {% if pending_user.system_admin_approved %}approved{% else %}pending{% endif %}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 d-flex flex-wrap">
+                                        {% if account_request.can_registrar_approve %}
+                                            <form method="post" action="{% url 'decide_staff_account_approval' pending_user.pk 'registrar' %}" class="mr-2 mb-2">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-check mr-1"></i> Registrar Approve
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if account_request.can_system_admin_approve %}
+                                            <form method="post" action="{% url 'decide_staff_account_approval' pending_user.pk 'system-admin' %}" class="mr-2 mb-2">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-user-shield mr-1"></i> System Admin Approve
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if not account_request.can_registrar_approve and not account_request.can_system_admin_approve %}
+                                            <span class="text-muted small">This request is waiting for the other approval role.</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% empty %}
+                            <div class="text-muted">No staff account approval requests are waiting for your role.</div>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -153,6 +231,48 @@
                                     <div class="text-muted">No draft repository documents are waiting for review.</div>
                                 {% endfor %}
                                 <a href="{% url 'repository_search' %}" class="btn btn-sm btn-outline-secondary mt-2">Open Document Queue</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mt-3">
+                        <div class="card card-outline card-danger h-100">
+                            <div class="card-header"><strong>ICMS Complaints & Incidents</strong></div>
+                            <div class="card-body">
+                                {% for case in staff_summary.recent_complaint_cases %}
+                                    <div class="border-bottom pb-2 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong>{{ case.case_number }}</strong>
+                                            <span class="badge badge-danger">{{ case.get_priority_display }}</span>
+                                        </div>
+                                        <div>{{ case.title }}</div>
+                                        <div class="small text-muted">{{ case.get_office_scope_display }} &middot; {{ case.get_status_display }}</div>
+                                        <a href="{% url 'complaint_case_detail' case.case_uuid %}" class="btn btn-sm btn-outline-danger mt-2">Open Case</a>
+                                    </div>
+                                {% empty %}
+                                    <div class="text-muted">No open formal complaint or incident cases in your scope.</div>
+                                {% endfor %}
+                                <a href="{% url 'complaint_case_list' %}" class="btn btn-sm btn-outline-danger mt-2">Open ICMS Register</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mt-3">
+                        <div class="card card-outline card-danger h-100">
+                            <div class="card-header"><strong>Disciplinary Cases</strong></div>
+                            <div class="card-body">
+                                {% for case in staff_summary.recent_disciplinary_cases %}
+                                    <div class="border-bottom pb-2 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong>{{ case.discipline_number }}</strong>
+                                            <span class="badge badge-danger">{{ case.get_severity_display }}</span>
+                                        </div>
+                                        <div>{{ case.subject_name }}</div>
+                                        <div class="small text-muted">{{ case.get_stage_display }} &middot; {{ case.get_status_display }}</div>
+                                        <a href="{% url 'disciplinary_case_detail' case.discipline_uuid %}" class="btn btn-sm btn-outline-danger mt-2">Open Discipline</a>
+                                    </div>
+                                {% empty %}
+                                    <div class="text-muted">No open disciplinary cases in your scope.</div>
+                                {% endfor %}
+                                <a href="{% url 'disciplinary_case_list' %}" class="btn btn-sm btn-outline-danger mt-2">Open Discipline Register</a>
                             </div>
                         </div>
                     </div>

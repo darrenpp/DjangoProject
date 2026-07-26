@@ -1,0 +1,555 @@
+{% extends 'base.html' %}
+
+{% block title %}NHWA Toolkit - PNG Regulatory Bodies Online Platform{% endblock %}
+{% block title_label %}NHWA Data Collection Toolkit{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nhwa-toolkit-page {
+        color: #0f172a;
+    }
+
+    .nhwa-hero {
+        background: linear-gradient(135deg, #12304a 0%, #0f8b8d 72%, #d79a16 100%);
+        border-radius: 10px;
+        color: #fff;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+        margin-bottom: 1rem;
+        padding: 1.35rem 1.5rem;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+    }
+
+    .nhwa-hero h2 {
+        color: #fff;
+        font-size: clamp(1.4rem, 2vw, 2.2rem);
+        line-height: 1.12;
+        margin: 0 0 .35rem;
+    }
+
+    .nhwa-hero p {
+        color: rgba(255, 255, 255, .92);
+        margin: 0;
+        max-width: 68rem;
+    }
+
+    .nhwa-hero-actions {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        justify-content: flex-end;
+    }
+
+    .nhwa-access-badge {
+        background: rgba(255, 255, 255, .94);
+        border: 1px solid rgba(255, 255, 255, .4);
+        border-radius: 8px;
+        color: #12304a !important;
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        font-weight: 800;
+        padding: .55rem .75rem;
+        white-space: nowrap;
+    }
+
+    .nhwa-section {
+        background: #fff;
+        border: 1px solid #d9e3ee;
+        border-radius: 10px;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .nhwa-section-heading {
+        align-items: center;
+        background: #f4f8fb;
+        border-bottom: 1px solid #d9e3ee;
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+        padding: 1rem 1.15rem;
+    }
+
+    .nhwa-section-heading h3 {
+        color: #102b45;
+        font-size: 1.15rem;
+        margin: 0;
+    }
+
+    .nhwa-section-heading p {
+        color: #40556b;
+        margin: .2rem 0 0;
+    }
+
+    .nhwa-section-body {
+        padding: 1rem 1.15rem;
+    }
+
+    .nhwa-alignment-grid,
+    .nhwa-source-grid {
+        display: grid;
+        gap: .85rem;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .nhwa-alignment-card,
+    .nhwa-source-card,
+    .nhwa-slide-card {
+        border: 1px solid #d9e3ee;
+        border-radius: 8px;
+        padding: .9rem;
+    }
+
+    .nhwa-alignment-card h4,
+    .nhwa-source-card h4,
+    .nhwa-slide-card h4 {
+        color: #102b45;
+        font-size: 1rem;
+        margin: 0 0 .35rem;
+    }
+
+    .nhwa-alignment-card .module,
+    .nhwa-source-card .meta,
+    .nhwa-slide-card .meta {
+        color: #0f766e;
+        display: block;
+        font-size: .78rem;
+        font-weight: 800;
+        margin-bottom: .45rem;
+        text-transform: uppercase;
+    }
+
+    .nhwa-gate-list {
+        display: grid;
+        gap: .5rem;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .nhwa-gate-list li {
+        background: #f8fafc;
+        border: 1px solid #d9e3ee;
+        border-left: 5px solid #0f8b8d;
+        border-radius: 8px;
+        font-weight: 700;
+        padding: .7rem .8rem;
+    }
+
+    .nhwa-tabs {
+        border-bottom: 1px solid #d9e3ee;
+        display: flex;
+        gap: .35rem;
+        overflow-x: auto;
+        padding: .8rem 1rem 0;
+    }
+
+    .nhwa-tabs .nav-link {
+        border: 1px solid #d9e3ee;
+        border-bottom: 0;
+        border-radius: 8px 8px 0 0;
+        color: #12304a;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .nhwa-tabs .nav-link.active {
+        background: #12304a;
+        border-color: #12304a;
+        color: #fff;
+    }
+
+    .nhwa-workbook-meta {
+        color: #40556b;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-bottom: .75rem;
+    }
+
+    .nhwa-workbook-meta span {
+        background: #eef6f7;
+        border: 1px solid #cfe4e7;
+        border-radius: 999px;
+        color: #0f5f62;
+        font-weight: 800;
+        padding: .25rem .55rem;
+    }
+
+    .nhwa-workbook-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: .82rem;
+        min-width: 980px;
+        width: 100%;
+    }
+
+    .nhwa-workbook-table th,
+    .nhwa-workbook-table td {
+        border-bottom: 1px solid #d9e3ee;
+        border-right: 1px solid #e5edf4;
+        max-width: 22rem;
+        min-width: 5.5rem;
+        padding: .45rem .5rem;
+        vertical-align: top;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .nhwa-workbook-table thead th {
+        background: #102b45;
+        color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .nhwa-workbook-table .row-number {
+        background: #eaf1f7;
+        color: #334155;
+        font-weight: 800;
+        min-width: 3.25rem;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+    }
+
+    .nhwa-workbook-table .sheet-heading-row td {
+        font-weight: 800;
+    }
+
+    .nhwa-workbook-table .sheet-section-row td {
+        background: #12304a;
+        color: #fff;
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+
+    .nhwa-workbook-table .formula-cell {
+        background: #edf2f7;
+        color: #334155;
+        font-size: .74rem;
+    }
+
+    .nhwa-slide-grid {
+        display: grid;
+        gap: .85rem;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .nhwa-slide-card {
+        background: #fff;
+    }
+
+    .nhwa-slide-card ol {
+        counter-reset: nhwa-slide-step;
+        margin-bottom: 0;
+        max-height: 16rem;
+        overflow: auto;
+        padding-left: 0;
+    }
+
+    .nhwa-slide-card ol li {
+        align-items: flex-start;
+        border-bottom: 1px solid #edf2f7;
+        counter-increment: nhwa-slide-step;
+        display: grid;
+        gap: .55rem;
+        grid-template-columns: 2rem minmax(0, 1fr);
+        line-height: 1.42;
+        list-style: none;
+        padding: .45rem 0;
+    }
+
+    .nhwa-slide-card ol li::before {
+        align-items: center;
+        background: #e8f1f4;
+        border: 1px solid #cfe4e7;
+        border-radius: 999px;
+        color: #0f5f62;
+        content: counter(nhwa-slide-step);
+        display: inline-flex;
+        font-size: .75rem;
+        font-weight: 900;
+        height: 1.55rem;
+        justify-content: center;
+        width: 1.55rem;
+    }
+
+    .nhwa-slide-card ol li:last-child {
+        border-bottom: 0;
+    }
+
+    .nhwa-slide-metrics {
+        display: grid;
+        gap: .45rem;
+        margin: .7rem 0;
+    }
+
+    .nhwa-metric-pill {
+        background: #f8fafc;
+        border: 1px solid #d9e3ee;
+        border-radius: 8px;
+        overflow: hidden;
+        padding: .55rem .6rem;
+        position: relative;
+    }
+
+    .nhwa-metric-pill strong {
+        color: #102b45;
+        display: block;
+        font-size: .95rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .nhwa-metric-pill span {
+        color: #40556b;
+        display: block;
+        font-size: .74rem;
+        line-height: 1.25;
+        position: relative;
+        z-index: 1;
+    }
+
+    .nhwa-metric-pill::before {
+        background: linear-gradient(90deg, rgba(15, 139, 141, .18), rgba(215, 154, 22, .16));
+        bottom: 0;
+        content: "";
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: var(--metric-width, 48%);
+    }
+
+    .nhwa-slide-card details {
+        margin-top: .7rem;
+    }
+
+    .nhwa-slide-card summary {
+        color: #0f766e;
+        cursor: pointer;
+        font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+        .nhwa-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .nhwa-hero-actions {
+            justify-content: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nhwa-toolkit-page">
+    <section class="nhwa-hero">
+        <div>
+            <h2>PNG NHWA Data Collection Toolkit</h2>
+            <p>
+                This section aligns the May 2026 NHWA workbook and Output 2 briefing with the platform's
+                workforce stock, distribution, education, council register, finance, data-quality, and
+                reporting controls. Source documents are retained server-side and are not downloadable.
+            </p>
+        </div>
+        <div class="nhwa-hero-actions">
+            <a class="nhwa-access-badge" href="{% url 'nhwa_workbook_index' %}"><i class="fas fa-pen-to-square"></i> Open web workbooks</a>
+            <span class="nhwa-access-badge"><i class="fas fa-lock"></i> Downloads disabled</span>
+            <span class="nhwa-access-badge"><i class="fas fa-user-shield"></i> Role restricted</span>
+        </div>
+    </section>
+
+    <section class="nhwa-section">
+        <div class="nhwa-section-heading">
+            <div>
+                <h3>Controlled Source Alignment</h3>
+                <p>The original toolkit and briefing files are used only as internal parsing references.</p>
+            </div>
+        </div>
+        <div class="nhwa-section-body">
+            <div class="nhwa-source-grid">
+                {% for document in source_documents %}
+                <article class="nhwa-source-card">
+                    <span class="meta">{{ document.type }}</span>
+                    <h4>{{ document.title }}</h4>
+                    {% if document.exists %}
+                    <p class="mb-1"><strong>Status:</strong> Server-side source confirmed</p>
+                    <p class="mb-0"><strong>Access:</strong> {{ document.access_policy }}</p>
+                    {% else %}
+                    <p class="mb-0 text-danger"><strong>Status:</strong> Missing from project source folder</p>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="nhwa-section">
+        <div class="nhwa-section-heading">
+            <div>
+                <h3>Disclosure Controls</h3>
+                <p>How the NHWA material is implemented without turning internal documents into public downloads.</p>
+            </div>
+        </div>
+        <div class="nhwa-section-body">
+            <div class="nhwa-alignment-grid">
+                {% for control in disclosure_controls %}
+                <article class="nhwa-alignment-card">
+                    <h4>{{ control.title }}</h4>
+                    <p class="mb-0">{{ control.detail }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="nhwa-section">
+        <div class="nhwa-section-heading">
+            <div>
+                <h3>Platform Alignment</h3>
+                <p>How the NHWA templates map into the regulatory platform and reporting controls.</p>
+            </div>
+        </div>
+        <div class="nhwa-section-body">
+            <div class="nhwa-alignment-grid">
+                {% for card in alignment_cards %}
+                <article class="nhwa-alignment-card">
+                    <span class="module">{{ card.module }}</span>
+                    <h4>{{ card.title }}</h4>
+                    <p><strong>Platform:</strong> {{ card.platform }}</p>
+                    <p class="mb-0"><strong>Action:</strong> {{ card.action }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="nhwa-section">
+        <div class="nhwa-section-heading">
+            <div>
+                <h3>NHWA Reporting Gates</h3>
+                <p>Rules from the toolkit that must be enforced before official submission or public reporting.</p>
+            </div>
+        </div>
+        <div class="nhwa-section-body">
+            <ul class="nhwa-gate-list">
+                {% for gate in reporting_gates %}
+                <li>{{ gate }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+
+    <section class="nhwa-section">
+        <div class="nhwa-section-heading">
+            <div>
+                <h3>Workbook Templates</h3>
+                <p>Template structure and NHWA field guidance are rendered for alignment. Person-level evidence must stay in protected review workflows.</p>
+            </div>
+        </div>
+        {% if workbook.available %}
+        <ul class="nav nhwa-tabs" id="nhwaWorkbookTabs" role="tablist">
+            {% for sheet in workbook.sheets %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {% if forloop.first %}active{% endif %}" id="sheet-{{ forloop.counter }}-tab" data-toggle="tab" data-bs-toggle="tab" href="#sheet-{{ forloop.counter }}" role="tab">
+                    {{ sheet.name }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="tab-content">
+            {% for sheet in workbook.sheets %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="sheet-{{ forloop.counter }}" role="tabpanel">
+                <div class="nhwa-section-body">
+                    <div class="nhwa-workbook-meta">
+                        <span>{{ sheet.max_row }} rows</span>
+                        <span>{{ sheet.max_column }} columns</span>
+                        <span>{{ sheet.non_empty_count }} populated cells</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="nhwa-workbook-table">
+                            <thead>
+                                <tr>
+                                    <th class="row-number">Row</th>
+                                    {% for column in sheet.columns %}
+                                    <th>{{ column }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in sheet.rows %}
+                                <tr class="{{ row.class_name }}">
+                                    <td class="row-number">{{ row.index }}</td>
+                                    {% for cell in row.cells %}
+                                    <td class="{{ cell.class_name }}" style="{{ cell.style }}">{{ cell.text|linebreaksbr }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="nhwa-section-body">
+            <p class="text-danger mb-0">{{ workbook.error }}</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="nhwa-section">
+        <div class="nhwa-section-heading">
+            <div>
+                <h3>Output 2 Presentation</h3>
+                <p>Slide-by-slide findings are shown as controlled platform guidance, without distributing the presentation file.</p>
+            </div>
+        </div>
+        <div class="nhwa-section-body">
+            {% if presentation.available %}
+            <div class="nhwa-slide-grid">
+                {% for slide in presentation.slides %}
+                <article class="nhwa-slide-card">
+                    <span class="meta">Slide {{ slide.number }}</span>
+                    <h4>{{ slide.title }}</h4>
+                    {% if slide.subtitle %}<p><strong>{{ slide.subtitle }}</strong></p>{% endif %}
+                    {% if slide.metrics %}
+                    <div class="nhwa-slide-metrics" aria-label="Extracted slide metrics">
+                        {% for metric in slide.metrics %}
+                        <div class="nhwa-metric-pill" style="--metric-width: {{ metric.bar_width }}%;">
+                            <strong>{{ metric.value }}</strong>
+                            <span>{{ metric.label }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if slide.text_parts %}
+                    <ol class="nhwa-slide-points">
+                        {% for part in slide.text_parts %}
+                        <li>{{ part }}</li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                    <details>
+                        <summary>Controlled extracted slide text</summary>
+                        <p class="mt-2 mb-0">{{ slide.full_text }}</p>
+                    </details>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-danger mb-0">{{ presentation.error }}</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}NHWA Web Workbooks - PNG Regulatory Bodies Online Platform{% endblock %}
+{% block title_label %}NHWA Web Workbooks{% endblock %}
+
+{% block extra_css %}
+<style>
+  .nhwa-workbook-hero {
+    background: linear-gradient(135deg, #12304a 0%, #0f8b8d 72%, #d79a16 100%);
+    border-radius: 10px;
+    color: #fff;
+    margin-bottom: 1rem;
+    padding: 1.2rem 1.35rem;
+  }
+
+  .nhwa-workbook-hero h2,
+  .nhwa-workbook-hero p {
+    color: #fff;
+    margin: 0;
+  }
+
+  .nhwa-workbook-hero p {
+    margin-top: .35rem;
+    max-width: 76rem;
+  }
+
+  .nhwa-workbook-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  .nhwa-workbook-card {
+    background: #fff;
+    border: 1px solid #d9e3ee;
+    border-radius: 10px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
+    overflow: hidden;
+  }
+
+  .nhwa-workbook-card header {
+    background: #f4f8fb;
+    border-bottom: 1px solid #d9e3ee;
+    padding: 1rem;
+  }
+
+  .nhwa-workbook-card h3 {
+    color: #102b45;
+    font-size: 1.05rem;
+    margin: 0 0 .25rem;
+  }
+
+  .nhwa-workbook-card .meta {
+    color: #466078;
+    font-weight: 700;
+  }
+
+  .nhwa-workbook-card-body {
+    padding: 1rem;
+  }
+
+  .nhwa-metric-row {
+    display: grid;
+    gap: .65rem;
+    grid-template-columns: repeat(3, 1fr);
+    margin-bottom: .85rem;
+  }
+
+  .nhwa-metric {
+    background: #f8fafc;
+    border: 1px solid #d9e3ee;
+    border-radius: 8px;
+    padding: .65rem;
+  }
+
+  .nhwa-metric strong {
+    color: #102b45;
+    display: block;
+    font-size: 1.25rem;
+  }
+
+  .nhwa-metric span {
+    color: #526b84;
+    font-size: .8rem;
+    font-weight: 700;
+  }
+
+  .nhwa-card-actions {
+    display: flex;
+    gap: .5rem;
+    justify-content: space-between;
+  }
+
+  .nhwa-note {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    color: #7c2d12;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding: .8rem .9rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nhwa-workbook-hero">
+  <h2>NHWA Web Workbooks</h2>
+  <p>
+    Enter Nursing Council and Medical Board NHWA data directly in the platform using the controlled workbook structure.
+    Source Excel files remain server-side and are not downloadable; staff edit only the approved web cells.
+  </p>
+  <div class="mt-3">
+    <a class="btn btn-light btn-sm" href="{% url 'nhwa_alignment_centre' %}">
+      <i class="fas fa-clipboard-check"></i> Open NHWA Alignment Centre
+    </a>
+  </div>
+</div>
+
+<div class="nhwa-note">
+  Formula cells are locked and recalculated on screen. Blank still means unknown or unavailable; enter 0 only when the value is confirmed as zero.
+</div>
+
+{% if has_workbooks %}
+<div class="nhwa-workbook-grid">
+  {% for card in cards %}
+  <article class="nhwa-workbook-card">
+    <header>
+      <h3>{{ card.workbook.title }}</h3>
+      <div class="meta">{{ card.workbook.get_office_scope_display }} · {{ card.workbook.source_title }} · {{ card.workbook.source_version }}</div>
+    </header>
+    <div class="nhwa-workbook-card-body">
+      <div class="nhwa-metric-row">
+        <div class="nhwa-metric">
+          <strong>{{ card.completion.filled }}</strong>
+          <span>Filled Cells</span>
+        </div>
+        <div class="nhwa-metric">
+          <strong>{{ card.completion.editable }}</strong>
+          <span>Editable Cells</span>
+        </div>
+        <div class="nhwa-metric">
+          <strong>{{ card.completion.formulas }}</strong>
+          <span>Formula Cells</span>
+        </div>
+      </div>
+      <p>{{ card.completion.percent }}% of editable cells have captured values.</p>
+      <div class="nhwa-card-actions">
+        <a class="btn btn-primary" href="{% url 'nhwa_workbook_detail' card.workbook.slug %}">
+          <i class="fas fa-table"></i> Open Workbook
+        </a>
+        {% if card.can_edit %}
+        <span class="badge bg-success align-self-center">Editable</span>
+        {% else %}
+        <span class="badge bg-secondary align-self-center">Read only</span>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-warning">
+  No NHWA web workbooks are available yet. Run <code>python manage.py bootstrap_nhwa_workbooks</code> after migrations.
+</div>
+{% endif %}
+{% endblock %}

@@ -1,6 +1,14 @@
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 
+from apps.dashboard.assistant_memory import (
+    assistant_memory_rows,
+    retrieve_assistant_sources,
+    serialize_sources,
+)
+from apps.dashboard.assistant_scope_context import MEDICAL_OFFICE_TERMS, NURSING_OFFICE_TERMS
+from apps.dashboard.ai_provider import AIProviderError, ai_provider_status, call_configured_ai_json
+
 
 @dataclass(frozen=True)
 class HelpdeskAnswer:
@@ -112,6 +120,49 @@ DEFAULT_ANSWER = HelpdeskAnswer(
 )
 
 
+HELPDESK_AI_RESPONSE_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "title": {"type": "string"},
+        "answer": {"type": "string"},
+        "links": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "label": {"type": "string"},
+                    "url": {"type": "string"},
+                },
+                "required": ["label", "url"],
+            },
+            "maxItems": 4,
+        },
+        "suggestions": {
+            "type": "array",
+            "items": {"type": "string"},
+            "maxItems": 4,
+        },
+        "sources": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "label": {"type": "string"},
+                    "detail": {"type": "string"},
+                    "url": {"type": "string"},
+                },
+                "required": ["label", "detail", "url"],
+            },
+            "maxItems": 6,
+        },
+    },
+    "required": ["title", "answer", "links", "suggestions"],
+}
+
+
 def _score_question(question: str, answer: HelpdeskAnswer) -> float:
     question = question.lower()
     score = 0.0
@@ -137,3 +188,93 @@ def get_helpdesk_response(question: str) -> tuple[HelpdeskAnswer, list[HelpdeskA
     best = ranked[0] if ranked and _score_question(cleaned, ranked[0]) >= 1.25 else DEFAULT_ANSWER
     suggestions = [item for item in ranked[:4] if item.title != best.title]
     return best, suggestions
+
+
+def _helpdesk_knowledge_payload():
+    return [
+        {
+            "title": item.title,
+            "keywords": list(item.keywords),
+            "answer": item.answer,
+            "link_labels": [label for label, _url_name in item.links],
+        }
+        for item in HELPDESK_KNOWLEDGE
+    ]
+
+
+def public_helpdesk_sources(question, *, browser_session_key=""):
+    text = " ".join(str(question or "").lower().split())
+    has_nursing = any(term in text for term in NURSING_OFFICE_TERMS)
+    has_medical = any(term in text for term in MEDICAL_OFFICE_TERMS)
+    source_scope = "all"
+    if has_nursing and not has_medical:
+        source_scope = "nursing"
+    elif has_medical and not has_nursing:
+        source_scope = "medical"
+    sources = retrieve_assistant_sources(question=question, scope=source_scope, public=True)
+    memory_rows = assistant_memory_rows(
+        assistant_kind="public_helpdesk",
+        browser_session_key=browser_session_key,
+        scope="public",
+    )
+    if memory_rows and any(token in (question or "").lower() for token in ("remember", "earlier", "last question", "previous")):
+        sources.append({
+            "label": "Public helpdesk conversation memory",
+            "detail": "Recent public helpdesk messages in this browser session.",
+            "url": "",
+        })
+    return serialize_sources(sources)
+
+
+def maybe_generate_live_helpdesk_response(question: str, local_payload: dict, *, browser_session_key="") -> dict:
+    status = ai_provider_status()
+    local_payload["ai_provider"] = status
+    local_payload["sources"] = public_helpdesk_sources(question, browser_session_key=browser_session_key)
+    if status["mode"] != "google_adk":
+        return local_payload
+
+    system_prompt = (
+        "You are the public registration AI Helpdesk for a government health regulatory platform. "
+        "Answer only questions about account registration, Nursing Council forms, Medical Board forms, "
+        "documents, payments, application status, missing information alerts, renewals, and contacting a registrar. "
+        "Do not expose private records, do not claim an application was approved, and do not invent requirements. "
+        "Keep Nursing Council and Medical Board pathways separate. If a question is about nurses, midwives, "
+        "nurse aides, graduands, NC forms, or ATP, answer as Nursing Council guidance. If it is about doctors, "
+        "specialists, CHW, or Medical Board facilities, answer as Medical Board guidance. "
+        "Use the supplied helpdesk knowledge and local fallback answer."
+    )
+    try:
+        live_payload = call_configured_ai_json(
+            system_prompt=system_prompt,
+            user_payload={
+                "question": question,
+                "knowledge_base": _helpdesk_knowledge_payload(),
+                "local_fallback_answer": local_payload,
+                "public_sources": local_payload["sources"],
+            },
+            schema=HELPDESK_AI_RESPONSE_SCHEMA,
+            schema_name="public_helpdesk_response",
+        )
+    except AIProviderError as exc:
+        local_payload["ai_provider"] = {
+            **status,
+            "mode": "local_fallback",
+            "label": "Local Offline Assistant",
+            "detail": f"Public helpdesk fallback used: {exc}",
+        }
+        return local_payload
+
+    allowed_links = {
+        link["url"]: link
+        for link in local_payload.get("links", [])
+        if isinstance(link, dict) and link.get("url")
+    }
+    live_links = [
+        allowed_links[link.get("url")]
+        for link in live_payload.get("links", [])
+        if isinstance(link, dict) and link.get("url") in allowed_links
+    ]
+    live_payload["links"] = live_links or local_payload.get("links", [])
+    live_payload["sources"] = serialize_sources(live_payload.get("sources") or local_payload.get("sources") or [])
+    live_payload["ai_provider"] = status
+    return live_payload

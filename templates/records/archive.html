@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Registry Archives{% endblock %}
+{% block title_label %}Registry Archives{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-warning mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">Registry Archives</h3>
+            <div class="text-muted small">{{ records_hub_title }} archive table for records excluded from active totals.</div>
+        </div>
+        <a href="{% url 'records_home' %}" class="btn btn-sm btn-light mt-2 mt-md-0">
+            <i class="fas fa-arrow-left mr-1"></i>Records Hub
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row align-items-end mb-3">
+            <div class="col-md-2 mb-2">
+                <label class="small text-muted mb-1" for="archiveYear">Year</label>
+                <select class="form-control form-control-sm" id="archiveYear" name="archive_year">
+                    <option value="">All years</option>
+                    {% for year in registry_archive_filter_options.years %}
+                    <option value="{{ year }}" {% if registry_archive_filters.year == year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label class="small text-muted mb-1" for="archiveReason">Reason</label>
+                <select class="form-control form-control-sm" id="archiveReason" name="archive_reason">
+                    <option value="">All reasons</option>
+                    {% for value,label in registry_archive_filter_options.reasons %}
+                    <option value="{{ value }}" {% if registry_archive_filters.reason == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label class="small text-muted mb-1" for="archiveStatus">Status</label>
+                <select class="form-control form-control-sm" id="archiveStatus" name="archive_status">
+                    <option value="">All statuses</option>
+                    {% for value,label in registry_archive_filter_options.statuses %}
+                    <option value="{{ value }}" {% if registry_archive_filters.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label class="small text-muted mb-1" for="archiveModel">Model</label>
+                <select class="form-control form-control-sm" id="archiveModel" name="archive_model">
+                    <option value="">All models</option>
+                    {% for model_name in registry_archive_filter_options.models %}
+                    <option value="{{ model_name }}" {% if registry_archive_filters.model_name == model_name %}selected{% endif %}>{{ model_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="small text-muted mb-1" for="archiveSearch">Search</label>
+                <input class="form-control form-control-sm" id="archiveSearch" name="archive_q" value="{{ registry_archive_filters.search }}" placeholder="Name, reg no, cadre, facility">
+            </div>
+            <div class="col-md-1 mb-2">
+                <button class="btn btn-sm btn-primary btn-block" type="submit">
+                    <i class="fas fa-filter mr-1"></i>Filter
+                </button>
+            </div>
+        </form>
+
+        <div class="row mb-3">
+            <div class="col-md-3 mb-2">
+                <div class="small-box bg-warning mb-0">
+                    <div class="inner">
+                        <h3>{{ registry_archive_total|default:0 }}</h3>
+                        <p>Archived records</p>
+                        <small>Excluded from active totals</small>
+                    </div>
+                    <div class="icon"><i class="fas fa-box-archive"></i></div>
+                </div>
+            </div>
+            <div class="col-md-9 mb-2">
+                <div class="alert alert-light border mb-0">
+                    {% if registry_archive_reason_counts %}
+                    {% for reason,count in registry_archive_reason_counts %}
+                        <span class="badge badge-secondary mr-1">{{ reason }}: {{ count }}</span>
+                    {% endfor %}
+                    {% else %}
+                    <span class="text-muted">No archive reason breakdown is available yet.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>Name / source</th>
+                    <th>Scope</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Year</th>
+                    <th>Age</th>
+                    <th>Cadre</th>
+                    <th>Facility / province</th>
+                    <th>Registration</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in registry_archive_rows %}
+                <tr>
+                    <td>
+                        <strong>{{ row.source_label|default:row.source_reference }}</strong><br>
+                        <small class="text-muted">{{ row.source_model }}</small>
+                    </td>
+                    <td>{{ row.get_scope_display }}</td>
+                    <td>{{ row.get_archive_reason_display }}</td>
+                    <td>{{ row.get_archive_status_display }}</td>
+                    <td>{{ row.latest_renewal_year|default:row.record_year|default:"-" }}</td>
+                    <td>{{ row.age|default:"-" }}</td>
+                    <td>{{ row.cadre|default:"-" }}</td>
+                    <td>{{ row.facility|default:"-" }}{% if row.province %}<br><small class="text-muted">{{ row.province }}</small>{% endif %}</td>
+                    <td>
+                        {{ row.registration_no|default:"-" }}
+                        {% if row.practitioner_number %}<br><small class="text-muted">{{ row.practitioner_number }}</small>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-muted">No archive records match these filters.</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign In - PNG Regulatory Bodies The Medical Board &amp; Nursing Council</title>
+  <title>{{ login_page_title|default:"Sign In" }}</title>
   <script>
     window.ndohAssets = {
       bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
@@ -35,11 +35,16 @@
   <link rel="stylesheet" href="{% static 'vendor/adminlte/css/adminlte.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.adminlteCss, 'ndoh-adminlte-cdn')">
   <style>
     body.auth-page {
+      --agency-primary: #1d5d52;
+      --agency-primary-dark: #143f39;
+      --agency-accent: #b7791f;
+      --agency-soft: #e7f3ed;
+      --agency-ink: #153a35;
       min-height: 100vh;
       background:
-        radial-gradient(circle at top left, rgba(47, 95, 83, 0.10), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.10), transparent 26%),
-        linear-gradient(180deg, #f7f7f4 0%, #edf1ee 100%);
+        radial-gradient(circle at top left, color-mix(in srgb, var(--agency-primary) 16%, transparent), transparent 31%),
+        radial-gradient(circle at bottom right, color-mix(in srgb, var(--agency-accent) 14%, transparent), transparent 28%),
+        linear-gradient(180deg, #f8fbfa 0%, #eef4f1 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -47,44 +52,98 @@
     }
     .auth-shell {
       width: 100%;
-      max-width: 760px;
+      max-width: 1080px;
     }
     .auth-card {
       background: rgba(255,255,255,.95);
-      border: 1px solid #d7dfdb;
-      border-radius: 28px;
-      box-shadow: 0 24px 60px rgba(14, 32, 49, .10);
+      border: 1px solid color-mix(in srgb, var(--agency-primary) 18%, #d7dfdb);
+      border-radius: 24px;
+      box-shadow: 0 26px 70px color-mix(in srgb, var(--agency-primary) 14%, transparent);
       overflow: hidden;
     }
-    .auth-card .card-body {
-      padding: 40px;
+    .portal-layout {
+      display: grid;
+      grid-template-columns: minmax(290px, .9fr) minmax(360px, 1.1fr);
+      min-height: 640px;
+    }
+    .portal-intro {
+      background:
+        linear-gradient(155deg, color-mix(in srgb, var(--agency-primary) 98%, #0f172a) 0%, var(--agency-primary) 58%, color-mix(in srgb, var(--agency-accent) 74%, var(--agency-primary)) 100%);
+      color: #fff;
+      padding: 42px;
+    }
+    .portal-signin {
+      background: rgba(255,255,255,.97);
+      padding: 42px;
+    }
+    .portal-agency-mark {
+      align-items: center;
+      display: inline-flex;
+      gap: .55rem;
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 999px;
+      color: #fff;
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+      padding: .42rem .7rem;
+      text-transform: uppercase;
     }
     .login-logo {
-      text-align: center;
-      margin-bottom: 24px;
+      margin: 30px 0 22px;
     }
     .login-logo img {
-      max-height: 92px;
-      margin-bottom: 16px;
+      background: rgba(255,255,255,.96);
+      border-radius: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.16);
+      max-height: 74px;
+      padding: 7px;
+      margin-bottom: 18px;
     }
     .login-logo h1 {
-      color: #15293d;
+      color: #fff;
       font-size: 2.2rem;
       margin-top: 0;
       margin-bottom: 8px;
       font-weight: 800;
-      letter-spacing: -0.02em;
+      letter-spacing: 0;
+      line-height: 1.15;
     }
-    h1, h2, h3 { color: #15293d; font-weight: 800; }
-    .btn-primary, .btn-success, .btn-info, .btn-danger { color: #fff !important; font-weight: 700; }
-    .btn-primary {
-      background: linear-gradient(135deg, #18324a 0%, #2f5f53 100%);
-      border-color: #2f5f53;
+    .portal-intro .text-muted,
+    .portal-intro .portal-audience-note { color: rgba(255,255,255,.88) !important; -webkit-text-fill-color: rgba(255,255,255,.88) !important; }
+    .portal-intro h1, .portal-intro h2, .portal-intro h3 { color: #fff; font-weight: 800; }
+    .btn-primary, .btn-success, .btn-info, .btn-danger {
+      color: #fff !important;
+      -webkit-text-fill-color: #fff !important;
+      font-weight: 700;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, .28);
+    }
+    body.auth-page .btn-primary {
+      background: var(--agency-primary) !important;
+      border-color: var(--agency-primary) !important;
       border-radius: 14px;
       min-height: 46px;
     }
+    body.auth-page .btn-primary:hover, body.auth-page .btn-primary:focus, body.auth-page .btn-primary:active {
+      color: #fff !important;
+      -webkit-text-fill-color: #fff !important;
+      background: var(--agency-primary-dark) !important;
+      border-color: var(--agency-primary-dark) !important;
+    }
     .btn-outline-secondary {
+      background: #fff;
+      border-color: #64748b;
       border-radius: 14px;
+      color: #15293d !important;
+      -webkit-text-fill-color: #15293d !important;
+      font-weight: 700;
+      text-shadow: none;
+    }
+    .btn-outline-secondary:hover, .btn-outline-secondary:focus, .btn-outline-secondary:active {
+      background: #334155;
+      border-color: #334155;
+      color: #fff !important;
+      -webkit-text-fill-color: #fff !important;
     }
     .form-control {
       min-height: 46px;
@@ -92,49 +151,133 @@
       border-color: #d2dcd8;
     }
     .form-control:focus {
-      border-color: #2f5f53;
-      box-shadow: 0 0 0 .2rem rgba(47, 95, 83, .12);
+      border-color: var(--agency-primary);
+      box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--agency-primary) 18%, transparent);
     }
     .portal-pill {
       display: inline-block;
       padding: 8px 14px;
       border-radius: 999px;
-      background: #edf2ef;
-      color: #274559;
+      background: var(--agency-soft);
+      color: var(--agency-ink);
       font-size: .85rem;
       margin-bottom: 18px;
     }
     .field-note {
       font-size: .82rem;
-      color: #64748b;
+      color: #334155 !important;
+      -webkit-text-fill-color: #334155 !important;
+      font-weight: 700;
+    }
+    .text-muted {
+      color: #334155 !important;
+      -webkit-text-fill-color: #334155 !important;
+      opacity: 1;
+    }
+    body.auth-nursing {
+      --agency-primary: #16705f;
+      --agency-primary-dark: #0f4b40;
+      --agency-accent: #b7791f;
+      --agency-soft: #e4f3ec;
+      --agency-ink: #0f5145;
+      background:
+        radial-gradient(circle at top left, rgba(47, 95, 83, 0.14), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(171, 123, 45, 0.10), transparent 26%),
+        linear-gradient(180deg, #f7fbf8 0%, #edf4f1 100%);
+    }
+    body.auth-medical {
+      --agency-primary: #15558b;
+      --agency-primary-dark: #0b365d;
+      --agency-accent: #b4233c;
+      --agency-soft: #e6f0fa;
+      --agency-ink: #0b3f70;
+      background:
+        radial-gradient(circle at top left, rgba(24, 50, 74, 0.14), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(153, 27, 27, 0.10), transparent 26%),
+        linear-gradient(180deg, #f8fafc 0%, #edf1f5 100%);
+    }
+    .account-guidance {
+      border-top: 1px solid rgba(255,255,255,.28);
+      margin-top: 28px;
+      padding-top: 22px;
+    }
+    .account-guidance h2 {
+      font-size: 1rem;
+      margin-bottom: .9rem;
+    }
+    .account-guide {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 14px;
+      margin-top: .75rem;
+      padding: .9rem;
+    }
+    .account-guide-title {
+      align-items: center;
+      display: flex;
+      font-weight: 800;
+      gap: .55rem;
+    }
+    .account-guide p { color: rgba(255,255,255,.91); font-size: .86rem; line-height: 1.45; margin: .4rem 0 .65rem; }
+    .account-guide .guide-audience { color: #fff; font-weight: 700; }
+    .account-guide a { color: #fff; font-size: .86rem; font-weight: 800; text-decoration: underline; }
+    .signin-kicker { color: var(--agency-primary); font-size: .78rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .signin-heading { color: #15293d; font-size: 1.55rem; font-weight: 900; margin: .3rem 0 .35rem; }
+    .signin-help { color: #475569; font-size: .92rem; line-height: 1.45; margin-bottom: 1.4rem; }
+    .sign-in-links { border-top: 1px solid #dce5e2; margin-top: 1.45rem; padding-top: 1rem; }
+    .sign-in-links a { color: var(--agency-primary-dark); font-weight: 800; }
+    @media (max-width: 767.98px) {
+      body.auth-page { align-items: flex-start; padding: 18px 12px; }
+      .portal-layout { grid-template-columns: 1fr; }
+      .portal-intro, .portal-signin { padding: 28px 22px; }
+      .portal-layout { min-height: 0; }
+      .login-logo h1 { font-size: 1.8rem; }
     }
   </style>
-  <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}">
+  <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}?v=20260623-font-contrast-4">
 </head>
-<body class="auth-page">
+<body class="auth-page {{ auth_agency_class|default:'auth-general' }}">
 {% include 'includes/page_section_navigation.html' %}
 <div class="auth-shell">
   <div class="auth-card">
-    <div class="card-body">
+    <div class="portal-layout">
+      <section class="portal-intro">
+        {% if portal %}
+          <div class="portal-agency-mark"><i class="{{ login_agency_icon }}"></i>{{ login_agency_badge|default:portal_name }}</div>
+        {% endif %}
       <div class="login-logo">
         <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest">
-        <h1>PNG Regulatory Bodies:The Medical Board &amp; Nursing Council</h1>
-        <p class="text-muted mb-0">Online Registration and Management Platform for the Nursing Council &amp; Medical Board</p>
+        <h1>{{ login_heading|default:portal_name }}</h1>
+        <p class="text-muted mb-0">{{ login_subtitle|default:"Choose the correct agency sign in for your account." }}</p>
       </div>
 
-      {% if portal %}
-        <div class="text-center">
-          <span class="portal-pill">Signing in to {{ portal_name }}</span>
-        </div>
-      {% endif %}
-
-      <p class="text-center text-muted">
-        {% if login_mode == 'staff' %}
-          Staff sign in is for Registrar, Admin, and Reviewer accounts only.
-        {% else %}
-          Applicant sign in is for nurses, graduands, doctors, CHWs, and nurse aides.
-        {% endif %}
+      <p class="portal-audience-note mb-0">
+        {{ login_audience_note|default:"Applicant sign in is for public applicant accounts." }}
       </p>
+
+      {% if login_mode != 'staff' and login_account_guides %}
+      <div class="account-guidance">
+        <h2><i class="fas fa-compass mr-1"></i>New here? Choose your account</h2>
+        {% for guide in login_account_guides %}
+        <article class="account-guide">
+          <div class="account-guide-title"><i class="{{ guide.icon }}"></i>{{ guide.title }}</div>
+          <p class="guide-audience">{{ guide.audience }}</p>
+          <p>{{ guide.detail }}</p>
+          {% if guide.url %}<a href="{{ guide.url }}">{{ guide.action_label }} <i class="fas fa-arrow-right ml-1"></i></a>{% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% endif %}
+      </section>
+
+      <section class="portal-signin">
+        <div class="signin-kicker"><i class="fas fa-lock mr-1"></i>Secure portal sign in</div>
+        <h2 class="signin-heading">Welcome back</h2>
+        <p class="signin-help">Use the username, licence number, or registration number linked to your account. If you are new, follow the account guidance alongside this form.</p>
+
+        {% if portal %}
+          <span class="portal-pill">Signing in to {{ portal_name }}</span>
+        {% endif %}
 
       {% if messages %}
         {% for message in messages %}
@@ -148,8 +291,8 @@
       <form method="post" novalidate>
         {% csrf_token %}
         <div class="form-group">
-          <label>Username / License / Registration No</label>
-          <input type="text" name="username" class="form-control" placeholder="Username, License No, or Registration No" required>
+          <label>Username / Licence / Registration No</label>
+          <input type="text" name="username" class="form-control" placeholder="Username, licence no, or registration no" required>
         </div>
         <div class="form-group">
           <label>Password</label>
@@ -161,27 +304,41 @@
         <button type="submit" class="btn btn-primary btn-block">Sign In</button>
       </form>
 
+      <div class="sign-in-links text-center">
       {% if login_mode == 'staff' %}
-        <div class="text-center mt-3">
+        <div>
           <a href="{% url 'staff_register' %}">Create staff account</a>
         </div>
         <div class="text-center mt-2">
           <a href="{% url 'applicant_login' %}">Go to applicant sign in</a>
         </div>
       {% else %}
-        <div class="text-center mt-3">
+        <div>
           <a href="{% url 'staff_login' %}">Go to staff sign in</a>
         </div>
-        <div class="text-center mt-2">
-          <a href="{% url 'public_register' %}">Create applicant account</a>
+        {% if create_account_url and not login_account_guides %}
+        <div class="mt-2">
+          <a href="{{ create_account_url }}">{{ create_account_label }}</a>
         </div>
+        {% else %}
+          {% if not login_account_guides %}
+          <div class="mt-2">
+            <a href="{% url 'public_nursing_account_register' %}">Create Nursing Council account</a>
+          </div>
+          <div class="mt-2">
+            <a href="{% url 'public_medical_board_account_register' %}">Create Medical Board account</a>
+          </div>
+          {% endif %}
+        {% endif %}
       {% endif %}
+      </div>
 
       <div class="text-center mt-2">
         <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">
           <i class="fas fa-arrow-left mr-1"></i> Back to Home
         </a>
       </div>
+      </section>
     </div>
   </div>
 </div>
@@ -189,6 +346,6 @@
 <script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
 <script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
 <script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
-<script src="{% static 'js/page-section-navigation.js' %}?v=20260515-section-nav-1"></script>
+<script src="{% static 'js/page-section-navigation.js' %}?v=20260708-dashboard-links-1"></script>
 </body>
 </html>

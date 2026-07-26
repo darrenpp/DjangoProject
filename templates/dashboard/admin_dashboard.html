@@ -1,363 +1,1084 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}System Dashboard{% endblock %}
+{% block title %}System Administration Command Centre{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-command-centre {
+        --admin-ink: #102033;
+        --admin-muted: #5b6a7c;
+        --admin-line: #d8e3ec;
+        --admin-panel: #ffffff;
+        --admin-bg: #eef5f8;
+        --admin-blue: #174e7a;
+        --admin-teal: #0f766e;
+        --admin-green: #167044;
+        --admin-gold: #a35d00;
+        --admin-red: #b42318;
+        --admin-slate: #344054;
+        color: var(--admin-ink);
+    }
+
+    .admin-command-centre *,
+    .admin-command-centre *::before,
+    .admin-command-centre *::after {
+        box-sizing: border-box;
+        letter-spacing: 0;
+    }
+
+    .admin-shell {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .admin-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(280px, .6fr);
+        gap: 1rem;
+        align-items: stretch;
+        padding: 1rem;
+        background: var(--admin-panel);
+        border: 1px solid var(--admin-line);
+        border-left: 6px solid var(--admin-blue);
+        border-radius: 8px;
+        box-shadow: 0 12px 32px rgba(16, 32, 51, .08);
+    }
+
+    .admin-kicker {
+        margin: 0 0 .35rem;
+        font-size: .76rem;
+        font-weight: 800;
+        color: var(--admin-teal);
+        text-transform: uppercase;
+    }
+
+    .admin-hero h1 {
+        margin: 0;
+        font-size: 1.55rem;
+        line-height: 1.2;
+        color: var(--admin-ink);
+    }
+
+    .admin-hero p {
+        margin: .55rem 0 0;
+        color: var(--admin-muted);
+        max-width: 72ch;
+    }
+
+    .admin-status-panel {
+        display: grid;
+        gap: .7rem;
+        align-content: center;
+        padding: .85rem;
+        background: #f8fbfd;
+        border: 1px solid var(--admin-line);
+        border-radius: 8px;
+    }
+
+    .admin-status-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .admin-status-value {
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: var(--admin-ink);
+    }
+
+    .admin-badge,
+    .admin-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border-radius: 999px;
+        padding: .3rem .58rem;
+        font-size: .76rem;
+        font-weight: 800;
+        white-space: nowrap;
+        border: 1px solid transparent;
+    }
+
+    .admin-badge-success,
+    .admin-chip-success {
+        color: #0f5132;
+        background: #d9f5e4;
+        border-color: #a7e3bd;
+    }
+
+    .admin-badge-warning,
+    .admin-chip-warning {
+        color: #7a4b00;
+        background: #fff3cd;
+        border-color: #f4d58d;
+    }
+
+    .admin-badge-danger,
+    .admin-chip-danger {
+        color: #842029;
+        background: #f8d7da;
+        border-color: #efadb5;
+    }
+
+    .admin-badge-info,
+    .admin-chip-info {
+        color: #164866;
+        background: #dff2fb;
+        border-color: #a9d8ea;
+    }
+
+    .admin-badge-neutral,
+    .admin-chip-neutral,
+    .admin-chip-dark,
+    .admin-chip-primary {
+        color: #263445;
+        background: #edf2f7;
+        border-color: #d5dee9;
+    }
+
+    .admin-progress {
+        width: 100%;
+        height: .58rem;
+        background: #e6edf3;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .admin-progress span {
+        display: block;
+        height: 100%;
+        background: var(--admin-teal);
+        border-radius: inherit;
+    }
+
+    .admin-actions-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        align-items: center;
+    }
+
+    .admin-action-link,
+    .admin-op-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .42rem;
+        min-height: 2.25rem;
+        padding: .45rem .75rem;
+        border-radius: 7px;
+        border: 1px solid #bfd0df;
+        background: #fff;
+        color: var(--admin-ink);
+        font-weight: 800;
+        line-height: 1.15;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .admin-action-link:hover,
+    .admin-op-button:hover {
+        color: var(--admin-ink);
+        text-decoration: none;
+        border-color: var(--admin-blue);
+        background: #f3f8fb;
+    }
+
+    .admin-section {
+        background: var(--admin-panel);
+        border: 1px solid var(--admin-line);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 10px 28px rgba(16, 32, 51, .06);
+    }
+
+    .admin-section-header {
+        display: flex;
+        justify-content: space-between;
+        gap: .75rem;
+        align-items: center;
+        padding: .85rem 1rem;
+        border-bottom: 1px solid var(--admin-line);
+        background: #f8fbfd;
+    }
+
+    .admin-section-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 900;
+        color: var(--admin-ink);
+    }
+
+    .admin-section-subtitle {
+        margin: .25rem 0 0;
+        color: var(--admin-muted);
+        font-size: .86rem;
+    }
+
+    .admin-section-body {
+        padding: 1rem;
+    }
+
+    .admin-priority-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    .admin-priority-item {
+        min-width: 0;
+        padding: .85rem;
+        border: 1px solid var(--admin-line);
+        border-radius: 8px;
+        background: #fff;
+        display: grid;
+        gap: .62rem;
+        align-content: start;
+    }
+
+    .admin-priority-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: .65rem;
+    }
+
+    .admin-priority-count {
+        font-size: 1.55rem;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--admin-ink);
+    }
+
+    .admin-priority-label {
+        margin: 0;
+        font-weight: 900;
+        color: var(--admin-ink);
+        line-height: 1.2;
+    }
+
+    .admin-priority-detail {
+        margin: 0;
+        color: var(--admin-muted);
+        font-size: .86rem;
+    }
+
+    .admin-metric-group {
+        display: grid;
+        gap: .65rem;
+        margin-bottom: 1rem;
+    }
+
+    .admin-metric-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .admin-metric-group-head {
+        display: flex;
+        justify-content: space-between;
+        gap: .75rem;
+        align-items: end;
+    }
+
+    .admin-metric-group-head h3 {
+        margin: 0;
+        font-size: .98rem;
+        font-weight: 900;
+    }
+
+    .admin-metric-group-head p {
+        margin: .25rem 0 0;
+        color: var(--admin-muted);
+        font-size: .86rem;
+    }
+
+    .admin-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    .admin-metric-card {
+        min-width: 0;
+        position: relative;
+        display: grid;
+        gap: .55rem;
+        padding: .9rem;
+        border: 1px solid var(--admin-line);
+        border-radius: 8px;
+        background: #fff;
+        text-decoration: none;
+        color: var(--admin-ink);
+    }
+
+    .admin-metric-card:hover {
+        color: var(--admin-ink);
+        text-decoration: none;
+        border-color: #a8bfd2;
+        background: #f9fcfe;
+    }
+
+    .admin-metric-main {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: .7rem;
+    }
+
+    .admin-metric-value {
+        font-size: 1.62rem;
+        font-weight: 900;
+        line-height: 1.05;
+        overflow-wrap: anywhere;
+    }
+
+    .admin-metric-label {
+        margin: .15rem 0 0;
+        font-size: .87rem;
+        font-weight: 900;
+    }
+
+    .admin-metric-detail {
+        margin: 0;
+        color: var(--admin-muted);
+        font-size: .83rem;
+    }
+
+    .admin-metric-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 2.15rem;
+        height: 2.15rem;
+        border-radius: 8px;
+        background: #edf5f7;
+        color: var(--admin-blue);
+    }
+
+    .admin-tone-success .admin-metric-icon { color: var(--admin-green); background: #e3f5eb; }
+    .admin-tone-warning .admin-metric-icon { color: var(--admin-gold); background: #fff3d1; }
+    .admin-tone-danger .admin-metric-icon { color: var(--admin-red); background: #fde5e7; }
+    .admin-tone-info .admin-metric-icon { color: var(--admin-blue); background: #e5f2fb; }
+    .admin-tone-neutral .admin-metric-icon { color: var(--admin-slate); background: #edf2f7; }
+
+    .admin-two-column {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 1rem;
+    }
+
+    .admin-board-list,
+    .admin-command-list,
+    .admin-standards-list {
+        display: grid;
+        gap: .75rem;
+    }
+
+    .admin-board-row,
+    .admin-command-row,
+    .admin-standard-row {
+        min-width: 0;
+        display: grid;
+        gap: .65rem;
+        padding: .85rem;
+        border: 1px solid var(--admin-line);
+        border-radius: 8px;
+        background: #fff;
+    }
+
+    .admin-board-main,
+    .admin-command-main,
+    .admin-standard-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: .75rem;
+    }
+
+    .admin-board-title,
+    .admin-command-title,
+    .admin-standard-title {
+        margin: 0;
+        font-size: .96rem;
+        font-weight: 900;
+    }
+
+    .admin-board-scope,
+    .admin-command-detail,
+    .admin-standard-detail {
+        margin: .25rem 0 0;
+        color: var(--admin-muted);
+        font-size: .84rem;
+    }
+
+    .admin-board-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .55rem;
+    }
+
+    .admin-mini-stat {
+        padding: .55rem;
+        border-radius: 7px;
+        border: 1px solid #e2e8f0;
+        background: #f8fbfd;
+    }
+
+    .admin-mini-stat strong {
+        display: block;
+        font-size: 1.05rem;
+        color: var(--admin-ink);
+    }
+
+    .admin-mini-stat span {
+        display: block;
+        color: var(--admin-muted);
+        font-size: .76rem;
+        font-weight: 800;
+    }
+
+    .admin-command-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        align-items: center;
+        color: var(--admin-muted);
+        font-size: .8rem;
+    }
+
+    .admin-op-button {
+        border-color: var(--admin-blue);
+        background: var(--admin-blue);
+        color: #fff;
+    }
+
+    .admin-op-button:hover {
+        color: #fff;
+        background: #123f62;
+        border-color: #123f62;
+    }
+
+    .admin-op-button.admin-op-warning {
+        background: #9a5b00;
+        border-color: #9a5b00;
+    }
+
+    .admin-op-button.admin-op-success {
+        background: #146c43;
+        border-color: #146c43;
+    }
+
+    .admin-op-button.admin-op-info {
+        background: #0f6380;
+        border-color: #0f6380;
+    }
+
+    .admin-op-button.admin-op-dark {
+        background: #263445;
+        border-color: #263445;
+    }
+
+    .admin-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-table {
+        width: 100%;
+        min-width: 680px;
+        margin: 0;
+    }
+
+    .admin-table th {
+        color: var(--admin-ink);
+        background: #e9f1f7;
+        border-top: 0;
+        font-size: .8rem;
+        white-space: nowrap;
+    }
+
+    .admin-table td {
+        vertical-align: middle;
+    }
+
+    .admin-chart-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .admin-chart-card {
+        min-width: 0;
+        padding: 1rem;
+        border: 1px solid var(--admin-line);
+        border-radius: 8px;
+        background: #fff;
+    }
+
+    .admin-chart-card h3 {
+        margin: 0 0 .75rem;
+        font-size: .98rem;
+        font-weight: 900;
+    }
+
+    .admin-chart-canvas {
+        height: 220px;
+    }
+
+    .admin-chart-canvas canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    @media (max-width: 1199.98px) {
+        .admin-priority-grid,
+        .admin-metric-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .admin-chart-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        .admin-hero,
+        .admin-two-column {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .admin-command-centre {
+            margin-left: 0;
+        }
+
+        .admin-hero,
+        .admin-section-body {
+            padding: .85rem;
+        }
+
+        .admin-section-header,
+        .admin-status-line,
+        .admin-board-main,
+        .admin-command-main,
+        .admin-standard-main,
+        .admin-metric-group-head {
+            display: grid;
+            grid-template-columns: 1fr;
+            align-items: start;
+        }
+
+        .admin-actions-row {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .admin-action-link,
+        .admin-op-button {
+            width: 100%;
+        }
+
+        .admin-priority-grid,
+        .admin-metric-grid,
+        .admin-board-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-dark">
-            <div class="inner"><h3>{{ import_record_count|default:0 }}</h3><p>N-DATA Imported Rows</p></div>
-            <div class="icon"><i class="fas fa-database"></i></div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
-            <div class="inner"><h3>{{ nursing_count|default:0 }}</h3><p>Nursing Professionals</p></div>
-            <div class="icon"><i class="fas fa-user-nurse"></i></div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-info">
-            <div class="inner"><h3>{{ midwife_count|default:0 }}</h3><p>Midwives</p></div>
-            <div class="icon"><i class="fas fa-baby"></i></div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-warning">
-            <div class="inner"><h3>{{ import_latest_year|default:"-" }}</h3><p>Latest Data Year</p></div>
-            <div class="icon"><i class="fas fa-calendar-check"></i></div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-primary">
-            <div class="inner"><h3>{{ total_users|default:0 }}</h3><p>Total Users</p></div>
-            <div class="icon"><i class="fas fa-users"></i></div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-warning">
-            <div class="inner"><h3>{{ pending_applications|default:0 }}</h3><p>Pending Applications</p></div>
-            <div class="icon"><i class="fas fa-hourglass-half"></i></div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
-            <div class="inner"><h3>{{ receipt_completed_count|default:0 }}</h3><p>Completed Receipts</p></div>
-            <div class="icon"><i class="fas fa-receipt"></i></div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-info">
-            <div class="inner"><h3>{{ institution_count|default:0 }}</h3><p>PNG Nursing Schools</p></div>
-            <div class="icon"><i class="fas fa-school"></i></div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-danger">
-            <div class="inner"><h3>{{ missing_data_review_count|default:0 }}</h3><p>Missing Data Reviews</p></div>
-            <div class="icon"><i class="fas fa-triangle-exclamation"></i></div>
-        </div>
-    </div>
-</div>
-
-{% include "dashboard/_dashboard_search_panel.html" with search_placeholder="Search all staff, applications, licence numbers, facilities, provinces, and imported records..." %}
-
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card card-outline card-primary table-card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">System Controls</h3>
+<div class="admin-command-centre">
+    <div class="admin-shell">
+        <section class="admin-hero" aria-labelledby="admin-command-title">
+            <div>
+                <p class="admin-kicker">National regulatory platform control</p>
+                <h1 id="admin-command-title">System Administration Command Centre</h1>
+                <p>Operational oversight for registry integrity, licensing workflow, payments, workforce intelligence, access control, and public register assurance.</p>
+                <div class="admin-actions-row mt-3">
+                    <a href="{% url 'review_centre' %}" class="admin-action-link"><i class="fas fa-clipboard-check"></i> Review Centre</a>
+                    <a href="{% url 'records_home' %}" class="admin-action-link"><i class="fas fa-database"></i> Records Hub</a>
+                    <a href="{% url 'workforce_flow' %}" class="admin-action-link"><i class="fas fa-diagram-project"></i> Workforce Flow</a>
+                    <a href="{% url 'platform_standards_alignment' %}" class="admin-action-link"><i class="fas fa-list-check"></i> Standards</a>
+                </div>
+            </div>
+            <aside class="admin-status-panel" aria-label="System status">
+                <div class="admin-status-line">
+                    <span class="admin-badge admin-badge-{{ admin_system_status.tone }}">
+                        <i class="fas fa-circle"></i> {{ admin_system_status.label }}
+                    </span>
+                    <span class="admin-status-value">{{ admin_system_readiness.percent }}%</span>
+                </div>
                 <div>
-                    <a href="{% url 'records_home' %}" class="btn btn-sm btn-light">Records Hub</a>
-                    <a href="{% url 'workforce_flow' %}" class="btn btn-sm btn-light">Workforce Flow</a>
+                    <div class="admin-progress" aria-label="System readiness">
+                        <span style="width: {{ admin_system_readiness.percent }}%;"></span>
+                    </div>
+                    <p class="admin-section-subtitle mb-0 mt-2">{{ admin_system_status.detail }} {{ admin_system_readiness.checks_complete }} of {{ admin_system_readiness.checks_total }} control checks clear.</p>
                 </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <button class="btn btn-dark btn-block" onclick="executeCommand('import_ndata_workbook', 'Importing the N-DATA workbook and updating all statistics tables.')">Import N-DATA Workbook</button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-primary btn-block" onclick="executeCommand('bootstrap_reference_data')">Bootstrap Reference Data</button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-info btn-block" onclick="executeCommand('import_workforce_files')">Import Workforce Files</button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-success btn-block" onclick="executeCommand('generate_snapshot')">Generate Snapshot</button>
-                    </div>
-                    <div class="col-md-3 mt-2">
-                        <a href="{% url 'export_monthly_analytics_excel' %}" class="btn btn-success btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the Excel analytics workbook with monthly tables and charts.">Monthly Excel Report</a>
-                    </div>
-                    <div class="col-md-3 mt-2">
-                        <a href="{% url 'export_monthly_analytics_pdf' %}" class="btn btn-danger btn-block" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the professional monthly analytics PDF report.">Monthly PDF Report</a>
-                    </div>
-                    <div class="col-md-3 mt-2">
-                        <button class="btn btn-warning btn-block" onclick="executeCommand('audit_missing_data', 'Auditing incomplete records and sending profile/email alerts.')">Audit Missing Data</button>
-                    </div>
+                <div class="admin-command-meta">
+                    <span><i class="fas fa-calendar-check"></i> Snapshot {{ latest_snapshot.year|default:"not generated" }}</span>
+                    <span><i class="fas fa-database"></i> Import {{ admin_latest_import_progress }}%</span>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
+            </aside>
+        </section>
 
-{% include "dashboard/_missing_data_reviews_table.html" %}
+        {% include "dashboard/_dashboard_search_panel.html" with search_placeholder="Search staff, applications, licence numbers, facilities, provinces, receipts, and imported records..." %}
 
-<div class="row mt-4">
-    <div class="col-lg-4">
-        <div class="card card-outline card-dark">
-            <div class="card-header"><h3 class="card-title mb-0">Latest Workbook Import</h3></div>
-            <div class="card-body">
-                {% if latest_import_batch %}
-                <div class="mb-3">
-                    <div class="small text-muted">Source</div>
-                    <div class="font-weight-bold">{{ latest_import_batch.source_file_name }}</div>
-                    <div class="small text-muted">Completed {{ latest_import_batch.completed_at|date:"d M Y H:i" }}</div>
+        <section class="admin-section" aria-labelledby="priority-action-queue">
+            <div class="admin-section-header">
+                <div>
+                    <h2 class="admin-section-title" id="priority-action-queue">Priority Action Queue</h2>
+                    <p class="admin-section-subtitle">Operational work that affects public safety, register accuracy, payments, and service delivery.</p>
                 </div>
-                <div class="progress mb-2">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ latest_import_progress }}%">{{ latest_import_progress }}%</div>
-                </div>
-                <div class="row text-sm">
-                    <div class="col-6 mb-2"><strong>Records:</strong> {{ import_record_count|default:0 }}</div>
-                    <div class="col-6 mb-2"><strong>Latest Year:</strong> {{ import_latest_year|default:"-" }}</div>
-                    <div class="col-6 mb-2"><strong>Sheets:</strong> {{ latest_import_batch.processed_sheets }}/{{ latest_import_batch.total_sheets }}</div>
-                    <div class="col-6 mb-2"><strong>Status:</strong> {{ latest_import_batch.status|title }}</div>
-                </div>
-                {% else %}
-                <p class="text-muted mb-0">No N-DATA workbook batch has been imported yet.</p>
-                {% endif %}
+                <span class="admin-chip admin-chip-{{ admin_system_status.tone }}">{{ admin_system_status.label }}</span>
             </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card card-outline card-success">
-            <div class="card-header"><h3 class="card-title mb-0">Latest Snapshot</h3></div>
-            <div class="card-body">
-                {% if latest_snapshot %}
-                <div class="row text-sm">
-                    <div class="col-6 mb-2"><strong>Year:</strong> {{ latest_snapshot.year }}</div>
-                    <div class="col-6 mb-2"><strong>Total:</strong> {{ latest_snapshot.total_active_workers }}</div>
-                    <div class="col-6 mb-2"><strong>Nurses:</strong> {{ latest_snapshot.total_nurses }}</div>
-                    <div class="col-6 mb-2"><strong>Midwives:</strong> {{ latest_snapshot.total_midwives }}</div>
-                    <div class="col-6 mb-2"><strong>CHW:</strong> {{ latest_snapshot.total_chw }}</div>
-                    <div class="col-6 mb-2"><strong>Near Retirement:</strong> {{ latest_snapshot.nearing_retirement }}</div>
+            <div class="admin-section-body">
+                <div class="admin-priority-grid">
+                    {% for item in admin_priority_items %}
+                        <a href="{{ item.href }}" class="admin-priority-item admin-tone-{{ item.tone }}">
+                            <div class="admin-priority-top">
+                                <span class="admin-priority-count">{{ item.count }}</span>
+                                <span class="admin-chip admin-chip-{{ item.tone }}"><i class="{{ item.icon }}"></i> {{ item.status }}</span>
+                            </div>
+                            <div>
+                                <p class="admin-priority-label">{{ item.label }}</p>
+                                <p class="admin-priority-detail">{{ item.detail }}</p>
+                            </div>
+                        </a>
+                    {% endfor %}
                 </div>
-                <a href="/admin/workforce/workforcesnapshot/" class="btn btn-sm btn-outline-success mt-2">
-                    <i class="fas fa-table mr-1"></i> Open Snapshots
-                </a>
-                {% else %}
-                <p class="text-muted mb-0">No workforce snapshot has been generated yet.</p>
-                {% endif %}
             </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card card-outline card-secondary">
-            <div class="card-header"><h3 class="card-title mb-0">Recent Import Runs</h3></div>
-            <div class="card-body p-0">
-                {% if recent_import_batches_info %}
-                <table class="table table-sm table-striped mb-0">
-                    <thead>
-                        <tr><th>Workbook</th><th>Status</th><th>Progress</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for item in recent_import_batches_info %}
-                        <tr>
-                            <td>
-                                <div class="font-weight-bold">{{ item.batch.source_file_name }}</div>
-                                <div class="small text-muted">{{ item.batch.started_at|date:"d M Y H:i" }}</div>
-                            </td>
-                            <td>{{ item.batch.status|title }}</td>
-                            <td style="min-width:160px;">
-                                <div class="progress progress-xs mb-1">
-                                    <div class="progress-bar {% if item.batch.status == 'completed' %}bg-success{% elif item.batch.status == 'failed' %}bg-danger{% else %}bg-info{% endif %}" style="width: {{ item.progress }}%"></div>
+        </section>
+
+        <section class="admin-section" aria-labelledby="admin-metric-groups">
+            <div class="admin-section-header">
+                <div>
+                    <h2 class="admin-section-title" id="admin-metric-groups">System Control Indicators</h2>
+                    <p class="admin-section-subtitle">Grouped indicators for registry integrity, licensing, payments, workforce intelligence, and access control.</p>
+                </div>
+                <a href="{% url 'nhwa_toolkit' %}" class="admin-action-link"><i class="fas fa-table-cells"></i> NHWA Toolkit</a>
+            </div>
+            <div class="admin-section-body">
+                {% for group in admin_metric_groups %}
+                    <div class="admin-metric-group">
+                        <div class="admin-metric-group-head">
+                            <div>
+                                <h3>{{ group.title }}</h3>
+                                <p>{{ group.description }}</p>
+                            </div>
+                        </div>
+                        <div class="admin-metric-grid">
+                            {% for card in group.cards %}
+                                <a href="{{ card.href|default:'#' }}" class="admin-metric-card admin-tone-{{ card.tone }}">
+                                    <div class="admin-metric-main">
+                                        <div>
+                                            <div class="admin-metric-value">{{ card.value }}</div>
+                                            <div class="admin-metric-label">{{ card.label }}</div>
+                                        </div>
+                                        <span class="admin-metric-icon"><i class="{{ card.icon }}"></i></span>
+                                    </div>
+                                    <p class="admin-metric-detail">{{ card.detail }}</p>
+                                    {% if card.meta %}<span class="admin-chip admin-chip-neutral">{{ card.meta }}</span>{% endif %}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="admin-two-column">
+            <section class="admin-section" aria-labelledby="board-service-status">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title" id="board-service-status">Regulatory Body Service Status</h2>
+                        <p class="admin-section-subtitle">Separate operating view for each legal regulatory body.</p>
+                    </div>
+                </div>
+                <div class="admin-section-body">
+                    <div class="admin-board-list">
+                        {% for row in admin_board_status_rows %}
+                            <article class="admin-board-row">
+                                <div class="admin-board-main">
+                                    <div>
+                                        <h3 class="admin-board-title">{{ row.board }}</h3>
+                                        <p class="admin-board-scope">{{ row.scope }}</p>
+                                    </div>
+                                    <span class="admin-chip admin-chip-{{ row.tone }}">{{ row.data_quality_count }} reviews</span>
                                 </div>
-                                <div class="small text-muted">{{ item.batch.processed_rows }}/{{ item.batch.total_rows|default:item.batch.total_sheets }}</div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="p-3 text-muted">No import activity recorded yet.</div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-lg-4">
-        <div class="card card-outline card-success">
-            <div class="card-header"><h3 class="card-title mb-0">Workforce Trend</h3></div>
-            <div class="card-body"><canvas id="workforceTrendChart" height="220"></canvas></div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card card-outline card-warning">
-            <div class="card-header"><h3 class="card-title mb-0">Application Status</h3></div>
-            <div class="card-body"><canvas id="applicationStatusChart" height="220"></canvas></div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card card-outline card-info">
-            <div class="card-header"><h3 class="card-title mb-0">Receipt Tracking</h3></div>
-            <div class="card-body"><canvas id="receiptChart" height="220"></canvas></div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card card-outline card-primary table-card">
-            <div class="card-header">
-                <h3 class="card-title mb-0">Institutions and Graduands</h3>
-            </div>
-            <div class="card-body">
-                <table class="table table-striped table-hover datatable">
-                    <thead>
-                        <tr>
-                            <th>Institution</th>
-                            <th>Type</th>
-                            <th>Graduands</th>
-                            <th>Records</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in graduand_by_institution %}
-                        <tr>
-                            <td>{{ item.institution.name }}</td>
-                            <td>{{ item.institution.type|default:"-" }}</td>
-                            <td>
-                                <div class="font-weight-bold mb-2">{{ item.count }}</div>
-                                <ul class="mb-0 pl-3">
-                                    {% for graduand in item.graduands|slice:":5" %}
-                                        <li>{{ graduand.first_name }} {{ graduand.last_name }} ({{ graduand.registration_no }})</li>
-                                    {% empty %}
-                                        <li class="text-muted">No graduands</li>
-                                    {% endfor %}
-                                </ul>
-                            </td>
-                            <td>
-                                <a href="{% url 'record_list' 'graduand' %}" class="btn btn-sm btn-outline-primary">Open List</a>
-                            </td>
-                            <td>
-                                <a href="{% url 'record_create' 'graduand' %}" class="btn btn-sm btn-success">Add Graduand</a>
-                                <a href="{% url 'record_list' 'graduand' %}" class="btn btn-sm btn-info">CRUD</a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="5" class="text-center text-muted">No institutions found.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card card-outline card-secondary table-card">
-            <div class="card-header">
-                <h3 class="card-title mb-0">Facilities and Workers</h3>
-            </div>
-            <div class="card-body">
-                <table class="table table-striped table-hover datatable">
-                    <thead>
-                        <tr>
-                            <th>Facility</th>
-                            <th>Location</th>
-                            <th>Current Workers</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in workers_by_facility %}
-                        <tr>
-                            <td>{{ item.facility.name }}</td>
-                            <td>{{ item.facility.location|default:"-" }}</td>
-                            <td>
-                                <div class="font-weight-bold mb-2">{{ item.count }}</div>
-                                <ul class="mb-0 pl-3">
-                                    {% for posting in item.postings|slice:":5" %}
-                                        <li>{{ posting.professional }} - {{ posting.position_title }}</li>
-                                    {% empty %}
-                                        <li class="text-muted">No current postings</li>
-                                    {% endfor %}
-                                </ul>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{% url 'records_home' %}" class="btn btn-outline-primary">Hub</a>
-                                    <a href="{% url 'record_list' 'nursingprofessional' %}" class="btn btn-outline-success">Nurses</a>
-                                    <a href="{% url 'record_list' 'medicaldoctor' %}" class="btn btn-outline-info">Doctors</a>
+                                <div class="admin-board-stats">
+                                    <div class="admin-mini-stat"><strong>{{ row.register_count }}</strong><span>Register records</span></div>
+                                    <div class="admin-mini-stat"><strong>{{ row.pending_count }}</strong><span>Pending applications</span></div>
+                                    <div class="admin-mini-stat"><strong>{{ row.data_quality_count }}</strong><span>Quality reviews</span></div>
                                 </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="4" class="text-center text-muted">No facilities found.</td></tr>
+                                <div class="admin-actions-row">
+                                    <a href="{{ row.portal_url }}" class="admin-action-link"><i class="fas fa-gauge-high"></i> Open Portal</a>
+                                    <a href="{{ row.public_register_url }}" class="admin-action-link"><i class="fas fa-search"></i> Public Register</a>
+                                </div>
+                            </article>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+                    </div>
+                </div>
+            </section>
 
-<div class="row mt-4">
-    <div class="col-lg-6">
-        <div class="card card-outline card-success table-card">
-            <div class="card-header">
-                <h3 class="card-title mb-0">National Workers</h3>
-            </div>
-            <div class="card-body table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr><th>Name</th><th>Type</th><th>Reg No</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for worker in national_workers_table|slice:":10" %}
-                            <tr>
-                                <td>{{ worker.name }}</td>
-                                <td>{{ worker.type }}</td>
-                                <td>{{ worker.registration_no|default:"-" }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr><td colspan="3" class="text-center text-muted">No national workers.</td></tr>
+            <section class="admin-section" aria-labelledby="standards-readiness">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title" id="standards-readiness">International Standards Readiness</h2>
+                        <p class="admin-section-subtitle">NHWA, ISCO, DHIS2/HMIS, FHIR, and public register assurance signals.</p>
+                    </div>
+                </div>
+                <div class="admin-section-body">
+                    <div class="admin-standards-list">
+                        {% for row in admin_standards_rows %}
+                            <article class="admin-standard-row">
+                                <div class="admin-standard-main">
+                                    <div>
+                                        <h3 class="admin-standard-title">{{ row.label }}</h3>
+                                        <p class="admin-standard-detail">{{ row.detail }}</p>
+                                    </div>
+                                    <span class="admin-chip admin-chip-{{ row.tone }}">{{ row.value }}</span>
+                                </div>
+                            </article>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    </div>
+                </div>
+            </section>
         </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card card-outline card-warning table-card">
-            <div class="card-header">
-                <h3 class="card-title mb-0">Overseas Workers</h3>
+
+        <section class="admin-section" aria-labelledby="operations-console">
+            <div class="admin-section-header">
+                <div>
+                    <h2 class="admin-section-title" id="operations-console">Operations Console</h2>
+                    <p class="admin-section-subtitle">Controlled staff commands with scope, status context, and confirmation before execution.</p>
+                </div>
+                <div class="admin-actions-row">
+                    <a href="{% url 'export_monthly_analytics_excel' %}" class="admin-action-link" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the Excel analytics workbook with monthly tables and charts."><i class="fas fa-file-excel"></i> Monthly Excel</a>
+                    <a href="{% url 'export_monthly_analytics_pdf' %}" class="admin-action-link" data-progress-link data-download-link data-success-redirect="{% url 'main_dashboard' %}" data-progress-text="Preparing the professional monthly analytics PDF report."><i class="fas fa-file-pdf"></i> Monthly PDF</a>
+                </div>
             </div>
-            <div class="card-body table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr><th>Name</th><th>Type</th><th>Reg No</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for worker in overseas_workers_table|slice:":10" %}
+            <div class="admin-section-body">
+                <div class="admin-command-list">
+                    {% for command in admin_command_rows %}
+                        <article class="admin-command-row">
+                            <div class="admin-command-main">
+                                <div>
+                                    <h3 class="admin-command-title"><i class="{{ command.icon }}"></i> {{ command.label }}</h3>
+                                    <p class="admin-command-detail">{{ command.detail }}</p>
+                                    <div class="admin-command-meta mt-2">
+                                        <span class="admin-chip admin-chip-neutral">{{ command.area }}</span>
+                                        {% if command.background %}<span class="admin-chip admin-chip-info">Background</span>{% endif %}
+                                        <span>Last run: {% if command.last_run %}{{ command.last_run|date:"d M Y" }}{% else %}not recorded{% endif %}</span>
+                                    </div>
+                                </div>
+                                {% if command.href %}
+                                    <a href="{{ command.href }}" class="admin-op-button admin-op-{{ command.tone }}">
+                                        <i class="{{ command.icon }}"></i> {{ command.action_label|default:"Open" }}
+                                    </a>
+                                {% else %}
+                                    <button type="button"
+                                            class="admin-op-button admin-op-{{ command.tone }}"
+                                            data-admin-command="{{ command.command }}"
+                                            data-admin-message="{{ command.detail }}"
+                                            data-admin-confirm="{{ command.confirmation }}">
+                                        <i class="fas fa-play"></i> Run
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" aria-labelledby="import-health">
+            <div class="admin-section-header">
+                <div>
+                    <h2 class="admin-section-title" id="import-health">Import And Snapshot Health</h2>
+                    <p class="admin-section-subtitle">Latest workbook status by scope, with source, progress, and processed rows.</p>
+                </div>
+                <span class="admin-chip admin-chip-neutral">Latest data year {{ import_latest_year|default:"-" }}</span>
+            </div>
+            <div class="admin-section-body p-0">
+                <div class="admin-table-wrap">
+                    <table class="table admin-table">
+                        <thead>
                             <tr>
-                                <td>{{ worker.name }}</td>
-                                <td>{{ worker.type }}</td>
-                                <td>{{ worker.registration_no|default:"-" }}</td>
+                                <th>Scope</th>
+                                <th>Status</th>
+                                <th>Source</th>
+                                <th>Progress</th>
+                                <th>Rows</th>
+                                <th>Completed</th>
                             </tr>
-                        {% empty %}
-                            <tr><td colspan="3" class="text-center text-muted">No overseas workers.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for row in admin_import_health_rows %}
+                                <tr>
+                                    <td><strong>{{ row.label }}</strong></td>
+                                    <td><span class="admin-chip admin-chip-{{ row.tone }}">{{ row.status }}</span></td>
+                                    <td>{{ row.source }}</td>
+                                    <td style="min-width: 160px;">
+                                        <div class="admin-progress"><span style="width: {{ row.progress }}%;"></span></div>
+                                        <small class="text-muted">{{ row.progress }}%</small>
+                                    </td>
+                                    <td>{{ row.rows }}</td>
+                                    <td>{% if row.completed %}{{ row.completed|date:"d M Y H:i" }}{% else %}-{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </section>
+
+        {% include "dashboard/_missing_data_reviews_table.html" %}
+
+        <section class="admin-section" aria-labelledby="analytics-charts">
+            <div class="admin-section-header">
+                <div>
+                    <h2 class="admin-section-title" id="analytics-charts">Platform Analytics</h2>
+                    <p class="admin-section-subtitle">Workforce trend, application status, and receipt tracking.</p>
+                </div>
+            </div>
+            <div class="admin-section-body">
+                <div class="admin-chart-grid">
+                    <div class="admin-chart-card">
+                        <h3>Workforce Trend</h3>
+                        <div class="admin-chart-canvas"><canvas id="workforceTrendChart"></canvas></div>
+                    </div>
+                    <div class="admin-chart-card">
+                        <h3>Application Status</h3>
+                        <div class="admin-chart-canvas"><canvas id="applicationStatusChart"></canvas></div>
+                    </div>
+                    <div class="admin-chart-card">
+                        <h3>Receipt Tracking</h3>
+                        <div class="admin-chart-canvas"><canvas id="receiptChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="admin-two-column">
+            <section class="admin-section" aria-labelledby="security-events">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title" id="security-events">Recent Security Signals</h2>
+                        <p class="admin-section-subtitle">Failed login, MFA failure, and access denied events.</p>
+                    </div>
+                </div>
+                <div class="admin-section-body p-0">
+                    <div class="admin-table-wrap">
+                        <table class="table admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>User</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in admin_recent_security_events %}
+                                    <tr>
+                                        <td>{{ event.get_action_display }}</td>
+                                        <td>{{ event.username|default:event.user|default:"unknown" }}</td>
+                                        <td>{{ event.created_at|date:"d M Y H:i" }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="3" class="text-center text-muted">No recent security events.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-section" aria-labelledby="snapshot-summary">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title" id="snapshot-summary">Latest Snapshot Summary</h2>
+                        <p class="admin-section-subtitle">Current workforce reporting snapshot.</p>
+                    </div>
+                </div>
+                <div class="admin-section-body">
+                    {% if latest_snapshot %}
+                        <div class="admin-board-stats">
+                            <div class="admin-mini-stat"><strong>{{ latest_snapshot.year }}</strong><span>Year</span></div>
+                            <div class="admin-mini-stat"><strong>{{ latest_snapshot.total_active_workers }}</strong><span>Total workforce</span></div>
+                            <div class="admin-mini-stat"><strong>{{ latest_snapshot.nearing_retirement }}</strong><span>Near retirement</span></div>
+                            <div class="admin-mini-stat"><strong>{{ latest_snapshot.total_nurses }}</strong><span>Nurses</span></div>
+                            <div class="admin-mini-stat"><strong>{{ latest_snapshot.total_doctors }}</strong><span>Doctors</span></div>
+                            <div class="admin-mini-stat"><strong>{{ latest_snapshot.total_chw }}</strong><span>CHW</span></div>
+                        </div>
+                        <div class="admin-actions-row mt-3">
+                            <a href="/admin/workforce/workforcesnapshot/" class="admin-action-link"><i class="fas fa-table"></i> Open Snapshots</a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No workforce snapshot has been generated yet.</p>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <section class="admin-section" aria-labelledby="institutions-graduands">
+            <div class="admin-section-header">
+                <div>
+                    <h2 class="admin-section-title" id="institutions-graduands">Institutions And Graduands</h2>
+                    <p class="admin-section-subtitle">Training institution output feeding the provisional pathway.</p>
+                </div>
+            </div>
+            <div class="admin-section-body p-0">
+                <div class="admin-table-wrap">
+                    <table class="table table-striped table-hover datatable admin-table">
+                        <thead>
+                            <tr>
+                                <th>Institution</th>
+                                <th>Type</th>
+                                <th>Graduands</th>
+                                <th>Records</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in graduand_by_institution %}
+                                <tr>
+                                    <td><strong><a href="{% url 'institution_graduand_detail' item.institution.pk %}">{{ item.institution.name }}</a></strong></td>
+                                    <td>{{ item.institution.type|default:"-" }}</td>
+                                    <td>
+                                        <div class="font-weight-bold mb-2">{{ item.count }}</div>
+                                        <ul class="mb-0 pl-3">
+                                            {% for graduand in item.graduands|slice:":5" %}
+                                                <li>{{ graduand.first_name }} {{ graduand.last_name }} ({{ graduand.registration_no }})</li>
+                                            {% empty %}
+                                                <li class="text-muted">No graduands</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td><a href="{% url 'record_list' 'graduand' %}" class="admin-action-link">Open List</a></td>
+                                    <td>
+                                        <div class="admin-actions-row">
+                                            <a href="{% url 'record_create' 'graduand' %}" class="admin-action-link">Add</a>
+                                            <a href="{% url 'record_list' 'graduand' %}" class="admin-action-link">CRUD</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="5" class="text-center text-muted">No institutions found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section" aria-labelledby="facilities-workers">
+            <div class="admin-section-header">
+                <div>
+                    <h2 class="admin-section-title" id="facilities-workers">Facilities And Workers</h2>
+                    <p class="admin-section-subtitle">Current facility postings and register navigation.</p>
+                </div>
+            </div>
+            <div class="admin-section-body p-0">
+                <div class="admin-table-wrap">
+                    <table class="table table-striped table-hover datatable admin-table">
+                        <thead>
+                            <tr>
+                                <th>Facility</th>
+                                <th>Location</th>
+                                <th>Current Workers</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in workers_by_facility %}
+                                <tr>
+                                    <td><strong><a href="{% url 'facility_worker_detail' item.facility.pk %}">{{ item.facility.name }}</a></strong></td>
+                                    <td>{{ item.facility.location|default:"-" }}</td>
+                                    <td>
+                                        <div class="font-weight-bold mb-2">{{ item.count }}</div>
+                                        <ul class="mb-0 pl-3">
+                                            {% for posting in item.postings|slice:":5" %}
+                                                <li>{{ posting.professional }} - {{ posting.position_title }}</li>
+                                            {% empty %}
+                                                <li class="text-muted">No current postings</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <div class="admin-actions-row">
+                                            <a href="{% url 'records_home' %}" class="admin-action-link">Hub</a>
+                                            <a href="{% url 'record_list' 'nursingprofessional' %}" class="admin-action-link">Nurses</a>
+                                            <a href="{% url 'record_list' 'medicaldoctor' %}" class="admin-action-link">Doctors</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4" class="text-center text-muted">No facilities found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <div class="admin-two-column">
+            <section class="admin-section" aria-labelledby="national-workers">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title" id="national-workers">National Workers</h2>
+                        <p class="admin-section-subtitle">Preview of national register records.</p>
+                    </div>
+                </div>
+                <div class="admin-section-body p-0">
+                    <div class="admin-table-wrap">
+                        <table class="table table-striped table-hover admin-table">
+                            <thead><tr><th>Name</th><th>Type</th><th>Reg No</th></tr></thead>
+                            <tbody>
+                                {% for worker in national_workers_table|slice:":10" %}
+                                    <tr>
+                                        <td>{{ worker.name }}</td>
+                                        <td>{{ worker.type }}</td>
+                                        <td>{{ worker.registration_no|default:"-" }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="3" class="text-center text-muted">No national workers.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-section" aria-labelledby="overseas-workers">
+                <div class="admin-section-header">
+                    <div>
+                        <h2 class="admin-section-title" id="overseas-workers">Overseas Workers</h2>
+                        <p class="admin-section-subtitle">Preview of overseas register records.</p>
+                    </div>
+                </div>
+                <div class="admin-section-body p-0">
+                    <div class="admin-table-wrap">
+                        <table class="table table-striped table-hover admin-table">
+                            <thead><tr><th>Name</th><th>Type</th><th>Reg No</th></tr></thead>
+                            <tbody>
+                                {% for worker in overseas_workers_table|slice:":10" %}
+                                    <tr>
+                                        <td>{{ worker.name }}</td>
+                                        <td>{{ worker.type }}</td>
+                                        <td>{{ worker.registration_no|default:"-" }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="3" class="text-center text-muted">No overseas workers.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 </div>
@@ -366,7 +1087,10 @@
 {% block extra_js %}
 <script src="{% static 'vendor/axios/axios.min.js' %}"></script>
 <script>
-function executeCommand(command, message) {
+function executeCommand(command, message, confirmationText) {
+    if (confirmationText && !window.confirm(confirmationText)) {
+        return;
+    }
     if (window.showAppLoading) {
         window.showAppLoading('Running staff command', message || 'Please wait while the system processes the requested command.', 'The status bar remains active during imports, exports, and statistics refreshes.');
     }
@@ -378,9 +1102,9 @@ function executeCommand(command, message) {
     }).then(function (response) {
         const message = response.data && response.data.message ? response.data.message : 'The staff command completed successfully.';
         if (window.showAppSuccess) {
-            window.showAppSuccess('Successful', message, 'Redirecting you back to your dashboard.', '{% url "main_dashboard" %}', 1600);
+            window.showAppSuccess('Successful', message, 'Refreshing the command centre.', '{% url "admin_dashboard" %}', 1600);
         } else {
-            window.location.href = '{% url "main_dashboard" %}';
+            window.location.href = '{% url "admin_dashboard" %}';
         }
     }).catch(function (error) {
         if (window.hideAppLoading) {
@@ -391,6 +1115,16 @@ function executeCommand(command, message) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-admin-command]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            executeCommand(
+                button.getAttribute('data-admin-command'),
+                button.getAttribute('data-admin-message'),
+                button.getAttribute('data-admin-confirm')
+            );
+        });
+    });
+
     if (typeof Chart === 'undefined') return;
 
     new Chart(document.getElementById('workforceTrendChart'), {
@@ -400,10 +1134,10 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Active Workers',
                 data: {{ total_workers_by_year|default:"[]"|safe }},
-                borderColor: '#198754',
-                backgroundColor: 'rgba(25,135,84,.15)',
+                borderColor: '#174e7a',
+                backgroundColor: 'rgba(23, 78, 122, .14)',
                 fill: true,
-                tension: 0.35
+                tension: 0.32
             }]
         },
         options: {responsive: true, maintainAspectRatio: false}
@@ -419,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {{ approved_applications|default:0 }},
                     {{ rejected_applications|default:0 }}
                 ],
-                backgroundColor: ['#ffc107', '#198754', '#dc3545']
+                backgroundColor: ['#a35d00', '#167044', '#b42318']
             }]
         },
         options: {responsive: true, maintainAspectRatio: false}
@@ -436,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {{ receipt_completed_count|default:0 }},
                     {{ receipt_failed_count|default:0 }}
                 ],
-                backgroundColor: ['#0dcaf0', '#198754', '#dc3545']
+                backgroundColor: ['#0f6380', '#167044', '#b42318']
             }]
         },
         options: {responsive: true, maintainAspectRatio: false}

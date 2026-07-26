@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PNG Nursing Council Regulatory Profile{% endblock %}
+{% block title_label %}PNG Nursing Council Regulatory Profile{% endblock %}
+
+{% block content %}
+<style>
+    .nc-profile {
+        --nc-ink: #102033;
+        --nc-muted: #475569;
+        --nc-line: #d7e3e7;
+        --nc-green: #0f5f58;
+        --nc-green-dark: #073f3d;
+        --nc-gold: #b7791f;
+        color: var(--nc-ink);
+    }
+    .nc-profile-hero,
+    .nc-profile-section,
+    .nc-function-card,
+    .nc-responsibility-card {
+        background: #ffffff;
+        border: 1px solid var(--nc-line);
+        border-radius: 8px;
+        box-shadow: 0 14px 34px rgba(16, 32, 51, .07);
+    }
+    .nc-profile-hero {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: 96px minmax(0, 1fr);
+        margin-bottom: 16px;
+        padding: 22px;
+    }
+    .nc-profile-crest {
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid var(--nc-line);
+        border-radius: 50%;
+        display: flex;
+        height: 96px;
+        justify-content: center;
+        width: 96px;
+    }
+    .nc-profile-crest img {
+        max-height: 72px;
+        max-width: 72px;
+        object-fit: contain;
+    }
+    .nc-profile-kicker {
+        color: var(--nc-green);
+        font-size: .78rem;
+        font-weight: 900;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+    .nc-profile h2,
+    .nc-profile h3,
+    .nc-profile h4 {
+        color: var(--nc-ink);
+        font-weight: 900;
+        letter-spacing: 0;
+    }
+    .nc-profile-hero h2 {
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        line-height: 1;
+        margin: 4px 0 10px;
+        text-transform: uppercase;
+    }
+    .nc-profile-tagline {
+        color: var(--nc-green-dark);
+        font-size: 1.12rem;
+        font-style: italic;
+        font-weight: 800;
+        margin: 0;
+    }
+    .nc-profile-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+    }
+    .nc-profile-section {
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .nc-profile-section-header {
+        align-items: center;
+        background: linear-gradient(135deg, var(--nc-green-dark), var(--nc-green));
+        color: #ffffff;
+        display: flex;
+        gap: 12px;
+        padding: 13px 16px;
+    }
+    .nc-profile-section-header i {
+        align-items: center;
+        background: rgba(255, 255, 255, .16);
+        border-radius: 50%;
+        display: inline-flex;
+        height: 42px;
+        justify-content: center;
+        width: 42px;
+    }
+    .nc-profile-section-header h3 {
+        color: #ffffff;
+        font-size: 1.28rem;
+        margin: 0;
+        text-transform: uppercase;
+    }
+    .nc-profile-section-body {
+        padding: 18px;
+    }
+    .nc-profile-section-body p {
+        color: #1f2937;
+        font-size: 1rem;
+        line-height: 1.65;
+        margin-bottom: 14px;
+    }
+    .nc-functions-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .nc-function-card {
+        min-height: 170px;
+        padding: 16px;
+    }
+    .nc-function-card i {
+        align-items: center;
+        background: #e6f3f1;
+        border-radius: 8px;
+        color: var(--nc-green);
+        display: inline-flex;
+        font-size: 1.4rem;
+        height: 44px;
+        justify-content: center;
+        margin-bottom: 12px;
+        width: 44px;
+    }
+    .nc-function-card h4 {
+        font-size: .98rem;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+    .nc-function-card p,
+    .nc-responsibility-card p {
+        color: var(--nc-muted);
+        line-height: 1.55;
+        margin: 0;
+    }
+    .nc-responsibility-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .nc-responsibility-card {
+        align-items: flex-start;
+        display: flex;
+        gap: 10px;
+        padding: 13px;
+    }
+    .nc-responsibility-card i {
+        color: var(--nc-green);
+        margin-top: 3px;
+    }
+    .nc-profile-footer {
+        background: linear-gradient(135deg, var(--nc-green-dark), var(--nc-green));
+        border-radius: 8px;
+        color: #ffffff;
+        margin-bottom: 16px;
+        padding: 18px;
+        text-align: center;
+    }
+    .nc-profile-footer strong {
+        display: block;
+        font-size: 1.05rem;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+    .nc-profile-footer span {
+        color: #f7c948;
+        display: block;
+        font-style: italic;
+        font-weight: 800;
+        margin-top: 4px;
+    }
+    @media (max-width: 720px) {
+        .nc-profile-hero {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="nc-profile">
+    <section class="nc-profile-hero">
+        <div class="nc-profile-crest">
+            <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest">
+        </div>
+        <div>
+            <div class="nc-profile-kicker">Public Nursing Council Information</div>
+            <h2>PNG Nursing Council</h2>
+            <p class="nc-profile-tagline">Protecting the Public. Regulating the Profession. Advancing Nursing and Midwifery in PNG.</p>
+            <div class="nc-profile-actions">
+                <a href="{% url 'public_nursing_register_search_root' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-search mr-1"></i> Verify Public Register
+                </a>
+                <a href="{% url 'public_nursing_account_register' %}" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-user-plus mr-1"></i> Nursing Council Sign Up
+                </a>
+                <a href="{% url 'portal_home' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-house mr-1"></i> Home
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="nc-profile-section">
+        <div class="nc-profile-section-header">
+            <i class="fas fa-landmark" aria-hidden="true"></i>
+            <h3>Legislative Mandate</h3>
+        </div>
+        <div class="nc-profile-section-body">
+            <p>The Papua New Guinea Nursing Council (PNGNC) was established in <strong>1964</strong> and is mandated under the <strong>Medical Registration Act 1980</strong> to regulate nursing and midwifery education, registration, licensing and scope of practice in Papua New Guinea.</p>
+            <p>The Council is responsible for protecting public health and safety by ensuring that nurses and midwives meet approved standards of competence, professional conduct and professional practice.</p>
+            <p>In carrying out its statutory mandate, the Council exercises regulatory oversight and authority over matters relating to nursing and midwifery education, registration, licensing, accreditation, professional standards, professional conduct and scope of practice in accordance with applicable laws and regulations.</p>
+        </div>
+    </section>
+
+    <section class="nc-profile-section">
+        <div class="nc-profile-section-header">
+            <i class="fas fa-gear" aria-hidden="true"></i>
+            <h3>Key Functions</h3>
+        </div>
+        <div class="nc-profile-section-body">
+            <div class="nc-functions-grid">
+                <article class="nc-function-card">
+                    <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                    <h4>Registration</h4>
+                    <p>Register and maintain a current register of qualified nurses and midwives in Papua New Guinea.</p>
+                </article>
+                <article class="nc-function-card">
+                    <i class="fas fa-certificate" aria-hidden="true"></i>
+                    <h4>Licensing</h4>
+                    <p>License eligible practitioners to undertake nursing and midwifery scope of practice in Papua New Guinea.</p>
+                </article>
+                <article class="nc-function-card">
+                    <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                    <h4>Standards</h4>
+                    <p>Set and enforce professional standards, codes of conduct and practice guidelines.</p>
+                </article>
+                <article class="nc-function-card">
+                    <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                    <h4>Accreditation</h4>
+                    <p>Accredit and monitor nursing and midwifery education programs.</p>
+                </article>
+                <article class="nc-function-card">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                    <h4>Complaints Management</h4>
+                    <p>Receive, assess and manage complaints to ensure professional accountability.</p>
+                </article>
+                <article class="nc-function-card">
+                    <i class="fas fa-scale-balanced" aria-hidden="true"></i>
+                    <h4>Discipline</h4>
+                    <p>Investigate misconduct and take appropriate disciplinary action.</p>
+                </article>
+                <article class="nc-function-card">
+                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                    <h4>Policy &amp; Advice</h4>
+                    <p>Provide policy advice and input to strengthen nursing and midwifery regulation.</p>
+                </article>
+                <article class="nc-function-card">
+                    <i class="fas fa-handshake" aria-hidden="true"></i>
+                    <h4>Partnerships</h4>
+                    <p>Collaborate with stakeholders to strengthen health systems and workforce development.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="nc-profile-section">
+        <div class="nc-profile-section-header">
+            <i class="fas fa-user-shield" aria-hidden="true"></i>
+            <h3>Our Role &amp; Responsibility</h3>
+        </div>
+        <div class="nc-profile-section-body">
+            <p>The PNG Nursing Council is the independent statutory authority responsible for regulating nursing and midwifery professions. We act in the public interest by:</p>
+            <div class="nc-responsibility-grid">
+                <div class="nc-responsibility-card"><i class="fas fa-circle-check"></i><p>Upholding professional standards and ethics.</p></div>
+                <div class="nc-responsibility-card"><i class="fas fa-circle-check"></i><p>Ensuring practitioners are competent and fit to undertake their approved scope of practice.</p></div>
+                <div class="nc-responsibility-card"><i class="fas fa-circle-check"></i><p>Promoting quality nursing and midwifery education.</p></div>
+                <div class="nc-responsibility-card"><i class="fas fa-circle-check"></i><p>Protecting the public from harm.</p></div>
+                <div class="nc-responsibility-card"><i class="fas fa-circle-check"></i><p>Strengthening regulatory systems and governance.</p></div>
+                <div class="nc-responsibility-card"><i class="fas fa-circle-check"></i><p>Supporting a safe, skilled and sustainable workforce.</p></div>
+                <div class="nc-responsibility-card"><i class="fas fa-circle-check"></i><p>Advancing the profession for better health outcomes.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="nc-profile-footer">
+        <strong>Strong Regulation. Safe Practice. Quality Care. Healthy People.</strong>
+        <span>Our Vision. Our Mandate. Our Commitment.</span>
+    </div>
+</div>
+{% endblock %}

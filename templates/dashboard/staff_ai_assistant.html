@@ -18,18 +18,34 @@
                     <strong>Current scope:</strong> {{ scope_label }}.
                     The assistant reads the same live registry, import, review, and application queues already used by staff across the platform.
                 </div>
+                <div class="alert alert-warning border mb-3">
+                    <strong>Decision support only:</strong> verify the cited platform sources before any approval, licence, legal, clinical, or payment decision.
+                    The assistant cannot approve or alter live records.
+                </div>
                 <div class="alert alert-info border mb-0">
                     <strong>AI mode:</strong> {{ ai_provider.label }}.
                     {{ ai_provider.detail }}
                     {% if ai_provider.openai_ready %}
                         Model: {{ ai_provider.model }}.
+                    {% elif ai_provider.google_adk_ready %}
+                        Google ADK model: {{ ai_provider.google_adk_model }}.
+                    {% elif ai_provider.localai_ready %}
+                        LocalAI model: {{ ai_provider.localai_model }}.
                     {% elif ai_provider.ollama_ready %}
                         Free local model: {{ ai_provider.ollama_model }}.
                     {% elif ai_provider.local_llm_ready %}
                         Private model: {{ ai_provider.local_model }}.
                     {% else %}
-                        This mode works without internet access or external API billing. Configure Ollama to enable a free local GPT model.
+                        This mode works without internet access or external API billing. Enable and configure a live local provider (Ollama / LocalAI / private local endpoint) to run local model-assisted responses.
                     {% endif %}
+                    <div class="mt-2">
+                        <strong>Knowledge search:</strong> {{ ai_provider.rag_detail }}
+                        {% if ai_provider.rag_ready %}
+                            Indexed documents: {{ ai_provider.rag.index_document_count }}.
+                        {% elif ai_provider.rag_enabled %}
+                            Run <code>python manage.py build_ai_knowledge_index</code> after installing the local AI packages.
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,18 +84,34 @@
         <div class="card card-outline card-primary">
             <div class="card-header"><h3 class="card-title mb-0">Staff AI Chat</h3></div>
             <div class="card-body">
-                <div class="helpdesk-chat-panel border rounded p-3 mb-3" id="staff-ai-messages" style="height: 360px; overflow-y: auto;">
+                <div class="helpdesk-chat-panel border rounded p-3 mb-3" id="staff-ai-messages" aria-live="polite" aria-relevant="additions text" style="height: 360px; overflow-y: auto;">
                     <div class="helpdesk-message assistant">
                         <strong>{{ agent_label }}</strong>
-                        <p>You can ask about pending applications, missing data, imports, reports, role access, documents, or what action to take next.</p>
+                        <p>Ask one focused question within your current office scope. Sources are shown with every answer so you can verify the guidance before acting.</p>
                     </div>
                 </div>
                 <form id="staff-ai-form">
                     <div class="input-group">
                         <input type="text" class="form-control" id="staff-ai-question" placeholder="Ask the staff assistant a question..." autocomplete="off">
+                        <button type="button" class="btn btn-outline-secondary" id="staff-ai-voice" title="Voice input">
+                            <i class="fas fa-microphone"></i>
+                        </button>
                         <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </form>
+                <div class="small text-muted mt-2" id="staff-ai-voice-status" aria-live="polite" hidden></div>
+                <div class="d-flex flex-wrap align-items-center mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary mr-2" id="staff-ai-read-last">
+                        <i class="fas fa-volume-up mr-1"></i> Read last answer
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mr-2" id="staff-ai-voice-reply" aria-pressed="false">
+                        <i class="fas fa-comment-dots mr-1"></i> Voice reply off
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="staff-ai-stop-reading">
+                        <i class="fas fa-stop mr-1"></i> Stop
+                    </button>
+                    <span class="small text-muted ml-2">Voice uses the browser or Android device where supported.</span>
+                </div>
                 <div class="helpdesk-suggestions mt-3">
                     {% for suggestion in chat_suggestions %}
                         <button type="button" class="helpdesk-suggestion" data-staff-ai-question="{{ suggestion }}">{{ suggestion }}</button>
@@ -241,6 +273,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('staff-ai-form');
     const input = document.getElementById('staff-ai-question');
     const messages = document.getElementById('staff-ai-messages');
+    const voiceButton = document.getElementById('staff-ai-voice');
+    const readLastButton = document.getElementById('staff-ai-read-last');
+    const voiceReplyButton = document.getElementById('staff-ai-voice-reply');
+    const stopReadingButton = document.getElementById('staff-ai-stop-reading');
+    const voiceStatus = document.getElementById('staff-ai-voice-status');
+    const feedbackUrl = '{% url "staff_ai_feedback" %}';
+    let lastAssistantText = '';
+    let activeVoiceRecognition = null;
+    let voiceStopRequested = false;
+    let voiceReplyEnabled = localStorage.getItem('ndohStaffAiVoiceReply') === '1';
+    let staffSessionId = localStorage.getItem('ndohStaffAiSessionId');
+    if (!staffSessionId) {
+        staffSessionId = 'staff-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('ndohStaffAiSessionId', staffSessionId);
+    }
 
     if (!form || !input || !messages) {
         return;
@@ -254,26 +301,150 @@ document.addEventListener('DOMContentLoaded', function () {
         messages.scrollTop = messages.scrollHeight;
     }
 
-    function askStaffAssistant(question) {
-        appendMessage('<p>' + window.ndohEscapeHtml(question) + '</p>', 'user');
-        const waitingNode = document.createElement('div');
-        waitingNode.className = 'helpdesk-message assistant';
-        waitingNode.innerHTML = '<p>Checking live registry context and preparing an answer...</p>';
-        messages.appendChild(waitingNode);
-        messages.scrollTop = messages.scrollHeight;
-        fetch('{% url "staff_ai_chat" %}', {
+    function updateVoiceReplyButton() {
+        if (!voiceReplyButton) {
+            return;
+        }
+        voiceReplyButton.setAttribute('aria-pressed', voiceReplyEnabled ? 'true' : 'false');
+        voiceReplyButton.classList.toggle('btn-secondary', voiceReplyEnabled);
+        voiceReplyButton.classList.toggle('btn-outline-secondary', !voiceReplyEnabled);
+        voiceReplyButton.innerHTML = voiceReplyEnabled
+            ? '<i class="fas fa-comment-dots mr-1"></i> Voice reply on'
+            : '<i class="fas fa-comment-dots mr-1"></i> Voice reply off';
+    }
+
+    function setVoiceInputState(isListening) {
+        if (!voiceButton) {
+            return;
+        }
+        voiceButton.classList.toggle('is-listening', Boolean(isListening));
+        voiceButton.setAttribute('aria-pressed', isListening ? 'true' : 'false');
+        voiceButton.title = isListening ? 'Listening - click to stop voice input' : 'Voice input';
+    }
+
+    function setVoiceStatus(message, isError) {
+        if (!voiceStatus) {
+            return;
+        }
+        voiceStatus.textContent = message;
+        voiceStatus.hidden = !message;
+        voiceStatus.classList.toggle('text-danger', Boolean(isError));
+        voiceStatus.classList.toggle('text-muted', !isError);
+    }
+
+    function speakText(text) {
+        if (!text || !('speechSynthesis' in window)) {
+            return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en';
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function feedbackControls(data) {
+        if (!data.session_id || !data.assistant_message_id) {
+            return '';
+        }
+        return '<div class="small mt-3 staff-ai-feedback" data-feedback-session="' + window.ndohEscapeHtml(data.session_id)
+            + '" data-feedback-message="' + window.ndohEscapeHtml(String(data.assistant_message_id)) + '">'
+            + '<span class="text-muted mr-2">Was this answer useful?</span>'
+            + '<button type="button" class="btn btn-xs btn-outline-success mr-1" data-staff-ai-feedback="helpful">Helpful</button>'
+            + '<button type="button" class="btn btn-xs btn-outline-warning" data-staff-ai-feedback="needs_review">Needs expert review</button>'
+            + '</div>';
+    }
+
+    function recordLookupMarkup(lookup) {
+        if (!lookup || lookup.status !== 'ok' || !Array.isArray(lookup.records) || !lookup.records.length) {
+            return '';
+        }
+        const rows = lookup.records.map(function (record) {
+            const recordId = window.ndohEscapeHtml(String(record.id || ''));
+            const name = window.ndohEscapeHtml(record.full_name || 'Registry record');
+            const registration = window.ndohEscapeHtml(record.registration_no || 'Not captured');
+            const practitionerNo = record.practitioner_number
+                ? '<div class="text-muted small">Practitioner: ' + window.ndohEscapeHtml(record.practitioner_number) + '</div>'
+                : '';
+            const type = window.ndohEscapeHtml(record.record_type || record.category || 'Not captured');
+            const year = record.record_year ? '<div class="text-muted small">Year: ' + window.ndohEscapeHtml(String(record.record_year)) + '</div>' : '';
+            const province = window.ndohEscapeHtml(record.province || 'Not captured');
+            const url = String(record.record_url || '');
+            const openLink = url.indexOf('/') === 0
+                ? '<a class="btn btn-xs btn-outline-primary" href="' + window.ndohEscapeHtml(url) + '">Open official record</a>'
+                : '';
+            return '<tr><td>#' + recordId + '</td><td><strong>' + name + '</strong></td><td>' + registration + practitionerNo
+                + '</td><td>' + type + year + '</td><td>' + province + '</td><td>' + openLink + '</td></tr>';
+        }).join('');
+        return '<div class="table-responsive mt-3"><table class="table table-sm table-bordered mb-1">'
+            + '<caption class="sr-only">Authorised live registry lookup results</caption>'
+            + '<thead class="thead-light"><tr><th>Record</th><th>Professional</th><th>Registration</th><th>Type</th><th>Province</th><th></th></tr></thead>'
+            + '<tbody>' + rows + '</tbody></table></div>'
+            + '<div class="small text-muted">Read-only authorised lookup. Dates of birth, contact details, addresses, raw import data, and payment amounts are excluded.</div>';
+    }
+
+    function submitFeedback(button) {
+        const container = button.closest('.staff-ai-feedback');
+        if (!container) {
+            return;
+        }
+        const rating = button.getAttribute('data-staff-ai-feedback');
+        let feedbackText = '';
+        if (rating === 'needs_review') {
+            const promptText = 'Briefly describe the issue. Do not include patient, applicant, contact, date-of-birth, payment, or other personal information.';
+            feedbackText = window.prompt(promptText) || '';
+        }
+        button.disabled = true;
+        fetch(feedbackUrl, {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': window.ndohGetCsrfToken()
             },
-            body: JSON.stringify({ question: question })
+            body: JSON.stringify({
+                session_id: container.getAttribute('data-feedback-session'),
+                assistant_message_id: container.getAttribute('data-feedback-message'),
+                rating: rating,
+                feedback_text: feedbackText
+            })
         }).then(function (response) {
-            if (!response.ok) {
-                throw new Error('Staff assistant request failed.');
-            }
-            return response.json();
+            return response.json().then(function (payload) {
+                if (!response.ok) {
+                    throw new Error(payload.error || 'Feedback could not be saved.');
+                }
+                return payload;
+            });
+        }).then(function (payload) {
+            container.innerHTML = '<span class="text-muted">' + window.ndohEscapeHtml(payload.message) + '</span>';
+        }).catch(function (error) {
+            button.disabled = false;
+            container.insertAdjacentHTML('beforeend', '<span class="text-danger ml-2">' + window.ndohEscapeHtml(error.message) + '</span>');
+        });
+    }
+
+    function askStaffAssistant(question, options) {
+        const speakReply = Boolean(options && options.speakReply) || voiceReplyEnabled;
+        appendMessage('<p>' + window.ndohEscapeHtml(question) + '</p>', 'user');
+        const waitingNode = document.createElement('div');
+        waitingNode.className = 'helpdesk-message assistant';
+        waitingNode.innerHTML = '<p>Checking live registry context and preparing an answer...</p>';
+        messages.appendChild(waitingNode);
+        messages.scrollTop = messages.scrollHeight;
+        fetch('{% url "staff_ai_chat_stream" %}', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.ndohGetCsrfToken()
+            },
+            body: JSON.stringify({ question: question, session_id: staffSessionId })
+        }).then(function (response) {
+            return window.ndohReadSseResponse(response, {
+                onStatus: function (payload) {
+                    waitingNode.innerHTML = '<p>' + window.ndohEscapeHtml(payload.message || 'Preparing an answer...') + '</p>';
+                }
+            });
         }).then(function (data) {
             waitingNode.remove();
             const bullets = (data.bullets || []).map(function (item) {
@@ -285,14 +456,49 @@ document.addEventListener('DOMContentLoaded', function () {
             const suggestions = (data.suggestions || []).length
                 ? '<div class="small text-muted mt-2">Try also: ' + data.suggestions.map(window.ndohEscapeHtml).join(', ') + '</div>'
                 : '';
+            const recordLookup = recordLookupMarkup(data.record_lookup);
+            const route = data.regulatory_ai_route || {};
+            const routeAgent = route.agent && route.agent.label ? route.agent.label : '';
+            const routeNote = routeAgent
+                ? '<div class="small text-muted mt-2"><i class="fas fa-project-diagram mr-1"></i><strong>Regulatory AI route:</strong> '
+                    + window.ndohEscapeHtml(routeAgent)
+                    + ' · read-only scoped decision support</div>'
+                : '';
+            const sources = (data.sources || []).length
+                ? '<div class="small text-muted mt-2"><strong>Sources:</strong> ' + data.sources.map(function (source) {
+                    const label = window.ndohEscapeHtml(source.label || 'Source');
+                    const detail = source.detail ? ' - ' + window.ndohEscapeHtml(source.detail) : '';
+                    return source.url ? '<a href="' + window.ndohEscapeHtml(source.url) + '">' + label + '</a>' + detail : label + detail;
+                }).join('; ') + '</div>'
+                : '';
+            const decisionSupport = data.decision_support_notice
+                ? '<div class="small text-warning mt-2"><i class="fas fa-shield-alt mr-1"></i>' + window.ndohEscapeHtml(data.decision_support_notice) + '</div>'
+                : '';
+            lastAssistantText = [
+                data.title || '{{ agent_label|escapejs }}',
+                data.answer || '',
+                (data.bullets || []).join('. ')
+            ].join('. ');
+            if (data.session_id) {
+                staffSessionId = data.session_id;
+                localStorage.setItem('ndohStaffAiSessionId', staffSessionId);
+            }
             appendMessage(
                 '<strong>' + window.ndohEscapeHtml(data.title || '{{ agent_label|escapejs }}') + '</strong>'
                 + '<p>' + window.ndohEscapeHtml(data.answer || 'No response available.') + '</p>'
                 + (bullets ? '<ul class="mb-2">' + bullets + '</ul>' : '')
                 + (links ? '<div class="helpdesk-links">' + links + '</div>' : '')
-                + suggestions,
+                + recordLookup
+                + routeNote
+                + sources
+                + decisionSupport
+                + suggestions
+                + feedbackControls(data),
                 'assistant'
             );
+            if (speakReply) {
+                speakText(lastAssistantText);
+            }
         }).catch(function () {
             waitingNode.remove();
             appendMessage('<p>Sorry, the staff assistant could not answer right now. Please try again or open Staff Inbox & Chat.</p>', 'assistant');
@@ -317,6 +523,93 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    messages.addEventListener('click', function (event) {
+        const feedbackButton = event.target.closest('[data-staff-ai-feedback]');
+        if (feedbackButton) {
+            submitFeedback(feedbackButton);
+        }
+    });
+
+    if (readLastButton) {
+        readLastButton.addEventListener('click', function () {
+            speakText(lastAssistantText || 'No assistant answer is available yet.');
+        });
+    }
+    if (voiceReplyButton) {
+        if (!('speechSynthesis' in window)) {
+            voiceReplyButton.disabled = true;
+            voiceReplyButton.title = 'Voice replies are not supported by this browser';
+        } else {
+            updateVoiceReplyButton();
+            voiceReplyButton.addEventListener('click', function () {
+                voiceReplyEnabled = !voiceReplyEnabled;
+                localStorage.setItem('ndohStaffAiVoiceReply', voiceReplyEnabled ? '1' : '0');
+                updateVoiceReplyButton();
+            });
+        }
+    }
+    if (stopReadingButton && 'speechSynthesis' in window) {
+        stopReadingButton.addEventListener('click', function () {
+            window.speechSynthesis.cancel();
+        });
+    }
+    if (voiceButton) {
+        const voiceAvailability = window.ndohVoiceRecognitionAvailability();
+        if (!voiceAvailability.supported) {
+            voiceButton.disabled = true;
+            voiceButton.setAttribute('aria-disabled', 'true');
+            setVoiceStatus(voiceAvailability.message, true);
+        } else {
+            voiceButton.addEventListener('click', function () {
+                if (activeVoiceRecognition) {
+                    voiceStopRequested = true;
+                    try {
+                        activeVoiceRecognition.stop();
+                    } catch (error) {
+                        activeVoiceRecognition = null;
+                        setVoiceInputState(false);
+                        setVoiceStatus('Voice input stopped.', false);
+                    }
+                    return;
+                }
+                voiceStopRequested = false;
+                const recognition = window.ndohStartVoiceRecognition({
+                    language: 'en',
+                    onStart: function () {
+                        setVoiceInputState(true);
+                        setVoiceStatus('Listening - speak your staff question now.', false);
+                    },
+                    onResult: function (transcript) {
+                        setVoiceStatus('Voice question captured. Sending secure platform AI request...', false);
+                        input.value = transcript;
+                        askStaffAssistant(transcript, { speakReply: true });
+                    },
+                    onError: function (detail) {
+                        activeVoiceRecognition = null;
+                        setVoiceInputState(false);
+                        if (detail.error === 'aborted' && voiceStopRequested) {
+                            setVoiceStatus('Voice input stopped.', false);
+                            return;
+                        }
+                        setVoiceStatus(detail.message, true);
+                    },
+                    onEnd: function (detail) {
+                        activeVoiceRecognition = null;
+                        setVoiceInputState(false);
+                        if (!detail.hasTranscript && !detail.errorCode && !voiceStopRequested) {
+                            setVoiceStatus('No speech was detected. Press the microphone and speak after Listening appears.', true);
+                        }
+                        voiceStopRequested = false;
+                    },
+                });
+                activeVoiceRecognition = recognition;
+                if (!recognition) {
+                    setVoiceInputState(false);
+                }
+            });
+        }
+    }
 });
 </script>
 {% endblock %}

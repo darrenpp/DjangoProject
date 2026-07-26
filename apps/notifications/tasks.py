@@ -1,5 +1,4 @@
 from celery import shared_task
-from django.core.mail import send_mail
 from apps.workforce.models import Application
 from apps.workforce.services.data_quality import notify_expiring_licenses
 
@@ -14,8 +13,9 @@ def check_provisional_licence_expiry():
 def send_application_notification(application_id):
     try:
         app = Application.objects.get(id=application_id)
-        subject = f"Application Update: {app.form_code}"
-        message = f"Your application ({app.form_code}) status is now: {app.status.upper()}"
-        send_mail(subject, message, 'no-reply@ndoh.gov.pg', [app.professional.email])
-    except:
-        pass
+    except Application.DoesNotExist:
+        return False
+
+    from .views import send_application_status_email
+
+    return send_application_status_email(app)

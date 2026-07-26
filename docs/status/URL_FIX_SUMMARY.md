@@ -17,7 +17,7 @@ The URLconf only had patterns for:
 ## Solution
 
 ### 1. Added Dashboard URLs to Main URLconf
-**File:** `ndoh_workforce_registry/urls.py`
+**File:** `NDOH_regulatory_bodies/urls.py`
 
 Added the dashboard app to the main URL configuration:
 ```python
@@ -25,7 +25,7 @@ path('dashboard/', include('apps.dashboard.urls')),
 ```
 
 ### 2. Added Root URL Redirect
-**File:** `ndoh_workforce_registry/urls.py`
+**File:** `NDOH_regulatory_bodies/urls.py`
 
 Added a redirect from the root path to the dashboard:
 ```python

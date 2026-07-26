@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}NHWA Alignment Centre{% endblock %}
+{% block title_label %}NHWA Alignment Centre{% endblock %}
+
+{% block extra_css %}
+<style>
+  .nhwa-centre-hero {
+    background: linear-gradient(135deg, #12304a 0%, #0f8b8d 76%, #d79a16 100%);
+    border-radius: 8px;
+    color: #fff;
+    margin-bottom: 1rem;
+    padding: 1.15rem 1.25rem;
+  }
+  .nhwa-centre-hero h2,
+  .nhwa-centre-hero p {
+    color: #fff;
+    margin: 0;
+  }
+  .nhwa-centre-hero p {
+    margin-top: .4rem;
+    max-width: 82rem;
+  }
+  .nhwa-workflow-grid,
+  .nhwa-source-grid,
+  .nhwa-card-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .nhwa-panel {
+    background: #fff;
+    border: 1px solid #d9e3ee;
+    border-radius: 8px;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, .07);
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .nhwa-panel header {
+    background: #f4f8fb;
+    border-bottom: 1px solid #d9e3ee;
+    padding: .9rem 1rem;
+  }
+  .nhwa-panel h3,
+  .nhwa-panel h4 {
+    color: #102b45;
+    font-size: 1.05rem;
+    font-weight: 900;
+    margin: 0;
+  }
+  .nhwa-panel-body {
+    padding: 1rem;
+  }
+  .nhwa-action-button {
+    min-height: 3.1rem;
+    text-align: left;
+    white-space: normal;
+  }
+  .nhwa-action-note {
+    color: #526b84;
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+    margin-top: .18rem;
+  }
+  .nhwa-status-pill {
+    border-radius: 999px;
+    display: inline-block;
+    font-size: .76rem;
+    font-weight: 900;
+    padding: .22rem .55rem;
+  }
+  .nhwa-status-ok {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .nhwa-status-warn {
+    background: #fff7ed;
+    color: #9a3412;
+  }
+  .nhwa-readiness-table th,
+  .nhwa-readiness-table td {
+    vertical-align: middle;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="nhwa-centre-hero">
+  <h2>System Admin NHWA Import and Alignment Centre</h2>
+  <p>
+    The NHWA toolkit is a standards and reporting layer. Verified registry, analytics, finance and facility data flows into NHWA workbook cells for review, sign-off and export. NHWA workbook values never overwrite the legal registry automatically.
+  </p>
+</section>
+
+<div class="nhwa-panel">
+  <header><h3>Controlled Source Artefacts</h3></header>
+  <div class="nhwa-panel-body nhwa-source-grid">
+    {% for document in source_documents %}
+    <div>
+      <h4>{{ document.title }}</h4>
+      <div class="small text-muted">{{ document.path }}</div>
+      <div class="mt-2">
+        {% if document.exists %}
+        <span class="nhwa-status-pill nhwa-status-ok">Available {{ document.size_kb }} KB</span>
+        {% else %}
+        <span class="nhwa-status-pill nhwa-status-warn">Missing</span>
+        {% endif %}
+      </div>
+      <p class="small text-muted mt-2 mb-0">{{ document.policy }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="nhwa-panel">
+  <header><h3>Workflow Controls</h3></header>
+  <div class="nhwa-panel-body">
+    {% if can_run_actions %}
+    <div class="nhwa-workflow-grid">
+      <form method="post" action="{% url 'nhwa_alignment_action' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="bootstrap">
+        <input type="hidden" name="scope" value="all">
+        <button class="btn btn-primary btn-block nhwa-action-button" type="submit">
+          1. Bootstrap NHWA Toolkit
+          <span class="nhwa-action-note">Create or refresh Nursing Council and Medical Board web workbook templates.</span>
+        </button>
+      </form>
+      <form method="post" action="{% url 'nhwa_alignment_action' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="populate_2026">
+        <input type="hidden" name="scope" value="all">
+        <button class="btn btn-success btn-block nhwa-action-button" type="submit">
+          2. Populate from 2026 Registry
+          <span class="nhwa-action-note">Write known values from verified platform data into NHWA cells.</span>
+        </button>
+      </form>
+      <a class="btn btn-info btn-block nhwa-action-button" href="#nhwa-readiness">
+        3. Review Missing NHWA Fields
+        <span class="nhwa-action-note">Open workbook readiness, missing cell examples and checklist status.</span>
+      </a>
+      <form method="post" action="{% url 'nhwa_alignment_action' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="lock_signoff">
+        <input type="hidden" name="scope" value="all">
+        <button class="btn btn-warning btn-block nhwa-action-button" type="submit">
+          4. Lock / Sign Off Workbook
+          <span class="nhwa-action-note">Allowed only when the Data Quality Checklist is complete.</span>
+        </button>
+      </form>
+      <a class="btn btn-dark btn-block nhwa-action-button" href="{% url 'nhwa_submission_pack_export' %}">
+        5. Export NHWA Submission Pack
+        <span class="nhwa-action-note">Exports locked workbook values and a manifest. Source files remain controlled.</span>
+      </a>
+      <form method="post" action="{% url 'nhwa_alignment_action' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="unlock">
+        <input type="hidden" name="scope" value="all">
+        <button class="btn btn-outline-secondary btn-block nhwa-action-button" type="submit">
+          Reopen Locked Workbooks
+          <span class="nhwa-action-note">Use only when a signed-off workbook needs correction before export.</span>
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div class="alert alert-info mb-0">
+      You can view NHWA workbook status and guidance. Bootstrap, population, sign-off and export controls are restricted to System Admin users.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="nhwa-panel" id="nhwa-readiness">
+  <header><h3>Workbook Readiness</h3></header>
+  <div class="nhwa-panel-body">
+    {% if has_workbooks %}
+    <div class="nhwa-card-grid">
+      {% for card in cards %}
+      <div class="border rounded p-3">
+        <h4>{{ card.workbook.title }}</h4>
+        <div class="small text-muted mb-2">{{ card.workbook.get_office_scope_display }} | Reporting year {{ card.workbook.reporting_year }}</div>
+        <div class="mb-2">
+          {% if card.workbook.status == "locked" %}
+          <span class="nhwa-status-pill nhwa-status-ok">Signed off / locked</span>
+          {% else %}
+          <span class="nhwa-status-pill nhwa-status-warn">{{ card.workbook.get_status_display }}</span>
+          {% endif %}
+          {% if card.readiness.checklist_complete %}
+          <span class="nhwa-status-pill nhwa-status-ok">Checklist complete</span>
+          {% else %}
+          <span class="nhwa-status-pill nhwa-status-warn">Checklist incomplete</span>
+          {% endif %}
+        </div>
+        <p class="mb-2">{{ card.completion.percent }}% complete: {{ card.completion.filled }} of {{ card.completion.editable }} editable cells filled.</p>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'nhwa_workbook_detail' card.workbook.slug %}">
+          Open workbook
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="table-responsive mt-3">
+      <table class="table table-sm table-striped nhwa-readiness-table">
+        <thead>
+          <tr>
+            <th>Workbook</th>
+            <th>Sheet</th>
+            <th>Filled</th>
+            <th>Missing</th>
+            <th>Examples</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for card in cards %}
+            {% for row in card.readiness.sheet_rows %}
+            <tr>
+              <td>{{ card.workbook.get_office_scope_display }}</td>
+              <td>
+                {{ row.sheet.source_sheet_name }}
+                {% if row.is_checklist %}<span class="badge bg-warning text-dark">checklist</span>{% endif %}
+              </td>
+              <td>{{ row.completion.filled }} / {{ row.completion.editable }}</td>
+              <td>{{ row.completion.missing }}</td>
+              <td>{{ row.completion.missing_examples|join:", "|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning mb-0">
+      No NHWA web workbooks exist yet. Start with Bootstrap NHWA Toolkit.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="nhwa-panel">
+  <header><h3>Recent NHWA Audit Events</h3></header>
+  <div class="nhwa-panel-body p-0">
+    {% if recent_events %}
+    <table class="table table-sm table-striped mb-0">
+      <thead>
+        <tr><th>Time</th><th>Action</th><th>Workbook</th><th>Actor</th></tr>
+      </thead>
+      <tbody>
+        {% for event in recent_events %}
+        <tr>
+          <td>{{ event.created_at|date:"d M Y H:i" }}</td>
+          <td>{{ event.action }}</td>
+          <td>{{ event.workbook.title }}</td>
+          <td>{{ event.actor.username|default:"System" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="p-3 text-muted">No NHWA audit events recorded yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="alert alert-secondary">
+  <strong>Data direction:</strong>
+  Registry / Analytics / Finance / Facilities -> NHWA workbook cells -> review and sign-off -> NHWA export/report.
+  NHWA workbook values are never pushed back into operational registry tables automatically.
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% if professional_identity %}
+<section class="card shadow-sm border-0 mb-3" aria-labelledby="professional-passport-heading">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start">
+            <div class="pr-3">
+                <div class="text-uppercase text-muted small font-weight-bold">Professional regulatory identity</div>
+                <h3 id="professional-passport-heading" class="h5 mb-1">{{ professional_identity.full_name }}</h3>
+                <div class="text-muted">{{ professional_identity.title }}</div>
+                <div class="mt-2">
+                    <span class="badge badge-{{ professional_identity.status_theme }}">{{ professional_identity.status }}</span>
+                    {% if professional_identity.verified_credential_count %}
+                    <span class="badge badge-info ml-1"><i class="fas fa-certificate"></i> {{ professional_identity.verified_credential_count }} verified credential{{ professional_identity.verified_credential_count|pluralize }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="text-lg-right mt-3 mt-lg-0">
+                <div class="font-weight-bold">Profile completeness {{ professional_identity.profile_completeness }}%</div>
+                <div class="progress mt-1" style="width: 220px; height: .55rem;" role="progressbar" aria-valuenow="{{ professional_identity.profile_completeness }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-success" style="width: {{ professional_identity.profile_completeness }}%"></div>
+                </div>
+                <a href="{% url 'professional_profile_update_request' %}" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-user-edit mr-1"></i>Request verified update</a>
+            </div>
+        </div>
+        <div class="row small mt-3">
+            <div class="col-md-3 mb-2"><strong>Registration</strong><br>{{ professional_identity.registration_number|default:"Not captured" }}</div>
+            <div class="col-md-3 mb-2"><strong>Category / specialty</strong><br>{{ professional_identity.specialty_or_category|default:"Not captured" }}</div>
+            <div class="col-md-3 mb-2"><strong>Current practice</strong><br>{{ professional_identity.workplace|default:"Needs review" }}</div>
+            <div class="col-md-3 mb-2"><strong>Location</strong><br>{{ professional_identity.province|default:"Needs review" }}</div>
+        </div>
+        <div class="row small">
+            <div class="col-md-4 mb-2"><strong>Qualification</strong><br>{{ professional_identity.qualification|default:"Needs review" }}</div>
+            <div class="col-md-2 mb-2"><strong>CPD credits</strong><br>{{ professional_identity.cpd_credits|default:0 }}</div>
+            <div class="col-md-3 mb-2"><strong>Years practising</strong><br>{% if professional_identity.years_practicing is not None %}{{ professional_identity.years_practicing }}{% else %}Not captured{% endif %}</div>
+            <div class="col-md-3 mb-2"><strong>Last official update</strong><br>{{ professional_identity.last_updated|date:"d M Y"|default:"Not captured" }}</div>
+        </div>
+        {% if professional_identity.clinical_privileges %}
+        <div class="border-top pt-2 mt-2 small">
+            <strong>Approved clinical privileges</strong>
+            <ul class="mb-0 mt-1 pl-3">
+                {% for privilege in professional_identity.clinical_privileges %}
+                <li>{{ privilege.privilege_name }}{% if privilege.facility %} &mdash; {{ privilege.facility }}{% endif %}{% if privilege.expiry_date %} (until {{ privilege.expiry_date|date:"d M Y" }}){% endif %}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if professional_identity.missing_items %}
+        <div class="alert alert-light border small mb-0 mt-2">
+            <strong>Complete your profile:</strong> {{ professional_identity.missing_items|join:", " }}. Updates are submitted for verification; they do not change your legal record immediately.
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}

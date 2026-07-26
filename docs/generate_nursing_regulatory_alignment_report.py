@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ndoh_workforce_registry.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "NDOH_regulatory_bodies.settings")
 django.setup()
 
 from apps.dashboard.regulatory_alignment import build_nursing_regulatory_alignment_context  # noqa: E402
@@ -173,11 +173,11 @@ def build_document():
 
     document.add_heading("8. Key Findings", level=1)
     findings = [
-        "The live database is strong for current registry counts, imported history, dashboards, privacy scoping, and digital reporting.",
+        "The live platform is strong for analytics snapshots, imported history, dashboards, privacy scoping, document governance, ICMS case tracking, discipline workflow, decision records, and digital reporting.",
         "The ministerial graduate output tables can be compared meaningfully against qualification records, and several totals are reasonably close rather than exact matches.",
         "The full-licence and registration-elements tables do not align cleanly with current digital records, which indicates either different counting logic, incomplete year capture, or data-cleaning issues between source reports and the live registry.",
         "Employment-type reporting remains a major digital gap because there are currently no captured EmploymentRecord rows in the live system.",
-        "The situational analysis remains valid: legislation, SOPs, formal complaints management, and disciplined document governance still require operational and legal follow-through beyond software alone.",
+        "The situational analysis remains valid: legislation, approved SOP content, staff training, and disciplined operational use still require management and legal follow-through beyond software alone.",
     ]
     for item in findings:
         add_bullet(document, item)
@@ -188,6 +188,12 @@ def build_document():
         "Added the statutory context and mandate of the PNG Nursing Council into the platform.",
         "Added report-reference tables from the ministerial submission and live database comparison tables beneath them.",
         "Added situational-analysis alignment tables for SWOT, risks, gaps, and roadmap readiness.",
+        "Added Nursing Council analytics snapshot reporting from the cleansed workbook.",
+        "Added formal ICMS complaints, disciplinary case workflow, and regulatory decision register.",
+        "Added document approval/rejection sign-off for controlled repository versions.",
+        "Added NHWA workbook alignment as a reporting layer.",
+        "Added public FAQ, moderated forum, and mapped institution/facility reference pages.",
+        "Added receipt-owner linking and high-value review routing.",
     ]:
         add_bullet(document, item)
 
@@ -196,7 +202,9 @@ def build_document():
         "Standardise legal wording on the Council's statutory basis across all official documents and templates.",
         "Agree a single counting method for graduate outputs, full licences, ATP, and specialisations before using these figures for ministerial or board reporting.",
         "Populate employment and workforce movement data if employment-type reporting is expected from the system.",
-        "Continue the digital regulatory roadmap by adding formal complaints, discipline, and case-management workflows.",
+        "Adopt SOPs and staff training for formal complaints, discipline, regulatory decisions, document sign-off, and receipt review workflows.",
+        "Verify mapped entity coordinates before public map demonstrations.",
+        "Use NHWA workbooks as reporting/sign-off outputs only, not as registry overwrite sources.",
         "Use the new registrar profile section as the live operational reference point, but continue validating report-source spreadsheets before executive submission.",
     ]:
         add_bullet(document, item)

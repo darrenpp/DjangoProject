@@ -234,6 +234,19 @@ input[type="submit"].default,
     border-color: var(--ndoh-admin-gold) !important;
 }
 
+body.login .submit-row input,
+body.login .submit-row input:hover,
+body.login .submit-row input:focus,
+.submit-row input,
+.submit-row input:hover,
+.submit-row input:focus,
+body.login .submit-row input:active,
+.submit-row input:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18) !important;
+}
+
 input,
 textarea,
 select,

@@ -4,11 +4,54 @@
 {% block title %}Production Readiness Dashboard{% endblock %}
 {% block page_title %}Production Readiness Dashboard{% endblock %}
 
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .readiness-kicker {
+        color: #0f766e;
+        font-size: .78rem;
+        font-weight: 900;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .readiness-status-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+
+    .readiness-status-item {
+        background: #f8fafc;
+        border: 1px solid #d7e1ea;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .readiness-status-item strong {
+        color: #0f2638;
+        display: block;
+        font-size: .9rem;
+    }
+
+    .readiness-table td,
+    .readiness-table th {
+        vertical-align: top;
+    }
+
+    .readiness-table .badge {
+        white-space: normal;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="alert alert-info border">
-    <h5 class="mb-2"><i class="fas fa-shield-halved mr-2"></i>Government Launch Data Rule</h5>
-    <p class="mb-1">{{ production_rule }}</p>
-    <p class="mb-0"><strong>Current scope:</strong> {{ scope_label }}. Staff should correct issues from source records, not from memory.</p>
+<div class="alert alert-warning border">
+    <div class="readiness-kicker mb-1">Controlled testing gate</div>
+    <h5 class="mb-2"><i class="fas fa-shield-halved mr-2"></i>{{ production_status }} - {{ controlled_testing_status }}</h5>
+    <p class="mb-1"><strong>TWG message:</strong> {{ production_decision_line }}</p>
+    <p class="mb-1"><strong>Government launch data rule:</strong> {{ production_rule }}</p>
+    <p class="mb-0"><strong>Current scope:</strong> {{ scope_label }}. {{ go_live_rule }}</p>
 </div>
 
 <div class="row">
@@ -46,6 +89,115 @@
                 <p>Duplicate Review Backlog</p>
             </div>
             <div class="icon"><i class="fas fa-clone"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title mb-0"><i class="fas fa-traffic-light mr-2"></i>Controlled Rollout Command Centre</h3>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-lg-4 mb-3">
+                <div class="readiness-kicker">Launch gate status</div>
+                <div class="display-4 font-weight-bold mb-1">{{ readiness_gate_percent }}%</div>
+                <p class="text-muted mb-0">
+                    {{ gate_status_counts.clear }} clear,
+                    {{ gate_status_counts.warning }} pending evidence,
+                    {{ gate_status_counts.blocked }} blocked.
+                </p>
+            </div>
+            <div class="col-lg-8">
+                <div class="readiness-status-grid">
+                    {% for row in platform_setting_rows %}
+                    <div class="readiness-status-item">
+                        <strong>{{ row.label }}</strong>
+                        <span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0"><i class="fas fa-user-check mr-2"></i>Owner-Based Launch Gate Action Plan</h3>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped readiness-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Improvement Area</th>
+                        <th>Owner Needed</th>
+                        <th>Evidence Required</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in launch_gate_rows %}
+                    <tr>
+                        <td><strong>{{ row.area }}</strong></td>
+                        <td>{{ row.owner }}</td>
+                        <td>{{ row.evidence }}</td>
+                        <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-server mr-2"></i>Hosting And Environment Model</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm readiness-table mb-0">
+                        <thead><tr><th>Environment</th><th>Purpose</th><th>Hard Rule</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for row in environment_rows %}
+                            <tr>
+                                <td><strong>{{ row.environment }}</strong></td>
+                                <td>{{ row.purpose }}</td>
+                                <td>{{ row.rule }}</td>
+                                <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-calendar-check mr-2"></i>30 / 60 / 90 Day Improvement Plan</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm readiness-table mb-0">
+                        <thead><tr><th>Period</th><th>Focus</th><th>Output</th></tr></thead>
+                        <tbody>
+                            {% for row in thirty_sixty_ninety_rows %}
+                            <tr>
+                                <td><strong>{{ row.period }}</strong></td>
+                                <td>{{ row.focus }}</td>
+                                <td>{{ row.output }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -241,6 +393,57 @@
 
         <div class="card mt-4">
             <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-rotate mr-2"></i>Report &amp; Brief Freshness</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Output</th>
+                                <th>Status</th>
+                                <th>Changed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in report_freshness_rows %}
+                            <tr>
+                                <td>
+                                    <strong>{{ row.label }}</strong>
+                                    <div class="small text-muted">{{ row.scope_label }}</div>
+                                </td>
+                                <td>
+                                    {% if row.is_stale %}
+                                        <span class="badge badge-warning">Regenerate</span>
+                                    {% else %}
+                                        <span class="badge badge-success">Current</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if row.last_data_changed_at %}
+                                        <span class="small">{{ row.last_data_changed_at|date:"Y-m-d H:i" }}</span>
+                                        {% if row.last_data_change_source %}
+                                            <div class="small text-muted">{{ row.last_data_change_source|truncatechars:32 }}</div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted small">No tracked changes</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-muted text-center">No tracked report freshness status.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-light border m-3">
+                    Data updates automatically clear dashboard/report caches and mark exports stale. Heavy files are regenerated when staff request the export.
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
                 <h3 class="card-title mb-0"><i class="fas fa-database mr-2"></i>Recent Import Batches</h3>
             </div>
             <div class="card-body p-0">
@@ -262,6 +465,140 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0"><i class="fas fa-chart-simple mr-2"></i>Data Quality Command Centre KPIs</h3>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped readiness-table mb-0">
+                <thead><tr><th>KPI</th><th class="text-right">Value</th><th>Why It Matters</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for row in data_quality_kpi_rows %}
+                    <tr>
+                        <td><strong>{{ row.kpi }}</strong></td>
+                        <td class="text-right">{{ row.value }}</td>
+                        <td>{{ row.why }}</td>
+                        <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-lock mr-2"></i>Security And Privacy Hardening</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm readiness-table mb-0">
+                        <thead><tr><th>Control</th><th>Why It Matters</th><th>Evidence</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for row in security_control_rows %}
+                            <tr>
+                                <td><strong>{{ row.control }}</strong></td>
+                                <td>{{ row.why }}</td>
+                                <td>{{ row.evidence }}</td>
+                                <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-receipt mr-2"></i>Finance And Receipt Controls</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm readiness-table mb-0">
+                        <thead><tr><th>Control</th><th>Purpose</th><th>Metric</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for row in finance_control_rows %}
+                            <tr>
+                                <td><strong>{{ row.control }}</strong></td>
+                                <td>{{ row.purpose }}</td>
+                                <td>{{ row.metric }}</td>
+                                <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-light border m-3">
+                    Receipt records support evidence and reconciliation. They must not be used as practitioner counts.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-clipboard-list mr-2"></i>Repeatable UAT Evidence Scripts</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm readiness-table mb-0">
+                        <thead><tr><th>Role</th><th>Script Must Prove</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for row in uat_script_rows %}
+                            <tr>
+                                <td><strong>{{ row.role }}</strong></td>
+                                <td>{{ row.proves }}</td>
+                                <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-light border m-3">
+                    Each UAT test should capture case, role, expected result, actual result, screenshot/evidence, issue number, fix status, and sign-off.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-mobile-screen-button mr-2"></i>Mobile Intake Gate</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm readiness-table mb-0">
+                        <thead><tr><th>Gate</th><th>Why</th><th>Metric</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for row in mobile_gate_rows %}
+                            <tr>
+                                <td><strong>{{ row.gate }}</strong></td>
+                                <td>{{ row.why }}</td>
+                                <td>{{ row.metric }}</td>
+                                <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-light border m-3">
+                    Mobile remains intake-only until offline draft, sync, review, registrar decision, promotion, and Android status return are proven end-to-end.
+                    <a href="{% url 'mobile_production_readiness' %}" class="ml-1">Open mobile readiness.</a>
                 </div>
             </div>
         </div>
@@ -327,6 +664,88 @@
                     <a href="{% url 'duplicate_review_workflow' %}" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-clone mr-1"></i> Open Duplicate Review Workflow
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0"><i class="fas fa-users-gear mr-2"></i>Route-By-Role Permission Matrix</h3>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped readiness-table mb-0">
+                <thead><tr><th>Access Area</th><th>Must Be Proven</th><th>Privacy Position</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for row in permission_matrix_rows %}
+                    <tr>
+                        <td><strong>{{ row.access_area }}</strong></td>
+                        <td>{{ row.must_prove }}</td>
+                        <td>{{ row.privacy_position }}</td>
+                        <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="alert alert-light border m-3">
+            Hidden menu buttons are not security. Backend checks must enforce role, office scope, and ownership on every protected route.
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-headset mr-2"></i>Support, Change Control, And Disaster Recovery</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm readiness-table mb-0">
+                        <thead><tr><th>Area</th><th>Minimum Standard</th><th>Evidence</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for row in support_dr_rows %}
+                            <tr>
+                                <td><strong>{{ row.area }}</strong></td>
+                                <td>{{ row.minimum }}</td>
+                                <td>{{ row.evidence }}</td>
+                                <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-light border m-3">
+                    A backup that has not been restored is not production evidence. Restore drills must be recorded before go-live.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-diagram-project mr-2"></i>Integration Governance</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm readiness-table mb-0">
+                        <thead><tr><th>Control</th><th>Purpose</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for row in integration_control_rows %}
+                            <tr>
+                                <td><strong>{{ row.control }}</strong></td>
+                                <td>{{ row.purpose }}</td>
+                                <td><span class="badge badge-{{ row.status.tone }}">{{ row.status.label }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-light border m-3">
+                    Future FHIR or national-system integration should be assessed by NDOH ICT and eHealth/TWG before implementation.
                 </div>
             </div>
         </div>

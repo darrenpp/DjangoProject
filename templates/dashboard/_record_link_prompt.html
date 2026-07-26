@@ -1,0 +1,30 @@
+{% if professional_record_status == "pending_review" %}
+<div class="alert alert-warning">
+    <strong>Professional record pending registrar review.</strong>
+    {% if professional_link_review_note %}
+        {{ professional_link_review_note }}
+    {% else %}
+        Your account has been created, but the linked professional record must be reviewed before it is treated as active.
+    {% endif %}
+    {% if next_registration_url_name %}
+        <div class="mt-2">
+            <a href="{% url next_registration_url_name %}" class="btn btn-sm btn-warning">Continue required forms</a>
+        </div>
+    {% endif %}
+</div>
+{% elif professional_record_status == "unmatched" %}
+<div class="alert alert-info">
+    <strong>No professional record is linked to this account yet.</strong>
+    Continue through the correct online form so the registrar can review and approve your record.
+    {% if next_registration_url_name %}
+        <div class="mt-2">
+            <a href="{% url next_registration_url_name %}" class="btn btn-sm btn-primary">Start correct form</a>
+        </div>
+    {% endif %}
+</div>
+{% elif professional_record_status == "deceased" %}
+<div class="alert alert-secondary">
+    <strong>This account is marked against a deceased professional record.</strong>
+    Contact the registrar if this status is incorrect.
+</div>
+{% endif %}

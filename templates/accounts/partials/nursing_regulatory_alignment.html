@@ -5,9 +5,12 @@
     </div>
     <div class="card-body">
         <p class="text-muted">
-            This is the Nursing Council-only live regulatory statistics summary. The detailed ministerial tables, statutory context,
+            This is the Nursing Council-only cleaned regulatory statistics summary. The detailed ministerial tables, statutory context,
             situational analysis alignment, and database comparisons now open on a dedicated page so the registrar profile loads faster.
         </p>
+        <div class="alert alert-info py-2">
+            <i class="fas fa-database mr-1"></i>{{ alignment.live_refresh_note }}
+        </div>
 
         <div class="border rounded p-3 mb-3">
             <h4 class="h5 mb-2">{{ alignment.statutory_context.title }}</h4>
@@ -23,7 +26,7 @@
             </div>
             <div class="col-md-3 mb-3">
                 <div class="border rounded p-3 h-100">
-                    <div class="small text-uppercase text-muted">Live Registry Total</div>
+                    <div class="small text-uppercase text-muted">Cleaned Lifecycle Total</div>
                     <div class="h5 mb-0">{{ alignment.live_registry_total }}</div>
                 </div>
             </div>
@@ -45,9 +48,9 @@
             <table class="table table-sm table-striped mb-0">
                 <thead>
                 <tr>
-                    <th>Registry Category</th>
-                    <th>Current Count</th>
-                    <th>Active Count</th>
+                    <th>Metric</th>
+                    <th>Cleaned Count</th>
+                    <th>Basis</th>
                 </tr>
                 </thead>
                 <tbody>

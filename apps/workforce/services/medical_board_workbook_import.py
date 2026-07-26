@@ -91,6 +91,49 @@ PROVINCE_ALIASES = {
     "MADANG PROVINCE": "Madang",
 }
 
+CHW_HEADER_ALIASES = {
+    "address": "address",
+    "amount": "amount",
+    "app/status": "license_status",
+    "apply for": "application_for",
+    "arch#": "practitioner_number",
+    "cert #": "registry",
+    "certificate no": "registry",
+    "date": "date",
+    "date of the receipt": "payment_date",
+    "dob": "date_of_birth",
+    "email": "email",
+    "expiry due date": "expiry_due_date",
+    "gender": "gender",
+    "license#": "registry",
+    "marital status": "marital_status",
+    "name": "name",
+    "nationality": "nationality",
+    "phone": "primary_phone",
+    "place of employment": "employer_name",
+    "place of orgin": "place_of_origin",
+    "place of origin": "place_of_origin",
+    "practitioner's no": "practitioner_number",
+    "professional": "professional_cadre",
+    "professional-cadres": "professional_cadre",
+    "professional-cahres": "professional_cadre",
+    "qualification": "qualification",
+    "qualification2": "qualification",
+    "qualifications": "qualification",
+    "qualifications2": "qualification",
+    "qualifications\\designation": "qualification",
+    "receipt": "receipt",
+    "receipt no": "receipt",
+    "receipt no.": "receipt",
+    "receipt no#": "receipt",
+    "reciept": "receipt",
+    "reciept no": "receipt",
+    "remarks": "remarks",
+    "registry #": "registry",
+    "school address": "address",
+    "surname": "surname",
+}
+
 
 def clean_text(value):
     if value is None or pd.isna(value):
@@ -98,6 +141,10 @@ def clean_text(value):
     text = str(value).strip()
     text = text.replace("\u25cf", "").replace("\u26ab", "")
     return re.sub(r"\s+", " ", text).strip()
+
+
+def normalize_header(value):
+    return re.sub(r"\s+", " ", clean_text(value).lower()).strip()
 
 
 def normalize_sheet_name(value):
@@ -189,6 +236,26 @@ def parse_date(value):
     return parsed_date if 1901 <= parsed_date.year <= date.today().year + 1 else None
 
 
+def parse_birth_date(value):
+    parsed = parse_date(value)
+    if parsed:
+        return parsed
+    text = clean_text(value)
+    if not text:
+        return None
+    text = text.replace("_", ".").replace("-", ".")
+    text = re.sub(r"\s+", "", text)
+    for fmt in ("%d.%m.%y", "%d/%m/%y"):
+        try:
+            candidate = datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+        if candidate > date.today():
+            candidate = date(candidate.year - 100, candidate.month, candidate.day)
+        return candidate if 1901 <= candidate.year <= date.today().year else None
+    return None
+
+
 def extract_year(value, fallback_date=None):
     parsed = parse_date(value)
     if parsed:
@@ -244,10 +311,78 @@ def extract_school_name(qualification):
     return match.group(1).strip().title() if match else ""
 
 
+def normalize_gender(value):
+    text = clean_text(value).lower()
+    if text in {"m", "male"}:
+        return "Male"
+    if text in {"f", "female"}:
+        return "Female"
+    return ""
+
+
 def extract_amount(value):
     text = clean_text(value).upper()
     match = re.search(r"\bK\s*([0-9]+(?:\.[0-9]{1,2})?)", text)
     return Decimal(match.group(1)) if match else None
+
+
+def find_chw_header(worksheet, *, max_rows=10):
+    best = (None, {})
+    for row_number, row in enumerate(
+        worksheet.iter_rows(min_row=1, max_row=min(worksheet.max_row or 0, max_rows), values_only=True),
+        start=1,
+    ):
+        mapped = {}
+        for index, value in enumerate(row):
+            key = CHW_HEADER_ALIASES.get(normalize_header(value))
+            if key and key not in mapped:
+                mapped[key] = index
+        if "name" in mapped and ("registry" in mapped or "qualification" in mapped or "professional_cadre" in mapped):
+            return row_number, mapped
+        if len(mapped) > len(best[1]):
+            best = (row_number, mapped)
+    return best if "name" in best[1] else (None, {})
+
+
+def row_value(cells, header_map, *keys):
+    for key in keys:
+        index = header_map.get(key)
+        if index is not None and index < len(cells):
+            value = clean_text(cells[index])
+            if value:
+                return value
+    return ""
+
+
+def row_date(cells, header_map, *keys):
+    for key in keys:
+        index = header_map.get(key)
+        if index is not None and index < len(cells):
+            parsed = parse_date(cells[index])
+            if parsed:
+                return parsed
+    return None
+
+
+def row_birth_date(cells, header_map):
+    index = header_map.get("date_of_birth")
+    if index is not None and index < len(cells):
+        return parse_birth_date(cells[index])
+    return None
+
+
+def chw_full_name(record):
+    name = clean_text(record.get("name"))
+    surname = clean_text(record.get("surname"))
+    if surname and surname.upper() not in name.upper().split():
+        return title_name(f"{name} {surname}".strip())
+    return title_name(name)
+
+
+def is_header_like_chw_record(record):
+    name = clean_text(record.get("name")).lower()
+    registry = clean_text(record.get("registry")).lower()
+    return name in {"name", "names", "full name"} or registry in {"cert #", "license#", "registry #"}
 
 
 def atp_year_columns(worksheet):
@@ -262,11 +397,81 @@ def atp_year_columns(worksheet):
     return columns
 
 
+def atp_header(worksheet):
+    for row_number, row in enumerate(
+        worksheet.iter_rows(min_row=1, max_row=min(worksheet.max_row or 0, 5), values_only=True),
+        start=1,
+    ):
+        columns = []
+        for index, value in enumerate(row):
+            text = clean_text(value)
+            if re.fullmatch(r"(19|20)\d{2}", text):
+                year = int(text)
+                if 1980 <= year <= date.today().year + 1:
+                    columns.append((index, year))
+        mapped = {}
+        for index, value in enumerate(row):
+            key = CHW_HEADER_ALIASES.get(normalize_header(value))
+            if key and key not in mapped:
+                mapped[key] = index
+        if columns and "name" in mapped:
+            return row_number, mapped, columns
+    return 1, {"registry": 0, "date": 1, "name": 2, "practitioner_number": 3}, atp_year_columns(worksheet)
+
+
 class MedicalBoardWorkbookImporter:
-    def __init__(self, workbook_path=DEFAULT_MEDICAL_BOARD_WORKBOOK, initiated_by=None):
+    def __init__(self, workbook_path=DEFAULT_MEDICAL_BOARD_WORKBOOK, initiated_by=None, dry_run=False):
         self.workbook_path = Path(workbook_path)
         self.initiated_by = initiated_by
+        self.dry_run = dry_run
         self.summary = Counter()
+
+    def _existing_record(
+        self,
+        source_sheet_name,
+        source_row,
+        record_type,
+        *,
+        target_model="communityhealthworker",
+        registration_no="",
+        full_name="",
+        record_year=None,
+        reference_number="",
+        practitioner_number="",
+        payment_date=None,
+    ):
+        if self.dry_run:
+            return False
+        if PracticingLicenseRecord.objects.filter(
+            source_sheet_name=source_sheet_name,
+            source_row=source_row,
+            record_type=record_type,
+            target_model=target_model,
+        ).exists():
+            return True
+
+        query = PracticingLicenseRecord.objects.filter(
+            record_type=record_type,
+            target_model=target_model,
+        )
+        if registration_no:
+            query = query.filter(registration_no=registration_no)
+        elif practitioner_number:
+            query = query.filter(practitioner_number=practitioner_number)
+        elif full_name:
+            query = query.filter(full_name__iexact=full_name)
+        else:
+            return False
+
+        if record_type == "workforce_listing":
+            return query.exists()
+        if record_year:
+            query = query.filter(record_year=record_year)
+        if reference_number:
+            query = query.filter(reference_number=reference_number)
+        if payment_date:
+            query = query.filter(payment_date=payment_date)
+        return query.exists()
 
     def import_workbook(self):
         if not self.workbook_path.exists():
@@ -288,6 +493,8 @@ class MedicalBoardWorkbookImporter:
                 for sheet_name in workbook.sheetnames:
                     worksheet = workbook[sheet_name]
                     if is_chw_register_sheet(sheet_name):
+                        self._import_chw_sheet(batch, worksheet)
+                    elif "CHWS" in normalize_sheet_name(sheet_name) and "FILE" in normalize_sheet_name(sheet_name):
                         self._import_chw_sheet(batch, worksheet)
                     elif is_pending_chw_sheet(sheet_name):
                         self._import_pending_chw_sheet(batch, worksheet)
@@ -323,41 +530,56 @@ class MedicalBoardWorkbookImporter:
             workbook.close()
 
     def _record_import(self, batch, sheet, row_number, record, *, pending=False):
+        if is_header_like_chw_record(record):
+            self.summary["skipped_header_rows"] += 1
+            return None
         registration_no = normalize_registration(record.get("registry"))
-        source_name = clean_text(record.get("name"))
-        full_name = title_name(source_name)
+        full_name = chw_full_name(record)
         if not full_name:
             self.summary["skipped_missing_name"] += 1
             return None
 
         issued_date = parse_date(record.get("date"))
         year = extract_year(record.get("date"), issued_date)
-        first_name, last_name = split_name(source_name)
+        first_name, last_name = split_name(full_name)
         qualification = clean_text(record.get("qualification"))
         address = clean_text(record.get("address"))
         remarks = clean_text(record.get("remarks"))
         receipt = clean_text(record.get("receipt"))
-        practitioner_number = extract_practitioner_number(remarks) or extract_student_id(remarks)
+        practitioner_number = (
+            clean_text(record.get("practitioner_number"))
+            or extract_practitioner_number(remarks)
+            or extract_student_id(remarks)
+        )
         province = extract_province(address)
 
         if not registration_no:
-            safe_key = practitioner_number or f"{sheet.sheet_name}-{row_number}"
+            safe_key = practitioner_number or f"{full_name}-{qualification}" or f"{sheet.sheet_name}-{row_number}"
             registration_no = normalize_registration(safe_key, prefix="CHW-PENDING")
 
-        chw, _ = CommunityHealthWorker.objects.update_or_create(
+        chw = self._upsert_chw_profile(
             registration_no=registration_no,
-            defaults={
-                "first_name": first_name or "CHW",
-                "last_name": last_name or "Record",
-                "applicant_type": "national",
-                "full_address": address,
-                "province": province,
-                "community_id": practitioner_number[:50],
-                "training_level": qualification[:100],
-                "is_active": True,
-            },
+            first_name=first_name,
+            last_name=last_name,
+            record=record,
+            address=address,
+            province=province,
+            practitioner_number=practitioner_number,
+            qualification=qualification,
         )
         self._save_qualification(chw, qualification)
+
+        if self._existing_record(
+            sheet.sheet_name,
+            row_number,
+            "workforce_listing",
+            registration_no=registration_no,
+            full_name=full_name,
+            record_year=year,
+            practitioner_number=practitioner_number,
+        ):
+            self.summary["duplicate_rows_skipped"] += 1
+            return chw
 
         PracticingLicenseRecord.objects.create(
             batch=batch,
@@ -379,6 +601,8 @@ class MedicalBoardWorkbookImporter:
             workplace_address=address,
             province=province,
             issued_date=issued_date,
+            payment_date=record.get("payment_date"),
+            amount=extract_amount(record.get("amount")),
             reference_number=receipt,
             raw_payload={
                 "registry": clean_text(record.get("registry")),
@@ -387,6 +611,16 @@ class MedicalBoardWorkbookImporter:
                 "receipt": receipt,
                 "remarks": remarks,
                 "pending_import": pending,
+                "date_of_birth": record.get("date_of_birth").isoformat() if record.get("date_of_birth") else "",
+                "marital_status": clean_text(record.get("marital_status")),
+                "gender": normalize_gender(record.get("gender")),
+                "nationality": clean_text(record.get("nationality")),
+                "phone": clean_text(record.get("primary_phone")),
+                "email": clean_text(record.get("email")),
+                "application_for": clean_text(record.get("application_for")),
+                "professional_cadre": clean_text(record.get("professional_cadre")),
+                "license_status": clean_text(record.get("license_status")),
+                "expiry_due_date": record.get("expiry_due_date").isoformat() if record.get("expiry_due_date") else "",
             },
         )
         self.summary["chw_imported"] += 1
@@ -397,70 +631,218 @@ class MedicalBoardWorkbookImporter:
             self.summary[f"year_{year}"] += 1
         return chw
 
+    def _upsert_chw_profile(
+        self,
+        *,
+        registration_no,
+        first_name,
+        last_name,
+        record,
+        address,
+        province,
+        practitioner_number,
+        qualification,
+    ):
+        defaults = {
+            "first_name": first_name or "CHW",
+            "last_name": last_name or "Record",
+            "applicant_type": "national",
+            "date_of_birth": record.get("date_of_birth"),
+            "gender": normalize_gender(record.get("gender")),
+            "marital_status": clean_text(record.get("marital_status"))[:30],
+            "nationality": clean_text(record.get("nationality"))[:100] or "PNG",
+            "primary_phone": clean_text(record.get("primary_phone"))[:20] or None,
+            "email": clean_text(record.get("email"))[:254],
+            "full_address": address,
+            "province": province,
+            "community_id": practitioner_number[:50],
+            "training_level": qualification[:100],
+            "is_active": True,
+        }
+        existing = CommunityHealthWorker.objects.filter(registration_no=registration_no).first()
+        if not existing:
+            return CommunityHealthWorker.objects.create(registration_no=registration_no, **defaults)
+        changed = []
+        for field, value in defaults.items():
+            current = getattr(existing, field)
+            if value not in ("", None) or current in ("", None):
+                if current != value:
+                    setattr(existing, field, value)
+                    changed.append(field)
+        if changed:
+            existing.save(update_fields=changed + ["updated_at"])
+        return existing
+
+    def _record_chw_payment(self, batch, sheet, row_number, record, chw):
+        reference_number = clean_text(record.get("receipt"))
+        amount = extract_amount(record.get("amount"))
+        payment_date = record.get("payment_date")
+        if not reference_number and amount is None and not payment_date:
+            return None
+        full_name = chw_full_name(record)
+        first_name, last_name = split_name(full_name)
+        record_year = extract_year(payment_date, payment_date) or extract_year(record.get("date"))
+        registration_no = chw.registration_no
+        practitioner_number = clean_text(record.get("practitioner_number")) or chw.community_id
+        source_row = (row_number * 1000) + 1
+        if self._existing_record(
+            sheet.sheet_name,
+            source_row,
+            "payment",
+            registration_no=registration_no,
+            full_name=full_name,
+            record_year=record_year,
+            reference_number=reference_number,
+            practitioner_number=practitioner_number,
+            payment_date=payment_date,
+        ):
+            self.summary["duplicate_rows_skipped"] += 1
+            return None
+        raw_payload = {
+            key: (value.isoformat() if hasattr(value, "isoformat") else value)
+            for key, value in record.items()
+        }
+        PracticingLicenseRecord.objects.create(
+            batch=batch,
+            sheet=sheet,
+            record_type="payment",
+            target_model="communityhealthworker",
+            source_sheet_name=sheet.sheet_name,
+            source_row=source_row,
+            record_year=record_year,
+            full_name=full_name,
+            first_name=first_name,
+            last_name=last_name,
+            registration_no=registration_no,
+            practitioner_number=practitioner_number,
+            applicant_type="national",
+            qualification_name=clean_text(record.get("qualification")),
+            category="Community Health Worker Payment",
+            workplace_address=clean_text(record.get("address")),
+            province=extract_province(record.get("address")),
+            payment_date=payment_date,
+            amount=amount,
+            reference_number=reference_number,
+            raw_payload={**raw_payload, "payment_source": "medical_board_chw_workbook"},
+        )
+        self.summary["payments_imported"] += 1
+        self.summary["processed_rows"] += 1
+        return True
+
     def _import_chw_sheet(self, batch, worksheet):
+        header_row, header_map = find_chw_header(worksheet)
         sheet = ImportedWorkbookSheet.objects.create(
             batch=batch,
             sheet_name=worksheet.title,
             sheet_type="medical_board_chw",
             status="processed",
-            raw_rows=max((worksheet.max_row or 1) - 1, 0),
+            raw_rows=max((worksheet.max_row or 1) - (header_row or 1), 0),
         )
+        if not header_row:
+            sheet.status = "skipped"
+            sheet.notes = "No CHW person header found."
+            sheet.save(update_fields=["status", "notes"])
+            self.summary["sheets_skipped"] += 1
+            return
+
         imported = skipped = 0
-        for row_number, row in enumerate(worksheet.iter_rows(min_row=2, values_only=True), start=2):
-            registry, entry_date, name, address, qualification, receipt, remarks = (list(row) + [None] * 7)[:7]
-            if not clean_text(name):
+        for row_number, row in enumerate(worksheet.iter_rows(min_row=header_row + 1, values_only=True), start=header_row + 1):
+            cells = list(row)
+            record = {
+                "registry": row_value(cells, header_map, "registry"),
+                "date": row_value(cells, header_map, "date"),
+                "name": row_value(cells, header_map, "name"),
+                "surname": row_value(cells, header_map, "surname"),
+                "date_of_birth": row_birth_date(cells, header_map),
+                "marital_status": row_value(cells, header_map, "marital_status"),
+                "nationality": row_value(cells, header_map, "nationality", "place_of_origin"),
+                "gender": row_value(cells, header_map, "gender"),
+                "primary_phone": row_value(cells, header_map, "primary_phone"),
+                "email": row_value(cells, header_map, "email"),
+                "address": row_value(cells, header_map, "address", "employer_name"),
+                "qualification": row_value(cells, header_map, "qualification"),
+                "application_for": row_value(cells, header_map, "application_for"),
+                "professional_cadre": row_value(cells, header_map, "professional_cadre"),
+                "license_status": row_value(cells, header_map, "license_status"),
+                "receipt": row_value(cells, header_map, "receipt"),
+                "payment_date": row_date(cells, header_map, "payment_date"),
+                "amount": row_value(cells, header_map, "amount"),
+                "expiry_due_date": row_date(cells, header_map, "expiry_due_date"),
+                "practitioner_number": row_value(cells, header_map, "practitioner_number"),
+                "remarks": row_value(cells, header_map, "remarks"),
+            }
+            if not chw_full_name(record):
                 skipped += 1
                 continue
-            self._record_import(
+            chw = self._record_import(
                 batch,
                 sheet,
                 row_number,
-                {
-                    "registry": registry,
-                    "date": entry_date,
-                    "name": name,
-                    "address": address,
-                    "qualification": qualification,
-                    "receipt": receipt,
-                    "remarks": remarks,
-                },
+                record,
             )
-            imported += 1
+            if chw:
+                imported += 1
+                self._record_chw_payment(batch, sheet, row_number, record, chw)
+            else:
+                skipped += 1
         sheet.imported_rows = imported
         sheet.skipped_rows = skipped
-        sheet.save(update_fields=["imported_rows", "skipped_rows"])
+        sheet.metadata = {"header_row": header_row, "mapped_columns": sorted(header_map)}
+        sheet.save(update_fields=["imported_rows", "skipped_rows", "metadata"])
 
     def _import_atp_sheet(self, batch, worksheet):
+        header_row, header_map, year_columns = atp_header(worksheet)
         sheet = ImportedWorkbookSheet.objects.create(
             batch=batch,
             sheet_name=worksheet.title,
             sheet_type="medical_board_chw_practicing_licences",
             status="processed",
-            raw_rows=max((worksheet.max_row or 1) - 1, 0),
+            raw_rows=max((worksheet.max_row or 1) - header_row, 0),
         )
-        year_columns = atp_year_columns(worksheet)
         imported = skipped = 0
-        for row_number, row in enumerate(worksheet.iter_rows(min_row=2, values_only=True), start=2):
+        for row_number, row in enumerate(worksheet.iter_rows(min_row=header_row + 1, values_only=True), start=header_row + 1):
             cells = list(row)
-            registry, entry_date, name, arch = (cells + [None] * 4)[:4]
-            source_name = clean_text(name)
-            if not source_name:
+            record = {
+                "registry": row_value(cells, header_map, "registry"),
+                "date": row_value(cells, header_map, "date"),
+                "name": row_value(cells, header_map, "name"),
+                "surname": row_value(cells, header_map, "surname"),
+                "practitioner_number": row_value(cells, header_map, "practitioner_number"),
+            }
+            if is_header_like_chw_record(record):
+                skipped += 1
+                continue
+            full_name = chw_full_name(record)
+            if not full_name:
                 skipped += 1
                 continue
 
-            full_name = title_name(source_name)
-            first_name, last_name = split_name(source_name)
-            registration_no = normalize_registration(registry)
+            first_name, last_name = split_name(full_name)
+            registration_no = normalize_registration(record.get("registry"))
             if not registration_no:
                 registration_no = normalize_registration(f"ATP-{row_number}", prefix="CHW")
-            practitioner_number = clean_text(arch)
-            base_issued_date = parse_date(entry_date)
+            practitioner_number = clean_text(record.get("practitioner_number"))
+            base_issued_date = parse_date(record.get("date"))
             row_imported = 0
 
             for position, (column_index, year) in enumerate(year_columns, start=1):
                 payment_text = clean_text(cells[column_index] if column_index < len(cells) else None)
                 receipt_text = clean_text(cells[column_index + 1] if column_index + 1 < len(cells) else None)
                 if not payment_text and not receipt_text:
+                    continue
+                source_row = (row_number * 100) + position
+                if self._existing_record(
+                    source_sheet_name=sheet.sheet_name,
+                    source_row=source_row,
+                    record_type="practicing_license",
+                    registration_no=registration_no,
+                    full_name=full_name,
+                    record_year=year,
+                    reference_number=receipt_text or payment_text,
+                    practitioner_number=practitioner_number,
+                    payment_date=parse_date(payment_text),
+                ):
+                    self.summary["duplicate_licence_rows_skipped"] += 1
                     continue
 
                 PracticingLicenseRecord.objects.create(
@@ -469,7 +851,7 @@ class MedicalBoardWorkbookImporter:
                     record_type="practicing_license",
                     target_model="communityhealthworker",
                     source_sheet_name=sheet.sheet_name,
-                    source_row=(row_number * 100) + position,
+                    source_row=source_row,
                     record_year=year,
                     full_name=full_name,
                     first_name=first_name,
@@ -483,8 +865,8 @@ class MedicalBoardWorkbookImporter:
                     amount=extract_amount(payment_text),
                     reference_number=receipt_text or payment_text,
                     raw_payload={
-                        "registry": clean_text(registry),
-                        "date": clean_text(entry_date),
+                        "registry": clean_text(record.get("registry")),
+                        "date": clean_text(record.get("date")),
                         "arch": practitioner_number,
                         "year": year,
                         "payment": payment_text,
@@ -503,42 +885,70 @@ class MedicalBoardWorkbookImporter:
 
         sheet.imported_rows = imported
         sheet.skipped_rows = skipped
-        sheet.metadata = {"year_columns": [year for _, year in year_columns]}
+        sheet.metadata = {"header_row": header_row, "mapped_columns": sorted(header_map), "year_columns": [year for _, year in year_columns]}
         sheet.save(update_fields=["imported_rows", "skipped_rows", "metadata"])
 
     def _import_pending_chw_sheet(self, batch, worksheet):
+        header_row, header_map = find_chw_header(worksheet)
         sheet = ImportedWorkbookSheet.objects.create(
             batch=batch,
             sheet_name=worksheet.title,
             sheet_type="medical_board_chw_pending",
             status="processed",
-            raw_rows=max((worksheet.max_row or 1) - 1, 0),
+            raw_rows=max((worksheet.max_row or 1) - (header_row or 1), 0),
         )
+        if not header_row:
+            sheet.status = "skipped"
+            sheet.notes = "No pending CHW person header found."
+            sheet.save(update_fields=["status", "notes"])
+            self.summary["sheets_skipped"] += 1
+            return
+
         imported = skipped = 0
-        for row_number, row in enumerate(worksheet.iter_rows(min_row=2, values_only=True), start=2):
-            registry, entry_date, name, address, qualification, receipt, remarks = (list(row) + [None] * 7)[:7]
-            if not clean_text(name):
+        for row_number, row in enumerate(worksheet.iter_rows(min_row=header_row + 1, values_only=True), start=header_row + 1):
+            cells = list(row)
+            record = {
+                "registry": row_value(cells, header_map, "registry"),
+                "date": row_value(cells, header_map, "date"),
+                "name": row_value(cells, header_map, "name"),
+                "surname": row_value(cells, header_map, "surname"),
+                "date_of_birth": row_birth_date(cells, header_map),
+                "marital_status": row_value(cells, header_map, "marital_status"),
+                "nationality": row_value(cells, header_map, "nationality", "place_of_origin"),
+                "gender": row_value(cells, header_map, "gender"),
+                "primary_phone": row_value(cells, header_map, "primary_phone"),
+                "email": row_value(cells, header_map, "email"),
+                "address": row_value(cells, header_map, "address", "employer_name"),
+                "qualification": row_value(cells, header_map, "qualification"),
+                "application_for": row_value(cells, header_map, "application_for"),
+                "professional_cadre": row_value(cells, header_map, "professional_cadre"),
+                "license_status": row_value(cells, header_map, "license_status"),
+                "receipt": row_value(cells, header_map, "receipt"),
+                "payment_date": row_date(cells, header_map, "payment_date"),
+                "amount": row_value(cells, header_map, "amount"),
+                "expiry_due_date": row_date(cells, header_map, "expiry_due_date"),
+                "practitioner_number": row_value(cells, header_map, "practitioner_number"),
+                "remarks": row_value(cells, header_map, "remarks"),
+            }
+            if not chw_full_name(record):
                 skipped += 1
                 continue
-            self._record_import(
+            chw = self._record_import(
                 batch,
                 sheet,
                 row_number,
-                {
-                    "registry": registry,
-                    "date": entry_date,
-                    "name": name,
-                    "address": address,
-                    "qualification": qualification,
-                    "receipt": receipt,
-                    "remarks": remarks,
-                },
+                record,
                 pending=True,
             )
-            imported += 1
+            if chw:
+                imported += 1
+                self._record_chw_payment(batch, sheet, row_number, record, chw)
+            else:
+                skipped += 1
         sheet.imported_rows = imported
         sheet.skipped_rows = skipped
-        sheet.save(update_fields=["imported_rows", "skipped_rows"])
+        sheet.metadata = {"header_row": header_row, "mapped_columns": sorted(header_map)}
+        sheet.save(update_fields=["imported_rows", "skipped_rows", "metadata"])
 
     def _import_school_sheet(self, batch, worksheet):
         sheet = ImportedWorkbookSheet.objects.create(

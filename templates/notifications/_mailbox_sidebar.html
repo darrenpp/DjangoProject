@@ -1,0 +1,30 @@
+<div class="mailbox-sidebar card card-outline card-primary">
+    <div class="card-header">
+        <strong>Mailbox</strong>
+    </div>
+    <div class="card-body p-2">
+        <a href="{% url 'enquiry_create' %}" class="btn btn-primary btn-block mb-3">
+            <i class="fas fa-edit mr-1"></i>
+            {% if request.user.role == 'admin' or request.user.role == 'registrar' %}New Message{% else %}New Enquiry{% endif %}
+        </a>
+        <div class="mailbox-folder-list">
+            {% for folder in mailbox.folders %}
+                <a href="{{ folder.url }}" class="mailbox-folder-link {% if folder.active %}active{% endif %}">
+                    <span>
+                        <i class="{{ folder.icon }} mr-2"></i>{{ folder.label }}
+                    </span>
+                    <span class="mailbox-folder-count">{{ folder.count }}</span>
+                </a>
+            {% endfor %}
+        </div>
+        {% if request.user.role == 'admin' or request.user.role == 'registrar' %}
+            <div class="mailbox-sidebar-summary mt-3">
+                <div class="small text-muted text-uppercase mb-2">Staff Queue</div>
+                <div><span>Pending Applications</span><strong>{{ staff_summary.pending_application_count|default:0 }}</strong></div>
+                <div><span>Open Conversations</span><strong>{{ staff_summary.open_thread_count|default:0 }}</strong></div>
+                <div><span>Draft Documents</span><strong>{{ staff_summary.document_review_count|default:0 }}</strong></div>
+                <a href="{% url 'staff_communications' %}" class="btn btn-outline-warning btn-sm btn-block mt-2">Communications Hub</a>
+            </div>
+        {% endif %}
+    </div>
+</div>

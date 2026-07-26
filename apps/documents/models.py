@@ -182,12 +182,14 @@ class DocumentAccessPolicy(models.Model):
         ("admin", "Admin"),
         ("registrar", "Registrar"),
         ("reviewer", "Reviewer"),
+        ("board_member", "Board Member"),
         ("viewer", "Viewer"),
         ("nurse", "Nurse"),
         ("doctor", "Doctor"),
         ("chw", "Community Health Worker"),
         ("graduand", "Graduand"),
         ("nurse_aide", "Nurse Aide"),
+        ("mobile_collector", "Mobile Collector"),
     ]
 
     folder = models.ForeignKey(
@@ -249,6 +251,8 @@ class DocumentAuditEvent(models.Model):
     EVENT_CHOICES = [
         ("created", "Created"),
         ("uploaded", "Uploaded"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
         ("viewed", "Viewed"),
         ("downloaded", "Downloaded"),
         ("metadata_updated", "Metadata Updated"),
@@ -287,3 +291,40 @@ class DocumentAuditEvent(models.Model):
 
     def __str__(self):
         return f"{self.document.title} - {self.event_type}"
+
+
+class DocumentApproval(models.Model):
+    STATUS_CHOICES = [
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("revoked", "Revoked"),
+    ]
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="approvals")
+    version = models.ForeignKey(
+        DocumentVersion,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approvals",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, db_index=True)
+    note = models.TextField(blank=True)
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="document_approvals",
+    )
+    approved_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-approved_at"]
+        indexes = [
+            models.Index(fields=["document", "status"]),
+            models.Index(fields=["approved_at", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.document.title} - {self.get_status_display()}"

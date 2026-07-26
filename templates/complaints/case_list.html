@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Complaints and ICMS{% endblock %}
+{% block title_label %}Complaints and ICMS{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-danger mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-1">{% if selected_office == "medical" %}Medical Board Fitness to Practise and ICMS Register{% elif selected_office == "nursing" %}Nursing Council Fitness to Practise and ICMS Register{% else %}Incident and Complaints Case Register{% endif %}</h3>
+            <div class="text-muted small">
+                {% if selected_office == "medical" %}
+                    Formal Medical Board pathway for intake, triage, investigation, interim risk control, discipline referral, final decision, and monitoring.
+                {% elif selected_office == "nursing" %}
+                    Formal Nursing Council pathway for public complaints, professional conduct, registration risk, conditions, discipline referral, final decision, and monitoring.
+                {% else %}
+                    Formal ICMS register for complaints, incidents, conduct matters, and escalated enquiries.
+                {% endif %}
+            </div>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a href="{% url 'complaint_case_create' %}" class="btn btn-danger">
+                <i class="fas fa-folder-plus mr-1"></i> New ICMS Case
+            </a>
+            <a href="{% url 'disciplinary_case_list' %}" class="btn btn-outline-danger">
+                <i class="fas fa-gavel mr-1"></i> Discipline
+            </a>
+            <a href="{% url 'regulatory_decision_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-file-signature mr-1"></i> Decisions
+            </a>
+            <a href="{% url 'complaint_public_submit' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-globe mr-1"></i> Public Form
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if selected_office == "medical" %}
+        <div class="alert alert-light border mb-4">
+            <strong>Medical Board public-protection lens:</strong>
+            triage practitioner risk, record evidence, escalate conduct matters to discipline, apply conditions or restrictions through formal decisions, and keep public register implications auditable.
+        </div>
+        {% elif selected_office == "nursing" %}
+        <div class="alert alert-light border mb-4">
+            <strong>Nursing Council public-protection lens:</strong>
+            triage practice risk, record evidence, separate complaint handling from licence renewal, escalate conduct matters to discipline, and keep public register implications auditable.
+        </div>
+        {% endif %}
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="small-box bg-danger mb-0">
+                    <div class="inner"><h3>{{ summary.open_case_count }}</h3><p>Open Cases</p></div>
+                    <div class="icon"><i class="fas fa-scale-balanced"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="small-box bg-warning mb-0">
+                    <div class="inner"><h3>{{ summary.high_risk_case_count }}</h3><p>High Risk</p></div>
+                    <div class="icon"><i class="fas fa-triangle-exclamation"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="small-box bg-secondary mb-0">
+                    <div class="inner"><h3>{{ summary.unassigned_case_count }}</h3><p>Unassigned</p></div>
+                    <div class="icon"><i class="fas fa-user-clock"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="small-box bg-dark mb-0">
+                    <div class="inner"><h3>{{ summary.critical_case_count }}</h3><p>Critical Priority</p></div>
+                    <div class="icon"><i class="fas fa-bell"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label for="office" class="form-label">Office</label>
+                <select id="office" name="office" class="form-control">
+                    {% for value, label in office_options %}
+                    <option value="{{ value }}" {% if selected_office == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="open" {% if selected_status == "open" %}selected{% endif %}>Open cases</option>
+                    <option value="all" {% if selected_status == "all" %}selected{% endif %}>All statuses</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="priority" class="form-label">Priority</label>
+                <select id="priority" name="priority" class="form-control">
+                    <option value="all" {% if selected_priority == "all" %}selected{% endif %}>All priorities</option>
+                    {% for value, label in priority_choices %}
+                    <option value="{{ value }}" {% if selected_priority == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="q" class="form-label">Search</label>
+                <input id="q" type="search" name="q" value="{{ query }}" class="form-control" placeholder="Case number, name, subject">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary btn-block">Apply</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0">Case Queue</h3>
+        <span class="badge bg-primary">{{ cases.paginator.count }} cases</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Case</th>
+                        <th>Office</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Assigned</th>
+                        <th>Updated</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in cases %}
+                    <tr>
+                        <td>
+                            <strong>{{ case.case_number }}</strong>
+                            <div>{{ case.title }}</div>
+                            <div class="small text-muted">{{ case.complainant_display }}</div>
+                        </td>
+                        <td>{{ case.get_office_scope_display }}</td>
+                        <td>{{ case.get_case_type_display }}</td>
+                        <td><span class="badge bg-info">{{ case.get_status_display }}</span></td>
+                        <td>
+                            <span class="badge bg-{% if case.priority == 'critical' %}dark{% elif case.priority == 'high' %}danger{% elif case.priority == 'normal' %}primary{% else %}secondary{% endif %}">
+                                {{ case.get_priority_display }}
+                            </span>
+                        </td>
+                        <td>{% if case.assigned_to %}{{ case.assigned_to.get_full_name|default:case.assigned_to.username }}{% else %}Unassigned{% endif %}</td>
+                        <td>{{ case.updated_at|date:"d M Y H:i" }}</td>
+                        <td class="text-right">
+                            <a href="{% url 'complaint_case_detail' case.case_uuid %}" class="btn btn-sm btn-outline-primary">Open</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-muted">No ICMS cases matched the current filters.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if cases.has_other_pages %}
+    <div class="card-footer d-flex justify-content-between">
+        <div>Page {{ cases.number }} of {{ cases.paginator.num_pages }}</div>
+        <div>
+            {% if cases.has_previous %}
+            <a class="btn btn-sm btn-outline-secondary" href="?page={{ cases.previous_page_number }}">Previous</a>
+            {% endif %}
+            {% if cases.has_next %}
+            <a class="btn btn-sm btn-outline-secondary" href="?page={{ cases.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

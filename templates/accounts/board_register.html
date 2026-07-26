@@ -1,0 +1,416 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Board Member Account Registration - PNG Regulatory Bodies</title>
+  <script>
+    window.ndohAssets = {
+      bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
+      bootstrapJs: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
+      fontawesomeCss: "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css",
+      adminlteCss: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/css/adminlte.min.css",
+      adminlteJs: "https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc3/dist/js/adminlte.min.js"
+    };
+    window.ndohLoadCss = function (href, id) {
+      if (id && document.getElementById(id)) return;
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      if (id) link.id = id;
+      document.head.appendChild(link);
+    };
+    window.ndohLoadScript = function (src, test, id) {
+      if (test && test()) return;
+      if (id && document.getElementById(id)) return;
+      const script = document.createElement('script');
+      script.src = src;
+      if (id) script.id = id;
+      document.body.appendChild(script);
+    };
+  </script>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.bootstrapCss, 'ndoh-bootstrap-cdn')">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.fontawesomeCss, 'ndoh-fontawesome-cdn')">
+  <link rel="stylesheet" href="{% static 'vendor/adminlte/css/adminlte.min.css' %}" onerror="window.ndohLoadCss(window.ndohAssets.adminlteCss, 'ndoh-adminlte-cdn')">
+  <style>
+    body.board-auth-page {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        linear-gradient(135deg, rgba(20, 44, 66, .94), rgba(26, 83, 74, .92)),
+        url("{% static 'img/NDOH_LOGO.png' %}") center 56px / 220px auto no-repeat,
+        #132d43;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      color: #102033;
+    }
+
+    .board-auth-shell {
+      width: 100%;
+      max-width: 980px;
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(340px, 1fr);
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, .72);
+      box-shadow: 0 28px 70px rgba(8, 20, 32, .28);
+      overflow: hidden;
+    }
+
+    .board-auth-panel {
+      background: #102033;
+      color: #f8fafc;
+      padding: 44px 38px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 560px;
+    }
+
+    .board-auth-panel img {
+      width: 84px;
+      height: auto;
+      margin-bottom: 28px;
+      background: #ffffff;
+      border-radius: 50%;
+      padding: 8px;
+    }
+
+    .board-auth-panel h1 {
+      font-size: 2rem;
+      line-height: 1.15;
+      font-weight: 800;
+      margin: 0 0 16px;
+      color: #ffffff;
+      letter-spacing: 0;
+    }
+
+    .board-auth-panel p,
+    .board-governance-list li {
+      color: #e2e8f0;
+      line-height: 1.65;
+    }
+
+    .board-governance-list {
+      list-style: none;
+      padding: 0;
+      margin: 28px 0 0;
+    }
+
+    .board-governance-list li {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-weight: 600;
+    }
+
+    .board-governance-list i {
+      color: #f4c95d;
+      margin-top: 5px;
+    }
+
+    .board-auth-form {
+      padding: 38px 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 560px;
+    }
+
+    .portal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 14px;
+      background: #eef6f3;
+      color: #17443b;
+      border: 1px solid #c7ded8;
+      font-size: .84rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+    }
+
+    .board-auth-form h2 {
+      color: #102033;
+      font-size: 1.7rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: 0;
+    }
+
+    .board-auth-form .text-muted {
+      color: #334155 !important;
+      -webkit-text-fill-color: #334155 !important;
+      opacity: 1;
+    }
+
+    .board-auth-form :where(input, select, textarea) {
+      min-height: 44px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      color: #111827;
+      -webkit-text-fill-color: #111827;
+    }
+
+    .board-auth-form textarea {
+      min-height: auto;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      color: #172133;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .field-note {
+      color: #1f4f77 !important;
+      -webkit-text-fill-color: #1f4f77 !important;
+      font-weight: 800;
+      font-size: .86rem;
+    }
+
+    .btn-board-primary {
+      min-height: 48px;
+      background: #18324a;
+      border: 1px solid #18324a;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    .btn-board-primary:hover,
+    .btn-board-primary:focus {
+      background: #102033;
+      border-color: #102033;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .btn-outline-board {
+      border: 1px solid #64748b;
+      color: #102033 !important;
+      -webkit-text-fill-color: #102033 !important;
+      background: #ffffff;
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    .btn-outline-board:hover,
+    .btn-outline-board:focus {
+      background: #334155;
+      border-color: #334155;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .board-access-note {
+      border-top: 1px solid #e2e8f0;
+      margin-top: 24px;
+      padding-top: 16px;
+      color: #334155;
+      -webkit-text-fill-color: #334155;
+      font-size: .92rem;
+      line-height: 1.6;
+    }
+
+    .board-form-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: 14px;
+    }
+
+    .board-form-links .board-auth-footer-link {
+      color: #0f4b75;
+      -webkit-text-fill-color: #0f4b75;
+      font-weight: 800;
+      text-decoration: none;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+    }
+
+    .board-form-links .board-auth-footer-link:hover {
+      background: #dbeafe;
+      color: #0b2f4f;
+      -webkit-text-fill-color: #0b2f4f;
+      text-decoration: none;
+    }
+
+    .form-error {
+      margin-top: 8px;
+      color: #b42318 !important;
+      -webkit-text-fill-color: #b42318 !important;
+      font-weight: 700;
+      font-size: .85rem;
+    }
+
+    @media (max-width: 860px) {
+      body.board-auth-page {
+        align-items: flex-start;
+      }
+
+      .board-auth-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .board-auth-panel,
+      .board-auth-form {
+        min-height: auto;
+      }
+
+      .board-auth-panel {
+        padding: 28px 24px;
+      }
+
+      .board-auth-form {
+        padding: 28px 24px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}?v=20260707-board-register-contrast-1">
+</head>
+<body class="board-auth-page">
+{% include 'includes/page_section_navigation.html' %}
+<main class="board-auth-shell">
+  <section class="board-auth-panel" aria-label="Nursing Council Board portal governance scope">
+    <div>
+      <img src="{% static 'img/NDOH_LOGO.png' %}" alt="Papua New Guinea crest">
+      <h1>Nursing Council Board Portal</h1>
+      <p>Use this page only for officially appointed Nursing Council board members.</p>
+      <ul class="board-governance-list">
+        <li><i class="fas fa-id-badge" aria-hidden="true"></i><span>Board credentials are for governance officers, committee chairs, and authorised secretariat roles.</span></li>
+        <li><i class="fas fa-lock" aria-hidden="true"></i><span>A Board Request Token is generated after submission for tracking; it does not grant access.</span></li>
+        <li><i class="fas fa-user-check" aria-hidden="true"></i><span>Applications are reviewed before account activation; this is a secure two-approver model.</span></li>
+        <li><i class="fas fa-gavel" aria-hidden="true"></i><span>All board account activity is recorded in the board audit log.</span></li>
+      </ul>
+    </div>
+    <p class="mb-0">Nursing Council Board Governance Portal</p>
+  </section>
+
+  <section class="board-auth-form" aria-label="Board member registration">
+    <span class="portal-pill"><i class="fas fa-user-plus" aria-hidden="true"></i>Board account registration</span>
+    <h2>Board account request</h2>
+    <p class="text-muted">This request creates an account for board-only access. A Board Request Token is generated after submission for tracking and approval; it is not a sign-in credential.</p>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible">
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="{{ form.first_name.id_for_label }}">First Name</label>
+        {{ form.first_name }}
+        <small class="field-note">Legal name on council appointment records.</small>
+        {% if form.first_name.errors %}<div class="form-error">{{ form.first_name.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+        {{ form.last_name }}
+        {% if form.last_name.errors %}<div class="form-error">{{ form.last_name.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">Board account username / official email alias</label>
+        {{ form.username }}
+        {% if form.username.help_text %}<small class="field-note">{{ form.username.help_text }}</small>{% endif %}
+        {% if form.username.errors %}<div class="form-error">{{ form.username.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.email.id_for_label }}">Official email</label>
+        {{ form.email }}
+        {% if form.email.errors %}<div class="form-error">{{ form.email.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.phone.id_for_label }}">Phone</label>
+        {{ form.phone }}
+        {% if form.phone.errors %}<div class="form-error">{{ form.phone.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.department.id_for_label }}">Department</label>
+        {{ form.department }}
+        {% if form.department.help_text %}<small class="field-note">{{ form.department.help_text }}</small>{% endif %}
+        {% if form.department.errors %}<div class="form-error">{{ form.department.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.job_title.id_for_label }}">Job title</label>
+        {{ form.job_title }}
+        {% if form.job_title.help_text %}<small class="field-note">{{ form.job_title.help_text }}</small>{% endif %}
+        {% if form.job_title.errors %}<div class="form-error">{{ form.job_title.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.employee_details.id_for_label }}">Board role note</label>
+        {{ form.employee_details }}
+        {% if form.employee_details.help_text %}<small class="field-note">{{ form.employee_details.help_text }}</small>{% endif %}
+        {% if form.employee_details.errors %}<div class="form-error">{{ form.employee_details.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.profile_image.id_for_label }}">Profile image</label>
+        {{ form.profile_image }}
+        {% if form.profile_image.help_text %}<small class="field-note">{{ form.profile_image.help_text }}</small>{% endif %}
+        {% if form.profile_image.errors %}<div class="form-error">{{ form.profile_image.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password1.id_for_label }}">Password</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}<div class="form-error">{{ form.password1.errors|join:", " }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}<div class="form-error">{{ form.password2.errors|join:", " }}</div>{% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-board-primary w-100">Submit Board Account Request</button>
+    </form>
+
+    <div class="board-access-note">
+      Approval workflow: the generated Board Request Token is logged for Nursing Council approvers and System Admin. Registrar and System Admin approval are both required before board sign in is available.
+    </div>
+
+    <div class="board-form-links">
+      <a href="{% url 'board_login' %}" class="board-auth-footer-link"><i class="fas fa-sign-in-alt"></i>Back to board sign in</a>
+      <a href="{% url 'staff_login' %}" class="btn btn-outline-board btn-sm">Staff sign in</a>
+      <a href="{% url 'home' %}" class="btn btn-outline-board btn-sm">Back to Home</a>
+    </div>
+  </section>
+</main>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script>window.bootstrap || window.ndohLoadScript(window.ndohAssets.bootstrapJs, function(){ return !!window.bootstrap; }, 'ndoh-bootstrap-cdn-js');</script>
+<script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
+<script>window.adminlte || window.ndohLoadScript(window.ndohAssets.adminlteJs, function(){ return !!window.adminlte; }, 'ndoh-adminlte-cdn-js');</script>
+<script src="{% static 'js/page-section-navigation.js' %}?v=20260708-dashboard-links-1"></script>
+</body>
+</html>

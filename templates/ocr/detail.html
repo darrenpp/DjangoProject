@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}OCR Record - NDOH Registry{% endblock %}
+{% block title_label %}OCR Record Detail{% endblock %}
+
+{% block content %}
+{% if forbidden %}
+<div class="alert alert-danger">You do not have permission to view this OCR record.</div>
+{% else %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card card-outline card-primary">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Extracted OCR Text</h3>
+                <span class="badge {% if ocr_document.processing_status == 'completed' %}badge-success{% elif ocr_document.processing_status == 'failed' %}badge-danger{% else %}badge-warning{% endif %}">
+                    {{ ocr_document.get_processing_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                {% if ocr_document.processing_error %}
+                <div class="alert alert-danger">
+                    {{ ocr_document.processing_error }}
+                </div>
+                {% endif %}
+                {% if ocr_document.extracted_text %}
+                <pre class="border rounded bg-light p-3 mb-0" style="white-space: pre-wrap;">{{ ocr_document.extracted_text }}</pre>
+                {% else %}
+                <div class="text-muted">No extracted text was saved for this OCR record.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Saved Record Details</h3>
+            </div>
+            <div class="card-body">
+                <dl class="mb-0">
+                    <dt>OCR record ID</dt>
+                    <dd>{{ ocr_document.pk }}</dd>
+                    <dt>Uploaded file</dt>
+                    <dd class="text-break">
+                        {% if ocr_document.file %}
+                        <a href="{{ ocr_document.file.url }}" target="_blank" rel="noopener">{{ ocr_document.file.name }}</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </dd>
+                    <dt>Processed</dt>
+                    <dd>{{ ocr_document.processed_at|date:"d M Y H:i" }}</dd>
+                    <dt>Repository link</dt>
+                    <dd>
+                        {% if ocr_document.document_version %}
+                        <a href="{% url 'repository_detail' ocr_document.document_version.document.pk %}">
+                            {{ ocr_document.document_version.document.title }}
+                        </a>
+                        <div class="small text-muted">Version {{ ocr_document.document_version.version_number }}</div>
+                        {% else %}
+                        Standalone OCR file
+                        {% endif %}
+                    </dd>
+                    <dt>Extracted text length</dt>
+                    <dd>{{ ocr_document.extracted_text|length }} characters</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card card-outline card-info">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Extracted Reference Fields</h3>
+            </div>
+            <div class="card-body">
+                {% if metadata_rows %}
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Values</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in metadata_rows %}
+                            <tr>
+                                <td class="font-weight-bold">{{ row.label }}</td>
+                                <td>
+                                    {% for value in row.values %}
+                                    <span class="badge badge-light border text-dark mr-1 mb-1">{{ value }}</span>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-muted">No receipt, registration, practitioner, licence, ATP, or year reference values were detected.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'ocr_import' %}" class="btn btn-outline-primary">
+                <i class="fas fa-file-upload mr-1"></i> Process Another OCR File
+            </a>
+            {% if ocr_document.document_version %}
+            <a href="{% url 'repository_search' %}?q={{ ocr_document.document_version.document.title|urlencode }}" class="btn btn-outline-secondary">
+                <i class="fas fa-search mr-1"></i> Search Repository
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

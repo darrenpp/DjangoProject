@@ -1,38 +1,96 @@
 {% extends 'base.html' %}
-{% block title %}New Enquiry{% endblock %}
-{% block title_label %}New Enquiry{% endblock %}
+{% block title %}{% if can_create_direct_messages %}New Message{% else %}New Enquiry{% endif %}{% endblock %}
+{% block title_label %}{% if can_create_direct_messages %}New Message{% else %}New Enquiry{% endif %}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card card-outline card-primary">
-            <div class="card-header"><h3 class="card-title mb-0">Create an Enquiry</h3></div>
-            <form method="post">
-                {% csrf_token %}
-                <div class="card-body">
-                    <div class="form-group mb-3">
-                        <label for="office">Send To</label>
-                        <select name="office" id="office" class="form-control">
-                            <option value="general" {% if default_office == 'general' %}selected{% endif %}>General Registry</option>
-                            <option value="nursing" {% if default_office == 'nursing' %}selected{% endif %}>Nursing Council</option>
-                            <option value="medical" {% if default_office == 'medical' %}selected{% endif %}>Medical Board</option>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="subject">Subject</label>
-                        <input type="text" name="subject" id="subject" class="form-control" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="body">Message</label>
-                        <textarea name="body" id="body" rows="7" class="form-control" required></textarea>
-                    </div>
+<div class="mailbox-page">
+    {% include 'notifications/_mailbox_sidebar.html' %}
+
+    <div class="mailbox-content card card-outline card-primary">
+        <div class="card-header">
+            <h3 class="card-title mb-0">{% if can_create_direct_messages %}Create a Message or Enquiry{% else %}Create an Enquiry{% endif %}</h3>
+        </div>
+        {% if can_create_direct_messages %}
+        <div class="card-body border-bottom">
+            <form method="get" class="mailbox-recipient-search">
+                <label for="recipient_search">Find an individual record</label>
+                <div class="input-group">
+                    <input type="search" name="recipient_search" id="recipient_search" class="form-control" value="{{ recipient_search }}" placeholder="Search by name, registration number, or email">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-search mr-1"></i> Find Records
+                    </button>
                 </div>
-                <div class="card-footer d-flex justify-content-between">
-                    <a href="{% url 'enquiry_inbox' %}" class="btn btn-outline-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Send Enquiry</button>
-                </div>
+                <div class="small text-muted mt-2">Select a nurse, midwife, nurse aide, graduand, doctor, CHW, or flagged imported row when you need direct follow-up.</div>
             </form>
         </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label for="office">Send To</label>
+                    {% if can_create_direct_messages %}
+                    <select name="recipient" id="office" class="form-control" required>
+                        <option value="office:general" {% if selected_recipient == 'office:general' or not selected_recipient and default_office == 'general' %}selected{% endif %}>General Registry enquiry queue</option>
+                        <option value="office:nursing" {% if selected_recipient == 'office:nursing' or not selected_recipient and default_office == 'nursing' %}selected{% endif %}>Nursing Council enquiry queue</option>
+                        <option value="office:medical" {% if selected_recipient == 'office:medical' or not selected_recipient and default_office == 'medical' %}selected{% endif %}>Medical Board enquiry queue</option>
+                        {% for group in recipient_groups %}
+                        <optgroup label="{{ group.label }}">
+                            {% for option in group.options %}
+                            <option value="{{ option.value }}" {% if option.selected %}selected{% endif %}>
+                                {{ option.label }}
+                            </option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endfor %}
+                    </select>
+                    <div class="small text-muted mt-2">Queue selections create a normal enquiry. Individual record selections can send platform mailbox messages, direct email, or both.</div>
+                    {% else %}
+                    <select name="office" id="office" class="form-control">
+                        <option value="general" {% if default_office == 'general' %}selected{% endif %}>General Registry</option>
+                        <option value="nursing" {% if default_office == 'nursing' %}selected{% endif %}>Nursing Council</option>
+                        <option value="medical" {% if default_office == 'medical' %}selected{% endif %}>Medical Board</option>
+                    </select>
+                    {% endif %}
+                </div>
+                {% if can_create_direct_messages %}
+                <div class="form-group mb-3">
+                    <label>Delivery Method</label>
+                    <div class="mailbox-delivery-options">
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_channel" value="both" checked>
+                            <span class="form-check-label">Platform mailbox and direct email</span>
+                        </label>
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_channel" value="mailbox">
+                            <span class="form-check-label">Platform mailbox only</span>
+                        </label>
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="delivery_channel" value="email">
+                            <span class="form-check-label">Direct email only</span>
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="form-group mb-3">
+                    <label for="subject">Subject</label>
+                    <input type="text" name="subject" id="subject" class="form-control" value="{{ prefill_subject|default:'' }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="body">Message</label>
+                    <textarea name="body" id="body" rows="7" class="form-control" required>{{ prefill_body|default:'' }}</textarea>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="attachments">Attachments</label>
+                    <input type="file" name="attachments" id="attachments" class="form-control-file" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx">
+                    <div class="small text-muted mt-2">Attach receipts, issued certificates, licence letters, ATP evidence, or supporting documents. Maximum 5 files, 10 MB each.</div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{% url 'enquiry_inbox' %}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">{% if can_create_direct_messages %}Send Message{% else %}Send Enquiry{% endif %}</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

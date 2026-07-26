@@ -1,8 +1,8 @@
 # OpenKM-Style Platform Test Guide
 
-Project: The National Department Of Health Regulatory Bodies Nursing Council & The Medical Board Online Workforce System
+Project: PNG Nursing Council and Medical Board Online Regulatory Workforce Platform
 
-Last updated: 07 May 2026
+Last updated: 1 June 2026
 
 ## 1. Purpose
 
@@ -15,8 +15,16 @@ It covers:
 - Document duplicate checks.
 - Staff inbox/chat.
 - Operational access requests.
+- Notification history, unread badge clearing, and read/opened message status.
 - Role privacy.
 - Financial scope separation.
+- Records Hub and Duplicate Review Queue table functions.
+- Nursing Council analytics snapshot summary and drilldown.
+- ICMS complaints, discipline workflow, and regulatory decision register.
+- Document approval/rejection sign-off.
+- NHWA workbook reporting layer.
+- Public FAQ, moderated forum, and mapped reference pages.
+- Receipt-owner matching and high-value review routing.
 - Reporting readiness.
 
 ## 2. Repository Foundation Tests
@@ -75,6 +83,17 @@ Expected result:
 - File size is stored.
 - Checksum is stored.
 - Current-version flag is correct.
+
+### Approve or reject a document version
+
+Open the document detail page as authorised staff.
+
+Expected result:
+
+- Approval and rejection controls are visible where the user has permission.
+- Approval records approver, timestamp, note, and version where available.
+- Rejection records reason and audit history.
+- Document audit events include approved or rejected.
 
 ## 3. Search and OCR Tests
 
@@ -152,6 +171,8 @@ Expected result:
 - Finance Officer cannot use CRUD functions, registrar approval tools, imports, or admin backend.
 - Exports show office scope, timestamp, and exporting user.
 
+Also test that authorised operations/data-quality reviewers can open the financial forecast where role and scope allow, while unauthorised reviewers remain locked out.
+
 ## 7. Role Privacy Tests
 
 Check these role rules:
@@ -176,8 +197,38 @@ Expected result:
 
 - Missing-data review items are created or updated.
 - Duplicate-review candidates are visible for staff review.
+- Duplicate Review Queue provides table search, sort, page length, full pagination, grouped source rows, and review actions.
 - Reports explain live people counts separately from imported row counts.
 - Suspicious future dates are flagged for review.
+
+## 8A. Notification And Records Table Tests
+
+Test:
+
+1. Send a mailbox message to a user.
+2. Confirm the notification bell count appears.
+3. Open the notification history or the related message thread.
+4. Confirm the bell count clears.
+5. Confirm the sender sees opened/read status after the recipient opens the thread.
+6. Open `/records/nursingprofessional/` as an authorised registrar.
+7. Confirm search, sorting, page length, pagination, View, Edit, and Add New controls are present.
+8. Open `/dashboard/duplicate-reviews/`.
+9. Confirm search, sorting, page length, full pagination, grouped source rows, and Mark Reviewed/Mark Merged/Reopen actions are present.
+
+## 8B. Analytics, ICMS, NHWA, Map, And Receipt Tests
+
+Test:
+
+1. Open `/dashboard/nursing-council/analytics/summary/` and confirm the active snapshot returns 34,851 lifecycle records, 19,998 ATP, 8,158 provisional, and 6,695 full licence.
+2. Open `/dashboard/nursing-council/analytics/drilldown/` with filters and confirm paginated facts include Open/detail actions.
+3. Open `/dashboard/complaints/submit/` as a public user and submit a test complaint.
+4. Open `/dashboard/complaints/` as authorised staff and confirm the ICMS case is visible.
+5. Escalate a suitable ICMS case to `/dashboard/complaints/discipline/`.
+6. Record a formal decision in `/dashboard/complaints/decisions/`.
+7. Open `/dashboard/nhwa-workbooks/` and confirm workbook review does not write values back to registry tables.
+8. Open `/dashboard/public/faqs/`, `/dashboard/public/forum/`, and `/dashboard/public/map/`.
+9. Confirm the map uses stored mapped-entity coordinates and does not geocode on page load.
+10. Run `link_receipts_to_individual_records --review-unmatched` and confirm weak or unmatched receipts remain in review.
 
 ## 9. Automated Test Commands
 
@@ -186,6 +237,7 @@ Run:
 ```powershell
 .\.venv\Scripts\python.exe manage.py check
 .\.venv\Scripts\python.exe manage.py test apps.documents.tests --keepdb
+.\.venv\Scripts\python.exe manage.py test apps.complaints apps.documents apps.notifications --keepdb
 .\.venv\Scripts\python.exe manage.py test apps.accounts.tests apps.dashboard.tests apps.workforce.tests apps.notifications.tests --keepdb
 ```
 
@@ -206,11 +258,22 @@ Expected result:
 - `/notifications/enquiries/`
 - `/accounts/profile/`
 - `/records/`
+- `/records/nursingprofessional/`
+- `/dashboard/duplicate-reviews/`
+- `/dashboard/nursing-council/analytics/summary/`
+- `/dashboard/nursing-council/analytics/drilldown/`
+- `/dashboard/complaints/`
+- `/dashboard/complaints/discipline/`
+- `/dashboard/complaints/decisions/`
+- `/dashboard/nhwa-workbooks/`
+- `/dashboard/public/faqs/`
+- `/dashboard/public/forum/`
+- `/dashboard/public/map/`
 - `/nursing/forms/`
 - `/public/nursing-council/register/search/`
 
 ## 11. Notes
 
 - The old phrase "Phase 1 and Phase 2" referred to the first repository and OCR/search build-out.
-- The current platform now also includes access-request workflow, finance separation, role explanations, and updated documentation.
+- The current platform now also includes access-request workflow, finance separation, role explanations, analytics snapshots, ICMS/discipline/decision workflows, NHWA reporting, public engagement, mapping, receipt linking, and updated documentation.
 - Keep using this guide for smoke testing, but use the main user manual for staff training.

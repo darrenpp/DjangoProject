@@ -1,0 +1,999 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PNG Nursing Council Board Governance Portal{% endblock %}
+{% block title_label %}PNG Nursing Council Board Governance Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .board-governance-shell {
+        --board-ink: #102033;
+        --board-muted: #4b5d70;
+        --board-line: #d8e1e8;
+        --board-soft: #f6f8fa;
+        --board-navy: #18324a;
+        --board-green: #12624f;
+        --board-amber: #9a6700;
+        --board-red: #b42318;
+        color: var(--board-ink);
+    }
+    .board-topbar {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid var(--board-line);
+        border-left: 6px solid var(--board-navy);
+        border-radius: 8px;
+        display: flex;
+        gap: 18px;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        padding: 16px;
+    }
+    .board-title h2 {
+        color: var(--board-ink);
+        font-size: 1.35rem;
+        font-weight: 900;
+        letter-spacing: 0;
+        margin: 0 0 4px;
+    }
+    .board-title p,
+    .board-muted {
+        color: var(--board-muted);
+        margin: 0;
+    }
+    .board-kicker {
+        color: var(--board-green);
+        font-size: .75rem;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .board-nav {
+        background: #ffffff;
+        border: 1px solid var(--board-line);
+        border-radius: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 14px;
+        padding: 8px;
+    }
+    .board-nav a {
+        align-items: center;
+        border-radius: 6px;
+        color: #23384d;
+        display: inline-flex;
+        font-size: .84rem;
+        font-weight: 800;
+        gap: 6px;
+        padding: 8px 10px;
+    }
+    .board-nav a.active,
+    .board-nav a:hover {
+        background: #e8f2ef;
+        color: #0f4d40;
+        text-decoration: none;
+    }
+    .board-module-banner {
+        background: #ffffff;
+        border: 1px solid var(--board-line);
+        border-left: 5px solid var(--board-green);
+        border-radius: 8px;
+        margin-bottom: 14px;
+        padding: 14px 16px;
+    }
+    .board-module-banner h3 {
+        color: var(--board-ink);
+        font-size: 1.12rem;
+        font-weight: 900;
+        margin: 0 0 4px;
+    }
+    .board-governance-shell:not([data-board-active-section="dashboard"]) [data-board-module] {
+        display: none;
+    }
+    .board-governance-shell:not([data-board-active-section="dashboard"]) .board-quick-actions,
+    .board-governance-shell:not([data-board-active-section="dashboard"]) .board-metric-grid,
+    .board-governance-shell[data-board-active-section="dashboard"] #board-profile {
+        display: none;
+    }
+    .board-governance-shell[data-board-active-section="meetings"] [data-board-module~="meetings"],
+    .board-governance-shell[data-board-active-section="papers"] [data-board-module~="papers"],
+    .board-governance-shell[data-board-active-section="decisions"] [data-board-module~="decisions"],
+    .board-governance-shell[data-board-active-section="committees"] [data-board-module~="committees"],
+    .board-governance-shell[data-board-active-section="registration"] [data-board-module~="registration"],
+    .board-governance-shell[data-board-active-section="education"] [data-board-module~="education"],
+    .board-governance-shell[data-board-active-section="standards"] [data-board-module~="standards"],
+    .board-governance-shell[data-board-active-section="conduct"] [data-board-module~="conduct"],
+    .board-governance-shell[data-board-active-section="actions"] [data-board-module~="actions"],
+    .board-governance-shell[data-board-active-section="risk"] [data-board-module~="risk"],
+    .board-governance-shell[data-board-active-section="library"] [data-board-module~="library"],
+    .board-governance-shell[data-board-active-section="profile"] [data-board-module~="profile"] {
+        display: block;
+    }
+    .board-quick-actions,
+    .board-metric-grid,
+    .board-committee-grid,
+    .board-risk-grid,
+    .board-readiness-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        margin-bottom: 14px;
+    }
+    .board-card,
+    .board-panel {
+        background: #ffffff;
+        border: 1px solid var(--board-line);
+        border-radius: 8px;
+        box-shadow: 0 10px 24px rgba(15, 32, 51, .05);
+    }
+    .board-card {
+        min-height: 86px;
+        padding: 14px;
+    }
+    .board-card strong {
+        color: var(--board-ink);
+        display: block;
+        font-size: 1.45rem;
+        font-weight: 900;
+        line-height: 1.1;
+    }
+    .board-card span {
+        color: var(--board-muted);
+        display: block;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+    .board-action-tile {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid var(--board-line);
+        border-radius: 8px;
+        color: #102033;
+        display: flex;
+        gap: 10px;
+        min-height: 74px;
+        padding: 12px;
+        text-decoration: none;
+    }
+    .board-action-tile i {
+        align-items: center;
+        background: #e8f2ef;
+        border-radius: 8px;
+        color: var(--board-green);
+        display: inline-flex;
+        height: 38px;
+        justify-content: center;
+        width: 38px;
+    }
+    .board-action-tile strong {
+        color: var(--board-ink);
+        display: block;
+        font-size: .93rem;
+        font-weight: 900;
+    }
+    .board-action-tile small {
+        color: var(--board-muted);
+        display: block;
+        line-height: 1.35;
+    }
+    .board-panel {
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+    .board-panel-header {
+        align-items: center;
+        background: var(--board-soft);
+        border-bottom: 1px solid var(--board-line);
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        padding: 12px 14px;
+    }
+    .board-panel-header h3 {
+        color: var(--board-ink);
+        font-size: 1rem;
+        font-weight: 900;
+        letter-spacing: 0;
+        margin: 0;
+    }
+    .board-panel-body {
+        padding: 14px;
+    }
+    .board-badge {
+        border-radius: 999px;
+        display: inline-block;
+        font-size: .76rem;
+        font-weight: 900;
+        padding: 5px 9px;
+        white-space: nowrap;
+    }
+    .board-badge-green,
+    .board-badge-success,
+    .board-badge-public { background: #dcfce7; color: #166534; }
+    .board-badge-amber,
+    .board-badge-warning { background: #fef3c7; color: #92400e; }
+    .board-badge-red,
+    .board-badge-confidential,
+    .board-badge-highly_confidential { background: #fee2e2; color: #991b1b; }
+    .board-badge-navy,
+    .board-badge-internal,
+    .board-badge-private { background: #e0f2fe; color: #075985; }
+    .board-badge-slate,
+    .board-badge-neutral { background: #e2e8f0; color: #334155; }
+    .board-score {
+        align-items: center;
+        display: flex;
+        gap: 14px;
+    }
+    .board-score-ring {
+        align-items: center;
+        background: #e8f2ef;
+        border: 8px solid #12624f;
+        border-radius: 50%;
+        color: #102033;
+        display: inline-flex;
+        font-size: 1.25rem;
+        font-weight: 900;
+        height: 92px;
+        justify-content: center;
+        min-width: 92px;
+        width: 92px;
+    }
+    .board-check {
+        align-items: flex-start;
+        border-top: 1px solid #edf2f7;
+        display: flex;
+        gap: 10px;
+        padding: 10px 0;
+    }
+    .board-check i {
+        margin-top: 3px;
+    }
+    .board-check .fa-circle-check { color: var(--board-green); }
+    .board-check .fa-circle-exclamation { color: var(--board-amber); }
+    .board-table th {
+        background: #eef3f1;
+        color: #102033 !important;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+    .board-table td {
+        color: #20303c;
+        vertical-align: middle;
+    }
+    .board-form-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    }
+    .board-form-grid .wide {
+        grid-column: 1 / -1;
+    }
+    .board-empty {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        color: var(--board-muted);
+        padding: 12px;
+    }
+    .board-two-col {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, .42fr);
+    }
+    .board-section-title {
+        color: var(--board-ink);
+        font-size: .95rem;
+        font-weight: 900;
+        margin: 0 0 10px;
+    }
+    .board-progress {
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 10px;
+        overflow: hidden;
+    }
+    .board-progress span {
+        background: var(--board-green);
+        display: block;
+        height: 10px;
+    }
+    .board-ai-note {
+        background: #f8fafc;
+        border: 1px solid var(--board-line);
+        border-left: 5px solid var(--board-amber);
+        border-radius: 8px;
+        padding: 12px;
+    }
+    @media (max-width: 900px) {
+        .board-topbar,
+        .board-panel-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .board-two-col {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="board-governance-shell" data-board-active-section="{{ board_active_section }}">
+    <section class="board-topbar">
+        <div class="board-title">
+            <div class="board-kicker">Secure boardroom workspace</div>
+            <h2>PNG Nursing Council Board Governance Portal</h2>
+            <p>Oversight, board papers, decisions, committees, education accreditation, standards, complaints, minutes, risk, and governance library.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {% if board_pack %}
+            <a href="{% url 'board_nursing_board_pack' board_pack.pk %}" class="btn btn-primary btn-sm{% if not board_pack %} disabled{% endif %}"><i class="fas fa-book-open mr-1"></i> Open Board Pack</a>
+            {% else %}
+            <a href="{% url 'board_nursing_papers' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-folder-open mr-1"></i> Board Papers</a>
+            {% endif %}
+            <a href="{% url 'board_nursing_decision_queue' %}" class="btn btn-outline-dark btn-sm"><i class="fas fa-list-check mr-1"></i> Decisions</a>
+            <a href="{% url 'board_nursing_library' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-landmark mr-1"></i> Library</a>
+        </div>
+    </section>
+
+    <nav class="board-nav" aria-label="Board portal navigation">
+        {% for key, label, url_name, icon in board_nav_items %}
+        <a href="{% url url_name %}" class="{% if board_active_section == key %}active{% endif %}">
+            <i class="{{ icon }}" aria-hidden="true"></i><span>{{ label }}</span>
+        </a>
+        {% endfor %}
+    </nav>
+
+    <section class="board-module-banner" aria-label="Current board portal module">
+        <h3>{{ board_page_title }}</h3>
+        <p class="board-muted">{{ board_page_description }}</p>
+    </section>
+
+    <div class="board-quick-actions">
+        <a class="board-action-tile" href="{% if board_pack %}{% url 'board_nursing_board_pack' board_pack.pk %}{% else %}{% url 'board_nursing_papers' %}{% endif %}">
+            <i class="fas fa-book-open" aria-hidden="true"></i>
+            <span><strong>Open next Board Pack</strong><small>Meeting papers and agenda sequence</small></span>
+        </a>
+        <a class="board-action-tile" href="{% url 'board_nursing_meetings' %}">
+            <i class="fas fa-scale-balanced" aria-hidden="true"></i>
+            <span><strong>Declare conflicts</strong><small>Attendance, conflict and recusal register</small></span>
+        </a>
+        <a class="board-action-tile" href="{% url 'board_nursing_decision_queue' %}">
+            <i class="fas fa-list-check" aria-hidden="true"></i>
+            <span><strong>Review decisions awaiting Board</strong><small>Board queue, accreditation, conduct and policy</small></span>
+        </a>
+        <a class="board-action-tile" href="{% url 'board_nursing_committees' %}">
+            <i class="fas fa-sitemap" aria-hidden="true"></i>
+            <span><strong>Read committee reports</strong><small>Registration, Education, Standards and Conduct</small></span>
+        </a>
+        <a class="board-action-tile" href="{% url 'board_nursing_actions' %}">
+            <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+            <span><strong>View my actions</strong><small>Owner, due date and completion evidence</small></span>
+        </a>
+    </div>
+
+    <div class="board-metric-grid">
+        {% for metric in board_metrics %}
+        <div class="board-card">
+            <strong>{{ metric.value }}</strong>
+            <span><i class="{{ metric.icon }} mr-1"></i>{{ metric.label }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="board-two-col">
+        <section class="board-panel" id="board-dashboard" data-board-module="dashboard">
+            <div class="board-panel-header">
+                <h3><i class="fas fa-gauge-high mr-2"></i>Board Dashboard</h3>
+                <span class="board-badge board-badge-{{ board_metrics.0.theme }}">Board Readiness {{ board_readiness.score }}%</span>
+            </div>
+            <div class="board-panel-body">
+                <div class="board-score mb-3">
+                    <div class="board-score-ring">{{ board_readiness.score }}%</div>
+                    <div>
+                        <h4 class="board-section-title">Board Readiness Score</h4>
+                        <p class="board-muted">Agenda, papers, Chair review, quorum, declarations, committee reports, classification, and previous minutes are checked before the pack is ready.</p>
+                        <div class="board-progress mt-2"><span style="width: {{ board_readiness.score }}%;"></span></div>
+                    </div>
+                </div>
+                <div class="board-readiness-grid">
+                    {% for check in board_readiness.checks %}
+                    <div class="board-check">
+                        <i class="fas {% if check.ok %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                        <div><strong>{{ check.label }}</strong><br><span class="board-muted">{{ check.detail }}</span></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="board-panel" id="board-meeting" data-board-module="dashboard meetings">
+            <div class="board-panel-header">
+                <h3><i class="fas fa-calendar-check mr-2"></i>Next Board Meeting</h3>
+                {% if board_quorum_met %}<span class="board-badge board-badge-green">Quorum ready</span>{% else %}<span class="board-badge board-badge-amber">Quorum pending</span>{% endif %}
+            </div>
+            <div class="board-panel-body">
+                {% if board_current_meeting %}
+                <h4 class="board-section-title">{{ board_current_meeting.title }}</h4>
+                <p class="board-muted">{{ board_current_meeting.get_meeting_type_display }} | {{ board_current_meeting.scheduled_for|date:"d M Y, H:i" }} | {{ board_current_meeting.location|default:"Venue to be confirmed" }}</p>
+                <div class="mt-3">
+                    <div><strong>Pack status:</strong> {{ board_pack.get_status_display|default:"Draft" }}</div>
+                    <div><strong>Papers due:</strong> {{ board_current_meeting.papers_due_at|date:"d M Y, H:i"|default:"Not set" }}</div>
+                    <div><strong>Agenda lock:</strong> {{ board_current_meeting.agenda_lock_at|date:"d M Y, H:i"|default:"Not set" }}</div>
+                    <div><strong>Attendance:</strong> {{ board_present_count }} present / {{ board_apology_count }} apologies</div>
+                    <div><strong>Quorum:</strong> {{ board_present_count }} of {{ board_quorum_required }}</div>
+                    <div><strong>Conflicts:</strong> {{ board_conflict_count }} declared</div>
+                </div>
+                {% if board_can_manage %}
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="board_action" value="issue_pack">
+                    <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn-outline-primary btn-sm"><i class="fas fa-paper-plane mr-1"></i> Issue Board Pack</button>
+                </form>
+                {% endif %}
+                {% else %}
+                <div class="board-empty">No Nursing Council Board meeting has been scheduled.</div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <section class="board-panel" id="board-risk" data-board-module="dashboard risk">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-triangle-exclamation mr-2"></i>Regulatory Risk Radar</h3>
+            <a href="{% url 'board_nursing_risk' %}" class="btn btn-outline-primary btn-sm">Risk dashboard</a>
+        </div>
+        <div class="board-panel-body">
+            <div class="board-risk-grid">
+                {% for risk in board_risk_radar %}
+                <div class="board-card">
+                    <span class="board-badge board-badge-{{ risk.status }}">{{ risk.status|title }}</span>
+                    <strong class="mt-2">{{ risk.count|default:"" }}</strong>
+                    <span>{{ risk.label }}</span>
+                    <small class="board-muted">{{ risk.detail }}</small>
+                </div>
+                {% endfor %}
+            </div>
+            {% if board_can_manage %}
+            <form method="post" class="mt-2">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="add_risk_item">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="board-form-grid">
+                    <div><label class="form-label">Risk title</label><input class="form-control" name="title"></div>
+                    <div><label class="form-label">Category</label><select class="form-control" name="category">{% for value, label in board_risk_category_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div><label class="form-label">Status</label><select class="form-control" name="status"><option value="green">Green</option><option value="amber">Amber</option><option value="red">Red</option></select></div>
+                    <div><label class="form-label">Due date</label><input class="form-control" name="due_date" type="date"></div>
+                    <div class="wide"><label class="form-label">Summary</label><textarea class="form-control" name="summary" rows="2"></textarea></div>
+                    <div class="wide"><button class="btn btn-primary" type="submit">Add Risk Item</button></div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if board_current_meeting %}
+    <section class="board-panel" id="board-attendance" data-board-module="meetings">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-user-check mr-2"></i>Attendance, Quorum, and Conflict Declarations</h3>
+            <span class="board-badge {% if board_quorum_met %}board-badge-green{% else %}board-badge-amber{% endif %}">{{ board_present_count }} / {{ board_quorum_required }}</span>
+        </div>
+        <div class="board-panel-body">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="record_attendance">
+                <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                <input type="hidden" name="role_on_board" value="{{ board_user_role }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="board-form-grid">
+                    <div>
+                        <label class="form-label">Attendance</label>
+                        <select class="form-control" name="attendance_status">
+                            {% for value, label in board_attendance_status_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-end"><label class="form-check"><input class="form-check-input" type="checkbox" name="conflict_declared"> Conflict declared</label></div>
+                    <div class="d-flex align-items-end"><label class="form-check"><input class="form-check-input" type="checkbox" name="recusal_required"> Recusal required</label></div>
+                    <div class="wide"><label class="form-label">Conflict note</label><textarea class="form-control" name="conflict_note" rows="2"></textarea></div>
+                    <div class="wide"><button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save Declaration</button></div>
+                </div>
+            </form>
+            <div class="table-responsive mt-3">
+                <table class="table board-table table-sm">
+                    <thead><tr><th>Member</th><th>Role</th><th>Status</th><th>Conflict</th><th>Recusal</th></tr></thead>
+                    <tbody>
+                    {% for record in board_attendance_records %}
+                    <tr>
+                        <td>{{ record.member.account_display_name }}</td>
+                        <td>{{ record.get_role_on_board_display }}</td>
+                        <td>{{ record.get_attendance_status_display }}</td>
+                        <td>{{ record.conflict_declared|yesno:"Declared,None" }}</td>
+                        <td>{{ record.recusal_required|yesno:"Required,No" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5"><div class="board-empty">No attendance declarations recorded.</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="board-panel" id="board-decisions" data-board-module="dashboard decisions">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-list-check mr-2"></i>Decision Queue</h3>
+            <span class="board-badge board-badge-navy">{{ board_decision_queue|length }} items</span>
+        </div>
+        <div class="board-panel-body">
+            <div class="board-metric-grid">
+                {% for bucket in board_decision_urgency %}
+                <div class="board-card"><strong>{{ bucket.count }}</strong><span>{{ bucket.label }}</span></div>
+                {% endfor %}
+            </div>
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead>
+                    <tr>
+                        <th>Reference</th><th>Subject</th><th>Type</th><th>Committee recommendation</th><th>Risk flag</th><th>Required action</th><th>Due</th><th>Status</th><th>Documents</th><th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in board_decision_queue %}
+                    <tr>
+                        <td><strong>{{ item.reference }}</strong><br><span class="board-muted">{{ item.title }}</span></td>
+                        <td>{{ item.subject }}</td>
+                        <td>{{ item.type }}</td>
+                        <td>{{ item.recommendation }}</td>
+                        <td>{{ item.risk_flag }}</td>
+                        <td>{{ item.required_action }}</td>
+                        <td>{{ item.due_date|date:"d M Y"|default:"Not set" }}</td>
+                        <td><span class="board-badge board-badge-{{ item.confidentiality_code }}">{{ item.status }}</span></td>
+                        <td>{% if item.restricted %}<span class="board-muted">Restricted</span>{% elif item.href %}<a href="{{ item.href }}" class="btn btn-outline-primary btn-sm">Open</a>{% else %}<span class="board-muted">Linked pack</span>{% endif %}</td>
+                        <td>
+                            {% if item.restricted %}
+                            <span class="board-muted">Authorised governance officers only</span>
+                            {% elif item.kind == "board_queue" %}
+                            <form method="post" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="board_action" value="record_decision_action">
+                                <input type="hidden" name="queue_item_id" value="{{ item.pk }}">
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <select class="form-control form-control-sm" name="decision_action">
+                                    {% for value, label in board_decision_action_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-outline-primary btn-sm" type="submit">Record</button>
+                            </form>
+                            {% else %}
+                            <span class="board-muted">Source workflow</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="10"><div class="board-empty">No decision items are awaiting Board action.</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if board_can_manage %}
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="add_decision_queue_item">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <h4 class="board-section-title">Add controlled decision item</h4>
+                <div class="board-form-grid">
+                    <div><label class="form-label">Reference</label><input class="form-control" name="reference"></div>
+                    <div><label class="form-label">Title</label><input class="form-control" name="title"></div>
+                    <div><label class="form-label">Subject</label><input class="form-control" name="subject"></div>
+                    <div><label class="form-label">Due date</label><input class="form-control" name="due_date" type="date"></div>
+                    <div><label class="form-label">Category</label><select class="form-control" name="category">{% for value, label in board_decision_category_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div><label class="form-label">Required action</label><select class="form-control" name="required_action">{% for value, label in board_decision_action_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div><label class="form-label">Confidentiality</label><select class="form-control" name="confidentiality">{% for value, label in board_confidentiality_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div class="wide"><label class="form-label">Risk flag</label><textarea class="form-control" name="risk_flag" rows="2"></textarea></div>
+                    <div class="wide"><button class="btn btn-primary" type="submit">Add Decision Item</button></div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="board-panel" id="board-papers" data-board-module="dashboard papers">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-folder-open mr-2"></i>Board Papers and Pack Reader</h3>
+            {% if board_pack %}<span class="board-badge board-badge-navy">{{ board_pack.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="board-panel-body">
+            {% if board_pack %}
+            <div class="board-ai-note mb-3">
+                <strong>AI Board Pack Summary:</strong>
+                <span class="board-muted">{{ board_pack.ai_summary|default:"Advisory only. Secretariat and Chair review are required before any minutes, decision, or public extract is final." }}</span>
+            </div>
+            <form method="post" class="mb-3">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="mark_pack_read">
+                <input type="hidden" name="pack_id" value="{{ board_pack.pk }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="board-form-grid">
+                    <div class="d-flex align-items-end"><label class="form-check"><input class="form-check-input" type="checkbox" name="acknowledge_confidentiality"> Confidentiality acknowledged</label></div>
+                    <div class="d-flex align-items-end"><label class="form-check"><input class="form-check-input" type="checkbox" name="bookmarked"> Bookmark pack</label></div>
+                    <div class="wide"><label class="form-label">Private notes</label><textarea class="form-control" name="private_notes" rows="2"></textarea></div>
+                    <div class="wide"><button class="btn btn-primary" type="submit">Mark Board Pack As Read</button></div>
+                </div>
+            </form>
+            {% endif %}
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead><tr><th>Agenda</th><th>Paper</th><th>Classification</th><th>Status</th><th>Version</th><th>Repository</th><th>Read</th></tr></thead>
+                    <tbody>
+                    {% for paper in board_all_papers|default:board_papers %}
+                    <tr>
+                        {% if paper.classification == 'confidential' and not board_can_manage %}
+                        <td>Restricted agenda</td>
+                        <td><strong>Restricted board paper</strong><br><span class="board-muted">Authorised governance officers only</span></td>
+                        <td><span class="board-badge board-badge-confidential">{{ paper.get_classification_display }}</span></td>
+                        <td>{{ paper.get_status_display }}</td>
+                        <td>{{ paper.version_label|default:"Current" }}</td>
+                        <td><span class="board-muted">Restricted</span></td>
+                        <td><span class="board-muted">Restricted</span></td>
+                        {% else %}
+                        <td>{{ paper.agenda_item.title|default:"Board pack" }}</td>
+                        <td><strong>{{ paper.title }}</strong>{% if paper.is_late %}<br><span class="board-badge board-badge-amber">Late</span>{% endif %}</td>
+                        <td><span class="board-badge board-badge-{{ paper.classification }}">{{ paper.get_classification_display }}</span></td>
+                        <td>{{ paper.get_status_display }}</td>
+                        <td>{{ paper.version_label|default:"Current" }}</td>
+                        <td>{% if paper.document_id %}<a class="btn btn-outline-primary btn-sm" href="{% url 'repository_detail' paper.document_id %}">Open</a>{% else %}<span class="board-muted">No file linked</span>{% endif %}</td>
+                        <td>
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="board_action" value="mark_paper_read">
+                                <input type="hidden" name="paper_id" value="{{ paper.pk }}">
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <button class="btn btn-outline-primary btn-sm" type="submit">Mark read</button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7"><div class="board-empty">No board papers are linked yet. Authorised governance staff can add controlled board documents.</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    {% if board_selected_committee %}
+    <section class="board-panel" id="board-selected-committee" data-board-module="{{ board_selected_committee }}">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-sitemap mr-2"></i>{{ board_page_title }} Workspace</h3>
+            <a href="{% url 'board_nursing_decision_queue' %}" class="btn btn-outline-primary btn-sm">Open Decision Queue</a>
+        </div>
+        <div class="board-panel-body">
+            {% for row in board_committee_rows %}
+                {% if row.slug == board_selected_committee %}
+                <h4 class="board-section-title">{{ row.committee.name }}</h4>
+                <p class="board-muted mb-3">{{ row.purpose }}</p>
+                <div class="board-committee-grid">
+                    {% for label, value in row.metrics %}
+                    <div class="board-card">
+                        <strong>{{ value }}</strong>
+                        <span>{{ label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="board-ai-note mt-2">
+                    <strong>Board scope:</strong>
+                    <span class="board-muted">This workspace shows Board-level governance oversight only. It does not expose Nursing Council operational portal records or confidential applicant files.</span>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="board-panel" id="board-committees" data-board-module="dashboard committees registration education standards conduct">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-sitemap mr-2"></i>Committee Workspaces</h3>
+            <span class="board-badge board-badge-slate">Registration | Education | Standards | Conduct</span>
+        </div>
+        <div class="board-panel-body">
+            <div class="board-committee-grid">
+                {% for row in board_committee_rows %}
+                <div class="board-card">
+                    <i class="{{ row.icon }} mb-2" aria-hidden="true"></i>
+                    <strong>{{ row.committee.name }}</strong>
+                    <span>{{ row.purpose }}</span>
+                    <div class="mt-2">
+                        {% for label, value in row.metrics %}
+                        <div class="d-flex justify-content-between border-top pt-1"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ row.href }}" class="btn btn-outline-primary btn-sm mt-2">Open workspace</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="board-panel" id="board-agenda" data-board-module="meetings">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-clipboard-list mr-2"></i>Meetings, Agenda Builder, and Matters Arising</h3>
+            {% if board_current_meeting %}<a class="btn btn-outline-primary btn-sm" href="{% url 'board_nursing_meeting_detail' board_current_meeting.pk %}">Open meeting</a>{% endif %}
+        </div>
+        <div class="board-panel-body">
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead><tr><th>#</th><th>Agenda item</th><th>Purpose</th><th>Category</th><th>Classification</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for row in board_meeting_pack_rows %}
+                    <tr>
+                        <td>{{ row.agenda_item.order }}</td>
+                        <td>
+                            {% if row.agenda_item.confidentiality == 'confidential' and not board_can_manage %}
+                            <strong>Restricted agenda item</strong><br><span class="board-muted">Authorised governance officers only</span>
+                            {% else %}
+                            <strong>{{ row.agenda_item.title }}</strong><br><span class="board-muted">{{ row.agenda_item.summary|default:row.agenda_item.recommendation|default:"No summary recorded" }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.agenda_item.get_purpose_display }}</td>
+                        <td>{{ row.agenda_item.get_category_display }}</td>
+                        <td><span class="board-badge board-badge-{{ row.agenda_item.confidentiality }}">{{ row.agenda_item.get_confidentiality_display }}</span></td>
+                        <td>{{ row.agenda_item.get_status_display }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6"><div class="board-empty">No agenda items recorded for the current meeting.</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if board_can_manage and board_current_meeting %}
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="add_agenda_item">
+                <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="board-form-grid">
+                    <div><label class="form-label">Agenda item</label><input class="form-control" name="title"></div>
+                    <div><label class="form-label">Purpose</label><select class="form-control" name="purpose">{% for value, label in board_agenda_purpose_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div><label class="form-label">Category</label><select class="form-control" name="category">{% for value, label in board_agenda_category_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div><label class="form-label">Classification</label><select class="form-control" name="confidentiality"><option value="private">Private</option><option value="confidential">Confidential</option><option value="public">Public</option></select></div>
+                    <div class="wide"><label class="form-label">Summary</label><textarea class="form-control" name="summary" rows="2"></textarea></div>
+                    <div class="wide"><label class="form-label">Recommendation</label><textarea class="form-control" name="recommendation" rows="2"></textarea></div>
+                    <div class="wide"><button class="btn btn-primary" type="submit">Add Agenda Item</button></div>
+                </div>
+            </form>
+            {% endif %}
+            <h4 class="board-section-title mt-3">Matters Arising</h4>
+            {% for item in board_matters_arising %}
+            <div class="board-check">
+                <i class="fas fa-circle-exclamation"></i>
+                <div><strong>{{ item.source }}: {{ item.title }}</strong><br><span class="board-muted">{{ item.detail }} | {{ item.status }} | {{ item.due_date|date:"d M Y"|default:"No due date" }}</span></div>
+            </div>
+            {% empty %}
+            <div class="board-empty">No matters arising are currently carried forward.</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="board-panel" id="board-actions" data-board-module="dashboard actions">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-clipboard-check mr-2"></i>Actions, Minutes, Motions, and Resolutions</h3>
+            {% if board_minutes %}<span class="board-badge board-badge-navy">{{ board_minutes.get_status_display }}</span>{% endif %}
+        </div>
+        <div class="board-panel-body">
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead><tr><th>Action ID</th><th>Action</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th><th>Update</th></tr></thead>
+                    <tbody>
+                    {% for action in board_action_items %}
+                    <tr>
+                        <td>BA-{{ action.pk }}</td>
+                        <td><strong>{{ action.title }}</strong><br><span class="board-muted">{{ action.description|default:"No description" }}</span></td>
+                        <td>{{ action.owner.account_display_name|default:"Unassigned" }}</td>
+                        <td>{{ action.due_date|date:"d M Y"|default:"Not set" }}</td>
+                        <td>{{ action.get_priority_display }}</td>
+                        <td>{{ action.get_status_display }}</td>
+                        <td>
+                            <form method="post" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="board_action" value="update_action_status">
+                                <input type="hidden" name="action_id" value="{{ action.pk }}">
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <select class="form-control form-control-sm" name="status">{% for value, label in board_action_status_choices %}<option value="{{ value }}"{% if action.status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+                                <button class="btn btn-outline-primary btn-sm" type="submit">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7"><div class="board-empty">No board actions recorded for this meeting.</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if board_current_meeting %}
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="add_action_item">
+                <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="board-form-grid">
+                    <div><label class="form-label">Action</label><input class="form-control" name="title"></div>
+                    <div><label class="form-label">Due date</label><input class="form-control" name="due_date" type="date"></div>
+                    <div><label class="form-label">Priority</label><select class="form-control" name="priority">{% for value, label in board_action_priority_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div class="wide"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
+                    <div class="wide"><button class="btn btn-primary" type="submit">Add Action</button></div>
+                </div>
+            </form>
+            {% endif %}
+            {% if board_current_meeting and board_minutes %}
+            <form method="post" class="mt-3" id="board-minutes">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="update_minutes">
+                <input type="hidden" name="meeting_id" value="{{ board_current_meeting.pk }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <h4 class="board-section-title">Minutes workflow</h4>
+                <div class="board-form-grid">
+                    <div><label class="form-label">Status</label><select class="form-control" name="status">{% for value, label in board_minutes_status_choices %}<option value="{{ value }}"{% if board_minutes.status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                    <div class="d-flex align-items-end"><label class="form-check"><input class="form-check-input" type="checkbox" name="generate_outline"> Generate draft outline</label></div>
+                    <div class="wide"><label class="form-label">Draft minutes</label><textarea class="form-control" name="draft_text" rows="5">{{ board_minutes.draft_text }}</textarea></div>
+                    <div class="wide"><label class="form-label">Public-safe decision extract</label><textarea class="form-control" name="public_safe_extract" rows="3">{{ board_minutes.public_safe_extract }}</textarea></div>
+                    <div class="wide"><button class="btn btn-primary" type="submit">Save Minutes</button></div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="board-panel" id="board-library" data-board-module="dashboard library">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-landmark mr-2"></i>Governance Library</h3>
+            <a href="{% url 'board_nursing_papers' %}" class="btn btn-outline-primary btn-sm">Board papers</a>
+        </div>
+        <div class="board-panel-body">
+            <div class="table-responsive">
+                <table class="table board-table table-sm">
+                    <thead><tr><th>Title</th><th>Category</th><th>Classification</th><th>Owner</th><th>Review due</th><th>Document</th></tr></thead>
+                    <tbody>
+                    {% for item in board_library_items %}
+                    <tr>
+                        {% if item.classification == 'confidential' and not board_can_manage or item.classification == 'highly_confidential' and not board_can_manage %}
+                        <td><strong>Restricted governance library item</strong><br><span class="board-muted">Authorised governance officers only</span></td>
+                        <td>{{ item.get_category_display }}</td>
+                        <td><span class="board-badge board-badge-{{ item.classification }}">{{ item.get_classification_display }}</span></td>
+                        <td>{{ item.policy_owner|default:"Not set" }}</td>
+                        <td>{{ item.review_due_date|date:"d M Y"|default:"Not set" }}</td>
+                        <td><span class="board-muted">Restricted</span></td>
+                        {% else %}
+                        <td><strong>{{ item.title }}</strong>{% if item.review_overdue %}<br><span class="board-badge board-badge-red">Review overdue</span>{% endif %}</td>
+                        <td>{{ item.get_category_display }}</td>
+                        <td><span class="board-badge board-badge-{{ item.classification }}">{{ item.get_classification_display }}</span></td>
+                        <td>{{ item.policy_owner|default:"Not set" }}</td>
+                        <td>{{ item.review_due_date|date:"d M Y"|default:"Not set" }}</td>
+                        <td><a href="{% url 'repository_detail' item.document_id %}" class="btn btn-outline-primary btn-sm">Open</a></td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6"><div class="board-empty">No governance library items have been registered yet.</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if board_can_manage %}
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="add_library_item">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="board-form-grid">
+                    <div><label class="form-label">Repository document ID</label><input class="form-control" name="document_id" type="number"></div>
+                    <div><label class="form-label">Title</label><input class="form-control" name="title"></div>
+                    <div><label class="form-label">Category</label><select class="form-control" name="category">{% for value, label in board_library_category_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div><label class="form-label">Classification</label><select class="form-control" name="classification">{% for value, label in board_confidentiality_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div><label class="form-label">Policy owner</label><input class="form-control" name="policy_owner"></div>
+                    <div><label class="form-label">Review due</label><input class="form-control" name="review_due_date" type="date"></div>
+                    <div class="wide"><button class="btn btn-primary" type="submit">Add Library Item</button></div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="board-panel" id="board-notices" data-board-module="library">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-bell mr-2"></i>Secure Notices and Communications</h3>
+            <span class="board-badge board-badge-slate">No informal decision-making</span>
+        </div>
+        <div class="board-panel-body">
+            {% for notice in board_notices %}
+            <div class="board-check">
+                <i class="fas fa-bell"></i>
+                <div>
+                    {% if notice.classification == 'confidential' and not board_can_manage or notice.classification == 'highly_confidential' and not board_can_manage %}
+                    <strong>Restricted board notice</strong><br><span class="board-muted">{{ notice.get_notice_type_display }} | {{ notice.get_classification_display }} | Authorised governance officers only</span>
+                    {% else %}
+                    <strong>{{ notice.title }}</strong><br><span class="board-muted">{{ notice.get_notice_type_display }} | {{ notice.get_classification_display }} | {{ notice.message }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="board-empty">No current board notices.</div>
+            {% endfor %}
+            {% if board_can_manage %}
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="board_action" value="add_notice">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="board-form-grid">
+                    <div><label class="form-label">Notice type</label><select class="form-control" name="notice_type">{% for value, label in board_notice_type_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div><label class="form-label">Classification</label><select class="form-control" name="classification">{% for value, label in board_confidentiality_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                    <div class="wide"><label class="form-label">Title</label><input class="form-control" name="title"></div>
+                    <div class="wide"><label class="form-label">Message</label><textarea class="form-control" name="message" rows="2"></textarea></div>
+                    <div class="wide"><button class="btn btn-primary" type="submit">Post Notice</button></div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="board-panel" id="board-profile" data-board-module="profile">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-user-shield mr-2"></i>Board Member Profile</h3>
+            <span class="board-badge board-badge-navy">Board scoped account</span>
+        </div>
+        <div class="board-panel-body">
+            <div class="board-form-grid">
+                <div><label class="form-label">Member</label><div class="board-empty">{{ request.user.account_display_name|default:request.user.username }}</div></div>
+                <div><label class="form-label">Username</label><div class="board-empty">{{ request.user.username }}</div></div>
+                <div><label class="form-label">Email</label><div class="board-empty">{{ request.user.email|default:"Not recorded" }}</div></div>
+                <div><label class="form-label">Department</label><div class="board-empty">{{ request.user.department|default:"Nursing Council Board" }}</div></div>
+                <div><label class="form-label">Board role</label><div class="board-empty">{% if board_profile %}{{ board_profile.get_board_role_display }}{% else %}Board Member{% endif %}</div></div>
+                <div><label class="form-label">Appointment reference</label><div class="board-empty">{% if board_profile.appointment_reference %}{{ board_profile.appointment_reference }}{% else %}Not recorded{% endif %}</div></div>
+                <div><label class="form-label">Appointment start</label><div class="board-empty">{% if board_profile.appointment_start %}{{ board_profile.appointment_start|date:"d M Y" }}{% else %}Not recorded{% endif %}</div></div>
+                <div><label class="form-label">Appointment end</label><div class="board-empty">{% if board_profile.appointment_end %}{{ board_profile.appointment_end|date:"d M Y" }}{% else %}Not recorded{% endif %}</div></div>
+                <div><label class="form-label">MFA expectation</label><div class="board-empty">{% if board_profile and board_profile.mfa_expected %}Required for Board use{% else %}Pending configuration{% endif %}</div></div>
+                <div><label class="form-label">Induction</label><div class="board-empty">{% if board_profile.induction_completed_at %}Completed {{ board_profile.induction_completed_at|date:"d M Y" }}{% else %}Not marked complete{% endif %}</div></div>
+                <div class="wide">
+                    <label class="form-label">Committee access</label>
+                    <div class="board-empty">
+                        {% if board_profile and board_profile.committee_access %}
+                            {% for committee in board_profile.committee_access %}<span class="board-badge board-badge-slate mr-1">{{ committee }}</span>{% endfor %}
+                        {% else %}
+                            Standard Board portal modules only.
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="wide">
+                    <div class="board-ai-note">
+                        <strong>Access boundary:</strong>
+                        <span class="board-muted">This account is scoped to Nursing Council Board governance. It cannot browse Nursing Council operational portal data, Medical Board records, individual applicant files, or confidential records outside Board papers and controlled governance items.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="board-panel" data-board-module="profile library risk">
+        <div class="board-panel-header">
+            <h3><i class="fas fa-shield-halved mr-2"></i>Security, Permissions, and Technology Controls</h3>
+            <span class="board-badge board-badge-navy">Governance health {{ board_governance_health.score }}%</span>
+        </div>
+        <div class="board-panel-body">
+            <div class="board-readiness-grid">
+                <div class="board-check"><i class="fas fa-lock"></i><div><strong>Mandatory MFA expectation</strong><br><span class="board-muted">Board profiles are marked as MFA expected; deployment settings control enforcement.</span></div></div>
+                <div class="board-check"><i class="fas fa-water"></i><div><strong>Watermark and read audit</strong><br><span class="board-muted">Pack and paper read acknowledgements record member, time, and confidentiality acknowledgement.</span></div></div>
+                <div class="board-check"><i class="fas fa-user-slash"></i><div><strong>Conflict-enforced recusal</strong><br><span class="board-muted">Declarations are stored separately from attendance for audit and review.</span></div></div>
+                <div class="board-check"><i class="fas fa-file-signature"></i><div><strong>Signed and locked minutes</strong><br><span class="board-muted">Minutes workflow separates draft, Chair review, Board confirmation, and signed locked status.</span></div></div>
+                <div class="board-check"><i class="fas fa-robot"></i><div><strong>AI advisory only</strong><br><span class="board-muted">AI summaries and redaction checks can assist, but cannot approve decisions or minutes.</span></div></div>
+                <div class="board-check"><i class="fas fa-tablet-screen-button"></i><div><strong>Tablet board pack mode</strong><br><span class="board-muted">The pack reader supports mark-as-read, bookmarks, notes, and agenda-led reading.</span></div></div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

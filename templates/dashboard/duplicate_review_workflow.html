@@ -2,6 +2,27 @@
 
 {% block title %}Duplicate Review Workflow{% endblock %}
 
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .duplicate-review-datatable td {
+        vertical-align: top;
+    }
+
+    .duplicate-review-members summary {
+        cursor: pointer;
+    }
+
+    .duplicate-review-members .table-responsive {
+        max-width: 100%;
+    }
+
+    .duplicate-review-actions {
+        gap: .35rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
@@ -93,7 +114,7 @@
     <div class="card-body p-0">
         {% if review_rows %}
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0 duplicate-review-datatable" data-duplicate-review-datatable="1">
                     <thead>
                     <tr>
                         <th>Practitioner</th>
@@ -114,56 +135,15 @@
                             </td>
                             <td>
                                 <div>{{ row.target_label }}</div>
-                                <div class="small text-muted">{{ row.record_type }}{% if row.record_year %} · {{ row.record_year }}{% endif %}</div>
+                                <div class="small text-muted">{{ row.record_type }}{% if row.record_year %} &middot; {{ row.record_year }}{% endif %}</div>
                             </td>
                             <td>
                                 <span class="badge badge-light border">{{ row.audit_label }}</span>
                             </td>
-                            <td>
-                                <span class="badge badge-danger">{{ row.member_count }}</span>
-                            </td>
-                            <td>
-                                {% if row.review.status == 'pending' %}
-                                    <span class="badge badge-danger">Pending</span>
-                                {% elif row.review.status == 'merged' %}
-                                    <span class="badge badge-success">Merged</span>
-                                {% else %}
-                                    <span class="badge badge-warning">Reviewed</span>
-                                {% endif %}
-                                {% if row.review.reviewed_by %}
-                                    <div class="small text-muted mt-1">
-                                        {{ row.review.reviewed_by.get_full_name|default:row.review.reviewed_by.username }}
-                                        {% if row.review.review_date %}· {{ row.review.review_date|date:"d M Y H:i" }}{% endif %}
-                                    </div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="d-flex flex-wrap">
-                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mr-2 mb-2">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="reviewed">
-                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-warning">Mark Reviewed</button>
-                                    </form>
-                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mr-2 mb-2">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="merged">
-                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-success">Mark Merged</button>
-                                    </form>
-                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mb-2">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="pending">
-                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Reopen</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="bg-light">
-                            <td colspan="6">
-                                <details>
-                                    <summary class="font-weight-bold" style="cursor:pointer;">View grouped source rows</summary>
+                            <td data-order="{{ row.member_count }}">
+                                <span class="badge badge-danger d-inline-block mb-2">{{ row.member_count }}</span>
+                                <details class="duplicate-review-members">
+                                    <summary class="font-weight-bold">View grouped source rows</summary>
                                     <div class="table-responsive mt-3">
                                         <table class="table table-sm table-bordered bg-white mb-0">
                                             <thead>
@@ -192,7 +172,7 @@
                                                     <td>{{ member.reference_number }}</td>
                                                     <td>
                                                         <div>{{ member.sheet_name }}</div>
-                                                        <div class="small text-muted">Row {{ member.source_row }} · {{ member.batch_name }}</div>
+                                                        <div class="small text-muted">Row {{ member.source_row }} &middot; {{ member.batch_name }}</div>
                                                     </td>
                                                 </tr>
                                             {% empty %}
@@ -204,6 +184,43 @@
                                         </table>
                                     </div>
                                 </details>
+                            </td>
+                            <td>
+                                {% if row.review.status == 'pending' %}
+                                    <span class="badge badge-danger">Pending</span>
+                                {% elif row.review.status == 'merged' %}
+                                    <span class="badge badge-success">Merged</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Reviewed</span>
+                                {% endif %}
+                                {% if row.review.reviewed_by %}
+                                    <div class="small text-muted mt-1">
+                                        {{ row.review.reviewed_by.get_full_name|default:row.review.reviewed_by.username }}
+                                        {% if row.review.review_date %}&middot; {{ row.review.review_date|date:"d M Y H:i" }}{% endif %}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap duplicate-review-actions">
+                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mr-2 mb-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="reviewed">
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">Mark Reviewed</button>
+                                    </form>
+                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mr-2 mb-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="merged">
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Mark Merged</button>
+                                    </form>
+                                    <form method="post" action="{% url 'duplicate_review_update' row.review.id %}" class="mb-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="pending">
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Reopen</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}
@@ -230,4 +247,75 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    function initializeDuplicateReviewTable(attempt) {
+        attempt = attempt || 1;
+        if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) {
+            if (attempt < 40) {
+                window.setTimeout(function () {
+                    initializeDuplicateReviewTable(attempt + 1);
+                }, 250);
+            }
+            return;
+        }
+
+        jQuery('[data-duplicate-review-datatable]').each(function () {
+            const table = this;
+            const $table = jQuery(table);
+            if ($table.attr('data-ndoh-datatables-ready') === '1') {
+                return;
+            }
+            if (jQuery.fn.dataTable && jQuery.fn.dataTable.isDataTable(table)) {
+                $table.attr('data-ndoh-datatables-ready', '1');
+                return;
+            }
+
+            $table.DataTable({
+                paging: true,
+                pagingType: 'full_numbers',
+                searching: true,
+                ordering: true,
+                info: true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All on this page']],
+                order: [],
+                responsive: false,
+                autoWidth: false,
+                scrollX: true,
+                columnDefs: [
+                    { targets: [2, 5], orderable: false },
+                    { targets: [5], searchable: false }
+                ],
+                language: {
+                    search: 'Search duplicate queue:',
+                    lengthMenu: 'Show _MENU_ duplicate reviews',
+                    info: 'Showing _START_ to _END_ of _TOTAL_ duplicate reviews',
+                    emptyTable: 'No duplicate-review items matched the current filters.',
+                    zeroRecords: 'No duplicate-review items match the table search.',
+                    paginate: {
+                        first: 'First',
+                        previous: 'Previous',
+                        next: 'Next',
+                        last: 'Last'
+                    }
+                }
+            });
+            $table.attr('data-ndoh-datatables-ready', '1');
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeDuplicateReviewTable();
+        });
+    } else {
+        initializeDuplicateReviewTable();
+    }
+})();
+</script>
 {% endblock %}

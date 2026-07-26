@@ -1,13 +1,14 @@
 from datetime import date
 from io import BytesIO
 import os
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from openpyxl import Workbook
 from rest_framework.test import APIClient
@@ -35,11 +36,13 @@ from apps.workforce.models import (
     Midwife,
     NurseAide,
     NursingProfessional,
+    IssuedLicenceDocument,
     PracticingLicenseRecord,
     RegulatoryBody,
     SupervisorAssignment,
     TrainingInstitution,
 )
+from apps.notifications.models import EnquiryMessageAttachment, EnquiryThread, Notification
 from apps.workforce.forms import (
     MedicalBoardAccreditationChecklistForm,
     MedicalBoardChwRegistrationForm,
@@ -63,6 +66,7 @@ from apps.workforce.services.nursing_council_workflows import (
     generate_application_checklist,
     search_public_nursing_register,
 )
+from apps.workforce.services.licence_issuance import issue_application_licence_document
 from apps.workforce.services.ai_import_cleanser import cleanse_import_row
 from apps.workforce.services.medical_board_workbook_import import (
     MedicalBoardWorkbookImporter,
@@ -315,13 +319,73 @@ class RecordHubOfficeScopeTests(TestCase):
         self.assertNotIn("report", visible_slugs)
         self.assertNotIn("ocrdocument", visible_slugs)
 
-    def test_office_registrar_cannot_use_generic_delete(self):
+    def test_office_registrar_can_delete_scoped_professional_records(self):
         self.client.force_login(self.medical_registrar)
 
         response = self.client.post(reverse("record_delete", args=["medicaldoctor", self.doctor.pk]))
 
-        self.assertEqual(response.status_code, 403)
-        self.assertTrue(MedicalDoctor.objects.filter(pk=self.doctor.pk).exists())
+        self.assertRedirects(response, reverse("record_list", args=["medicaldoctor"]))
+        self.assertFalse(MedicalDoctor.objects.filter(pk=self.doctor.pk).exists())
+
+    def test_nursing_professionals_list_uses_server_side_datatable_and_crud_actions(self):
+        self.client.force_login(self.nursing_registrar)
+
+        response = self.client.get(reverse("record_list", args=["nursingprofessional"]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="recordsHubTable"')
+        self.assertContains(response, 'data-server-side="1"')
+        self.assertContains(response, 'id="recordsTableFilterForm"')
+        self.assertContains(response, 'id="recordsPageLength"')
+        self.assertContains(response, 'id="recordsGlobalSearch"')
+        self.assertContains(response, "First")
+        self.assertContains(response, "Previous")
+        self.assertContains(response, "Next")
+        self.assertContains(response, "Last")
+        self.assertContains(response, "Showing 1-1 of 1")
+        self.assertContains(response, reverse("record_list_data", args=["nursingprofessional"]))
+        self.assertContains(response, reverse("record_create", args=["nursingprofessional"]))
+        self.assertContains(response, reverse("record_detail", args=["nursingprofessional", self.nurse.pk]))
+        self.assertContains(response, reverse("record_update", args=["nursingprofessional", self.nurse.pk]))
+        self.assertContains(response, reverse("record_delete", args=["nursingprofessional", self.nurse.pk]))
+
+    def test_nursing_professionals_datatable_endpoint_searches_sorts_and_returns_crud_actions(self):
+        self.client.force_login(self.nursing_registrar)
+
+        response = self.client.get(reverse("record_list_data", args=["nursingprofessional"]), {
+            "draw": "3",
+            "start": "0",
+            "length": "25",
+            "search[value]": "Nora",
+            "order[0][column]": "3",
+            "order[0][dir]": "asc",
+            "columns[3][name]": "first_name",
+        })
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["draw"], 3)
+        self.assertEqual(payload["recordsFiltered"], 1)
+        self.assertEqual(payload["data"][0]["first_name"], "Nora")
+        self.assertIn(reverse("record_detail", args=["nursingprofessional", self.nurse.pk]), payload["data"][0]["actions"])
+        self.assertIn(reverse("record_update", args=["nursingprofessional", self.nurse.pk]), payload["data"][0]["actions"])
+        self.assertIn(reverse("record_delete", args=["nursingprofessional", self.nurse.pk]), payload["data"][0]["actions"])
+
+    def test_nursing_professionals_list_keeps_page_size_in_pagination_links(self):
+        for index in range(30):
+            NursingProfessional.objects.create(
+                first_name=f"Paged {index}",
+                last_name="Nurse",
+                registration_no=f"NC-PAGE-{index}",
+            )
+        self.client.force_login(self.nursing_registrar)
+
+        response = self.client.get(reverse("record_list", args=["nursingprofessional"]), {"per_page": "25"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Showing 1-25 of 31")
+        self.assertContains(response, "Page 1 of 2")
+        self.assertContains(response, "per_page=25&amp;page=2")
 
     def test_system_admin_can_use_generic_delete(self):
         doctor = MedicalDoctor.objects.create(
@@ -353,6 +417,41 @@ class RecordHubOfficeScopeTests(TestCase):
         self.assertContains(nursing_response, self.nursing_receipt.receipt_number)
         self.assertContains(nursing_response, self.imported_nursing_receipt.receipt_number)
         self.assertNotContains(nursing_response, self.medical_receipt.receipt_number)
+
+    def test_medical_board_can_open_chw_import_record_from_ndata_workbook(self):
+        ndata_batch = DataImportBatch.objects.create(
+            source_file_name="2026 Current ATP-DATA Statistics & Tracking latest.xlsx",
+            source_kind="ndata_workbook",
+            status="completed",
+        )
+        chw_import_record = PracticingLicenseRecord.objects.create(
+            batch=ndata_batch,
+            source_sheet_name="ATP RECORD 2026",
+            source_row=1110,
+            record_type="practicing_license",
+            target_model="communityhealthworker",
+            full_name="Aine Tongamp",
+            registration_no="G 7383",
+            record_year=2026,
+        )
+
+        self.client.force_login(self.medical_registrar)
+        detail_response = self.client.get(reverse("record_detail", args=["practicinglicenserecord", chw_import_record.pk]))
+        edit_response = self.client.get(reverse("record_update", args=["practicinglicenserecord", chw_import_record.pk]))
+
+        self.assertEqual(detail_response.status_code, 200)
+        self.assertContains(detail_response, "Aine Tongamp")
+        self.assertEqual(edit_response.status_code, 200)
+        self.assertIn(ndata_batch, list(edit_response.context["form"].fields["batch"].queryset))
+
+        self.client.force_login(self.nursing_registrar)
+        nursing_response = self.client.get(reverse("record_detail", args=["practicinglicenserecord", chw_import_record.pk]))
+        nursing_edit_response = self.client.get(reverse("record_update", args=["practicinglicenserecord", chw_import_record.pk]))
+
+        self.assertEqual(nursing_response.status_code, 200)
+        self.assertContains(nursing_response, "Aine Tongamp")
+        self.assertNotContains(nursing_response, reverse("record_update", args=["practicinglicenserecord", chw_import_record.pk]))
+        self.assertEqual(nursing_edit_response.status_code, 404)
 
     def test_medical_board_edit_form_uses_medical_cadres_and_specialty_dropdown(self):
         Cadre.objects.create(name="Nursing", category="nursing")
@@ -626,6 +725,84 @@ class MedicalBoardWorkbookImportTests(TestCase):
         self.assertEqual(batch.summary["chw_practicing_licences_imported"], 1)
         self.assertTrue(
             batch.sheets.filter(sheet_name="NOT ON DATABASE CHW", status="processed").exists()
+        )
+
+    def test_importer_maps_current_chw_layout_and_skips_business_duplicates(self):
+        workbook = Workbook()
+        chw_sheet = workbook.active
+        chw_sheet.title = "CHW"
+        chw_sheet.append([
+            "LICENSE#",
+            "DATE",
+            "NAME",
+            "SURNAME",
+            "DOB",
+            "MARITAL STATUS",
+            "NATIONALITY",
+            "GENDER",
+            "PHONE",
+            "EMAIL",
+            "SCHOOL ADDRESS",
+            "Qualifications",
+            "APPLY FOR",
+            "QUALIFICATION",
+        ])
+        chw_sheet.append([
+            "1",
+            "05.09.85",
+            "RURI, YEME",
+            "",
+            "15.02.60",
+            "Married",
+            "PNG",
+            "M",
+            "70000001",
+            "ruri@example.test",
+            "BUNAPAS HEALTH CENTRE BOX 1080, MADANG PROVINCE",
+            "APO CERT (GAUBIN) 1976",
+            "FULL",
+            "CHW",
+        ])
+        atp_sheet = workbook.create_sheet("ATP DATABASE ONLY")
+        atp_sheet.append(["CERT #", "Date", "Name", "SURNAME", "ARCH#", "DATE2", "2017", "RECIEPT"])
+        atp_sheet.append(["CERT #", "Date", "Name", "SURNAME", "ARCH#", "DATE", 2017, "RECIEPT"])
+        atp_sheet.append(["1", "05.09.85", "RURI, YEME", "", "P#001", "", "05.03.2017 K15", "R0001"])
+        output = BytesIO()
+        workbook.save(output)
+
+        with NamedTemporaryFile(delete=False, suffix=".xlsx") as workbook_file:
+            workbook_file.write(output.getvalue())
+            workbook_path = workbook_file.name
+
+        try:
+            MedicalBoardWorkbookImporter(workbook_path=workbook_path).import_workbook()
+            MedicalBoardWorkbookImporter(workbook_path=workbook_path).import_workbook()
+        finally:
+            os.unlink(workbook_path)
+
+        chw = CommunityHealthWorker.objects.get(registration_no="CHW-1")
+        self.assertEqual(chw.first_name, "Yeme")
+        self.assertEqual(chw.last_name, "Ruri")
+        self.assertEqual(chw.date_of_birth.isoformat(), "1960-02-15")
+        self.assertEqual(chw.gender, "Male")
+        self.assertEqual(chw.email, "ruri@example.test")
+        self.assertEqual(chw.province, "Madang")
+        self.assertEqual(
+            PracticingLicenseRecord.objects.filter(
+                target_model="communityhealthworker",
+                registration_no="CHW-1",
+                record_type="workforce_listing",
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            PracticingLicenseRecord.objects.filter(
+                target_model="communityhealthworker",
+                registration_no="CHW-1",
+                record_type="practicing_license",
+                record_year=2017,
+            ).count(),
+            1,
         )
 
     def test_medical_board_bulk_upload_uses_medical_importer(self):
@@ -929,7 +1106,7 @@ class NursingCouncilWorkflowConfigurationTests(TestCase):
 
         self.assertEqual(ApplicationPathway.objects.filter(regulatory_body=body).count(), 12)
         self.assertEqual(DynamicFormDefinition.objects.filter(regulatory_body=body).count(), 18)
-        self.assertEqual(DocumentRequirement.objects.filter(pathway__regulatory_body=body).count(), 55)
+        self.assertEqual(DocumentRequirement.objects.filter(pathway__regulatory_body=body).count(), 60)
         self.assertEqual(FeeSchedule.objects.filter(regulatory_body=body).count(), 10)
         self.assertEqual(DeclarationTemplate.objects.filter(regulatory_body=body).count(), 11)
 
@@ -940,6 +1117,11 @@ class NursingCouncilWorkflowConfigurationTests(TestCase):
         self.assertIn(graduate_pathway, guide)
         self.assertIn(("NC1", "Application for Provisional Licence to Practice"), guide[graduate_pathway])
         self.assertIn(("G4", "Statement of Competency for Graduate Nurses"), guide[graduate_pathway])
+        self.assertIn("Special application forms", guide)
+        self.assertIn(
+            ("NC9", "Temporary Licence to Practise Criteria for Overseas Nurses Checklist (Revised 2023)"),
+            guide["Special application forms"],
+        )
         self.assertFalse(any("DECEASED_NOTICE" in pathway for pathway in guide))
 
     def test_dashboard_workflow_rows_include_full_configured_pathways(self):
@@ -1046,6 +1228,143 @@ class NursingCouncilWorkflowConfigurationTests(TestCase):
         self.assertTrue(PracticingLicenseRecord.objects.filter(source_row=application.pk, record_type="practicing_license").exists())
         self.assertTrue(AuditLog.objects.filter(action="REGISTRAR_APPROVED", entity_id=str(application.pk)).exists())
 
+    def test_full_registration_approval_creates_an_approved_full_licence_record(self):
+        """Keep applicant-stage full imports separate from registrar-approved licences."""
+        professional = NursingProfessional.objects.create(
+            first_name="Lina",
+            last_name="Full",
+            gender="Female",
+            date_of_birth=date(1992, 4, 8),
+            registration_no="RN-FULL-APPROVED-001",
+            registration_number="P-FULL-APPROVED-001",
+        )
+        application = Application.objects.create(
+            content_type=ContentType.objects.get_for_model(professional),
+            object_id=professional.pk,
+            form_code="NC2",
+            pathway="local_nursing_graduate",
+            payload={
+                "pathway_code": "PNG_PROV_TO_FULL",
+                "declaration_acceptance": True,
+                "institution_attended": "Test Nursing College",
+            },
+        )
+        for item in generate_application_checklist(application):
+            item.status = "accepted"
+            item.save(update_fields=["status"])
+        assignment = create_supervisor_assignment(
+            application=application,
+            supervisor_name="Senior Nurse",
+        )
+        complete_supervisor_competency(
+            assignment=assignment,
+            result="competent",
+            comments="Ready for full registration.",
+        )
+        Receipt.objects.create(
+            receipt_number="FULL-APPROVED-REC-001",
+            amount="50.00",
+            status="completed",
+            application=application,
+        )
+
+        result = approve_nursing_application(application)
+
+        self.assertTrue(result["approved"])
+        self.assertTrue(
+            PracticingLicenseRecord.objects.filter(
+                source_row=application.pk,
+                record_type="full_approved",
+            ).exists()
+        )
+        self.assertFalse(
+            PracticingLicenseRecord.objects.filter(
+                source_row=application.pk,
+                record_type="full",
+            ).exists()
+        )
+
+    def test_approved_application_can_issue_official_document_by_mailbox_and_email(self):
+        user_model = get_user_model()
+        professional = NursingProfessional.objects.create(
+            first_name="Issue",
+            last_name="Client",
+            gender="Female",
+            date_of_birth=date(1991, 6, 1),
+            registration_no="RN-ISSUE-001",
+            registration_number="P-ISSUE-001",
+            email="issue.client@example.com",
+        )
+        professional_ct = ContentType.objects.get_for_model(professional)
+        recipient = user_model.objects.create_user(
+            username="issue_client",
+            email="issue.client@example.com",
+            password="pass",
+            role="nurse",
+            professional_content_type=professional_ct,
+            professional_object_id=professional.pk,
+            professional_record_status="linked",
+        )
+        registrar = user_model.objects.create_user(
+            username="issue_registrar",
+            email="registrar@example.com",
+            password="pass",
+            role="registrar",
+            role_approved=True,
+            department="Nursing Council",
+        )
+        application = Application.objects.create(
+            content_type=professional_ct,
+            object_id=professional.pk,
+            form_code="NC3",
+            pathway="local_nursing_graduate",
+            payload={
+                "pathway_code": "PNG_RENEWAL",
+                "declaration_acceptance": True,
+                "employment_status": "full_time",
+                "employer_name": "Public Hospital",
+                "facility_name": "Public Hospital",
+                "province": "National Capital District",
+                "position_title": "Nurse",
+                "area_of_employment": "government",
+                "start_date": "2026-01-01",
+            },
+        )
+        for item in generate_application_checklist(application):
+            item.status = "accepted"
+            item.save(update_fields=["status"])
+        Receipt.objects.create(
+            receipt_number="ISSUE-REC-001",
+            amount="70.00",
+            status="completed",
+            application=application,
+        )
+        approve_nursing_application(application, actor=registrar)
+        application.refresh_from_db()
+
+        with TemporaryDirectory() as media_root, override_settings(
+            MEDIA_ROOT=media_root,
+            EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        ):
+            mail.outbox = []
+            issued = issue_application_licence_document(
+                application,
+                issuer=registrar,
+                delivery_channel="both",
+            )
+
+            self.assertEqual(issued.document_type, "authority_to_practice")
+            self.assertEqual(issued.status, "sent")
+            self.assertTrue(issued.email_sent)
+            self.assertTrue(issued.mailbox_sent)
+            self.assertEqual(issued.recipient_user, recipient)
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertTrue(issued.file.name.endswith(".pdf"))
+            self.assertTrue(EnquiryThread.objects.filter(pk=issued.mailbox_thread_id, recipient_user=recipient).exists())
+            self.assertTrue(EnquiryMessageAttachment.objects.filter(message__thread=issued.mailbox_thread).exists())
+            self.assertTrue(Notification.objects.filter(user=recipient, subject__icontains="Authority to Practice").exists())
+            self.assertTrue(IssuedLicenceDocument.objects.filter(pk=issued.pk, practicing_record__record_type="practicing_license").exists())
+
     def test_public_register_search_returns_safe_fields_only(self):
         NursingProfessional.objects.create(
             first_name="Safe",
@@ -1066,6 +1385,177 @@ class NursingCouncilWorkflowConfigurationTests(TestCase):
         self.assertNotIn("date_of_birth", rows[0])
         self.assertNotIn("primary_phone", rows[0])
 
+        full_name_rows = search_public_nursing_register(query="Safe Search")
+        self.assertEqual(full_name_rows[0]["full_name"], "Safe Search")
+
+    def test_public_register_search_returns_public_safe_imported_records(self):
+        nursing_batch = DataImportBatch.objects.create(
+            source_file_name="nursing-atp.xlsx",
+            source_kind="nursing_license_workbook",
+            status="completed",
+        )
+        medical_batch = DataImportBatch.objects.create(
+            source_file_name="medical.xlsx",
+            source_kind="medical_board_workbook",
+            status="completed",
+        )
+        PracticingLicenseRecord.objects.create(
+            batch=nursing_batch,
+            source_sheet_name="ATP RECORD 2026",
+            source_row=10,
+            record_type="practicing_license",
+            target_model="nursingprofessional",
+            full_name="Imported Safe",
+            first_name="Imported",
+            last_name="Safe",
+            registration_no="PG 2026",
+            practitioner_number="PN-IMPORT",
+            record_year=date.today().year,
+            category="General Nurse",
+            reference_number="PRIVATE-RECEIPT",
+        )
+        PracticingLicenseRecord.objects.create(
+            batch=nursing_batch,
+            source_sheet_name="Payments",
+            source_row=11,
+            record_type="payment",
+            target_model="nursingprofessional",
+            full_name="Imported Safe",
+            first_name="Imported",
+            last_name="Safe",
+            registration_no="PG 2026",
+            practitioner_number="PN-IMPORT",
+            record_year=date.today().year,
+            category="General Nurse",
+            reference_number="PRIVATE-PAYMENT",
+        )
+        PracticingLicenseRecord.objects.create(
+            batch=medical_batch,
+            source_sheet_name="Medical",
+            source_row=12,
+            record_type="practicing_license",
+            target_model="medicaldoctor",
+            full_name="Imported Safe",
+            first_name="Imported",
+            last_name="Safe",
+            registration_no="MD 2026",
+            practitioner_number="MP-IMPORT",
+            record_year=date.today().year,
+            category="Medical Doctor",
+        )
+
+        rows = search_public_nursing_register(query="Imported Safe")
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["full_name"], "Imported Safe")
+        self.assertEqual(rows[0]["registration_number"], "PG 2026")
+        self.assertEqual(rows[0]["professional_category"], "Registered Nurse")
+        self.assertEqual(rows[0]["licence_status"], "Active")
+        self.assertNotIn("reference_number", rows[0])
+        self.assertNotIn("payment_method", rows[0])
+        self.assertNotIn("date_of_birth", rows[0])
+
+    def test_public_register_search_url_renders_html_page_for_browser(self):
+        NursingProfessional.objects.create(
+            first_name="Safe",
+            last_name="Search",
+            registration_no="RN-SAFE-HTML",
+            registration_number="PN-SAFE-HTML",
+            email="private@example.com",
+            primary_phone="12345",
+        )
+
+        response = self.client.get(reverse("public_nursing_register_search_root"), {"q": "Safe"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/html", response["Content-Type"])
+        self.assertContains(response, "PNG Nursing Council Public Register Verification")
+        self.assertContains(response, "Safe Search")
+        self.assertContains(response, "RN-SAFE-HTML")
+        self.assertContains(response, reverse("workforce_map") + "?office=nursing")
+        self.assertContains(response, reverse("workforce_map"))
+        self.assertNotContains(response, "private@example.com")
+        self.assertNotContains(response, "12345")
+
+    def test_public_register_search_url_keeps_json_mode(self):
+        NursingProfessional.objects.create(
+            first_name="Safe",
+            last_name="Json",
+            registration_no="RN-SAFE-JSON",
+            registration_number="PN-SAFE-JSON",
+            email="private-json@example.com",
+            primary_phone="67890",
+        )
+
+        response = self.client.get(
+            reverse("public_nursing_register_search_root"),
+            {"q": "Safe", "format": "json"},
+            HTTP_ACCEPT="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        payload = response.json()
+        self.assertEqual(payload["count"], 1)
+        self.assertEqual(payload["results"][0]["full_name"], "Safe Json")
+        self.assertNotIn("email", payload["results"][0])
+        self.assertNotIn("primary_phone", payload["results"][0])
+
+    def test_public_medical_board_register_search_renders_html_page_for_browser(self):
+        MedicalDoctor.objects.create(
+            first_name="Public",
+            last_name="Doctor",
+            registration_no="MD-PUBLIC-001",
+            registration_number="MP-PUBLIC-001",
+            email="private-medical@example.com",
+            primary_phone="77777",
+            specialty="General Practice",
+            license_expiry_date=date(2030, 1, 1),
+        )
+
+        response = self.client.get(reverse("public_medical_board_register_search_root"), {"q": "Public"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/html", response["Content-Type"])
+        self.assertContains(response, "PNG Medical Board Public Register Verification")
+        self.assertContains(response, "Public Doctor")
+        self.assertContains(response, "MD-PUBLIC-001")
+        self.assertContains(response, reverse("workforce_map") + "?office=medical")
+        self.assertNotContains(response, "private-medical@example.com")
+        self.assertNotContains(response, "77777")
+
+    def test_public_medical_board_register_search_keeps_json_mode(self):
+        CommunityHealthWorker.objects.create(
+            first_name="Public",
+            last_name="Chw",
+            registration_no="CHW-PUBLIC-001",
+            community_id="CHW-COMM-001",
+            email="private-chw@example.com",
+            primary_phone="88888",
+            training_level="Certificate",
+        )
+
+        response = self.client.get(
+            reverse("public_medical_board_register_search_root"),
+            {"q": "Chw", "format": "json"},
+            HTTP_ACCEPT="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        payload = response.json()
+        self.assertEqual(payload["count"], 1)
+        self.assertEqual(payload["results"][0]["full_name"], "Public Chw")
+        self.assertNotIn("email", payload["results"][0])
+        self.assertNotIn("primary_phone", payload["results"][0])
+
+    def test_medical_board_forms_catalogue_includes_initial_doctor_application(self):
+        response = self.client.get(reverse("medical_board_register"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Initial Medical Practitioner Registration")
+        self.assertContains(response, reverse("medical_board_form_register", args=["MD1"]))
+
     def test_deceased_notification_approval_deactivates_practitioner(self):
         professional = NursingProfessional.objects.create(
             first_name="Late",
@@ -1074,6 +1564,14 @@ class NursingCouncilWorkflowConfigurationTests(TestCase):
             date_of_birth=date(1975, 1, 1),
             registration_no="RN-LATE-001",
             is_active=True,
+        )
+        user = get_user_model().objects.create_user(
+            username="late.practitioner",
+            password="StrongPass123!",
+            role="nurse",
+            professional_content_type=ContentType.objects.get_for_model(professional),
+            professional_object_id=professional.pk,
+            professional_record_status="linked",
         )
         notification = create_deceased_notification(
             actor=None,
@@ -1084,9 +1582,11 @@ class NursingCouncilWorkflowConfigurationTests(TestCase):
 
         approve_deceased_notification(notification)
         professional.refresh_from_db()
+        user.refresh_from_db()
 
         self.assertFalse(professional.is_active)
         self.assertEqual(professional.license_expiry_date, date(2026, 5, 1))
+        self.assertEqual(user.professional_record_status, "deceased")
         self.assertEqual(DeceasedNotification.objects.get(pk=notification.pk).verification_status, "approved")
 
     def test_employer_verification_returns_safe_snapshot(self):

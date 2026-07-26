@@ -22,8 +22,8 @@ from reportlab.platypus import (
 BASE_DIR = Path(__file__).resolve().parents[1]
 DOCS_DIR = BASE_DIR / "docs"
 LOGO_PATH = BASE_DIR / "static" / "img" / "NDOH_LOGO.png"
-PROJECT_TITLE = "The National Department Of Health Regulatory Bodies Nursing Council & The Medical Board Online Workforce System"
-DATE_TEXT = "07 May 2026"
+PROJECT_TITLE = "PNG Nursing Council and Medical Board Online Regulatory Workforce Platform"
+DATE_TEXT = "1 June 2026"
 
 
 styles = getSampleStyleSheet()
@@ -266,33 +266,33 @@ def implementation_audit_flowables():
     rows = [
         ["Phase 1 Repository Foundation", "Completed and integrated", "apps.documents models, admin, URLs, staff screens, bootstrap_document_repository, 24 folders."],
         ["Phase 2 OCR/Search/Duplicate", "Completed and integrated", "DocumentVersion extracted text, OCR linkage, reference extraction, repository search, checksum duplicate grouping."],
-        ["Phase 3 Workflow/Staff Review", "Completed and integrated", "Nursing Council workflow config, checklist review, linked repository evidence on application detail, inbox/access requests."],
-        ["Phase 4 Governance/Security", "Completed and integrated", "System Admin-only admin, office scope separation, finance separation, public-safe register, audit events."],
-        ["Phase 5 Documentation/Training", "Completed", "Updated manuals, cleansing guide, OpenKM guide, project timeline, and generated PDF handover guides."],
+        ["Phase 3 Workflow/Staff Review", "Completed and integrated", "Nursing Council workflow config, checklist review, linked repository evidence, inbox, notifications, read/opened status, access requests, ICMS, discipline, and decisions."],
+        ["Phase 4 Governance/Security", "Completed and integrated", "System Admin-only admin, office scope separation, finance separation, public-safe register, audit events, controlled role/cadre registration, document sign-off, and scoped case access."],
+        ["Phase 5 Documentation/Training", "Completed", "Updated manuals, cleansing guide, OpenKM guide, ICMS/discipline guidance, project timeline, update brief, and generated PDF handover guides."],
     ]
     flowables = [
         Paragraph("Implementation Audit Against OpenKM Timeline", styles["HeadingTwo"]),
         simple_table(["Timeline area", "Status", "Where implemented"], rows, [4.8 * cm, 3.6 * cm, 8.8 * cm]),
         Spacer(1, 0.2 * cm),
-        Paragraph("Plain-language conclusion: the OpenKM-style functions are integrated into the platform. The remaining work is operational adoption: staff must scan paper records, upload evidence, tag metadata, link documents to applications or practitioners, and keep data-quality review active.", styles["BodyClean"]),
+        Paragraph("Plain-language conclusion: the OpenKM-style and ICMS/discipline functions are integrated into the platform. The remaining work is operational adoption: staff must scan paper records, upload evidence, tag metadata, approve or reject controlled versions, link documents to applications, practitioners, complaints, discipline cases, and decisions, and keep data-quality review active.", styles["BodyClean"]),
     ]
     return flowables
 
 
 def plain_staff_quick_guide():
     rows = [
-        ["System Admin", "Set up users, repository folders, access rules, bootstraps, backups, and production settings."],
-        ["Registrar", "Review applications, open linked evidence, verify checklist/payment/competency, approve or reject, and generate reports."],
-        ["Reviewer", "Request operational access first. After approval, help review assigned records and evidence only within scope."],
-        ["Data Quality Officer", "Review missing data, duplicates, source rows, and repository evidence before reports are published."],
-        ["Finance Officer", "Use separated Nursing Council and Medical Board financial forecast pages. Do not edit records or mix office figures."],
+        ["System Admin", "Set up users, repository folders, access rules, NHWA/map/forum/FAQ bootstraps, backups, and production settings."],
+        ["Registrar", "Review applications, open linked evidence, verify checklist/payment/competency, approve or reject, manage ICMS/discipline/decision workflows, use Records Hub and duplicate-review tools, and generate reports."],
+        ["Reviewer", "Request operational access first. After approval, help review assigned records, cases, and evidence only within scope."],
+        ["Data Quality Officer", "Review active analytics snapshots, missing data, duplicate queue cases, source rows, receipt-owner matches, mapped references, and repository evidence before reports are published."],
+        ["Finance Officer", "Use separated Nursing Council and Medical Board financial forecast pages and assigned receipt review. Do not edit records or mix office figures."],
         ["Professional / Applicant", "Use own portal, own applications, own receipts, and public-safe forms. Cannot view other people's private records."],
     ]
     return [
         Paragraph("How Staff Use The Platform In Plain Language", styles["HeadingTwo"]),
         simple_table(["Staff group", "What to do"], rows, [4.3 * cm, 12.9 * cm]),
         Spacer(1, 0.2 * cm),
-        Paragraph("For documents: open Document Repository, upload the scanned evidence, choose the right office scope, add metadata, link it to the application or practitioner, run OCR if needed, and use the audit trail to prove who viewed, uploaded, downloaded, or changed the record.", styles["BodyClean"]),
+        Paragraph("For documents: open Document Repository, upload the scanned evidence, choose the right office scope, add metadata, link it to the application, practitioner, complaint, discipline case, decision, receipt, or source row, run OCR if needed, approve or reject controlled versions, and use the audit trail to prove who viewed, uploaded, downloaded, approved, rejected, or changed the record.", styles["BodyClean"]),
     ]
 
 
@@ -300,13 +300,14 @@ def main():
     user_guide_sections = [
         ("OpenKM Timeline Implementation Check", implementation_audit_flowables()),
         ("Plain Language Staff Guide", plain_staff_quick_guide()),
-        ("Main User Manual", (DOCS_DIR / "USER_GUIDE_AND_MANUAL_20260507.md").read_text(encoding="utf-8")),
-        ("OpenKM-Style Document Repository Guide", (DOCS_DIR / "OPENKM_FULL_PLATFORM_USER_GUIDE_20260507.md").read_text(encoding="utf-8")),
-        ("Data Cleansing And Import Alignment", (DOCS_DIR / "DATA_CLEANSING_AND_IMPORT_ALIGNMENT_PLAN_20260507.md").read_text(encoding="utf-8")),
+        ("Current Platform Update Brief", (DOCS_DIR / "PLATFORM_UPDATE_BRIEF_20260601.md").read_text(encoding="utf-8")),
+        ("Main User Manual", (DOCS_DIR / "FULL_PLATFORM_USER_GUIDE_20260601.md").read_text(encoding="utf-8")),
+        ("OpenKM-Style Document Repository Guide", (DOCS_DIR / "OPENKM_Comparison_And_Roadmap.md").read_text(encoding="utf-8")),
+        ("Data Cleansing And Import Alignment", (DOCS_DIR / "DATA_EXTRACTION_AND_POPULATION_GUIDE.md").read_text(encoding="utf-8")),
         ("OpenKM Project Timeline", (DOCS_DIR / "OPENKM_Project_Timeline.md").read_text(encoding="utf-8")),
     ]
     build_pdf(
-        DOCS_DIR / "NDOH_Full_Scope_Platform_User_Guide_20260507.pdf",
+        DOCS_DIR / "NDOH_Full_Scope_Platform_User_Guide_20260601.pdf",
         "Full-Scope Platform User Guide",
         "Plain-language guide for staff, registrars, administrators, finance, data quality, and document repository users.",
         user_guide_sections,
@@ -319,14 +320,45 @@ def main():
         ("Project Completion Report", (BASE_DIR / "docs" / "status" / "PROJECT_COMPLETION_REPORT.md").read_text(encoding="utf-8")),
     ]
     build_pdf(
-        DOCS_DIR / "NDOH_Documentation_Index_20260507.pdf",
+        DOCS_DIR / "NDOH_Documentation_Index_20260601.pdf",
         "Documentation Index",
         "Guide to the current documentation set, operational references, technical files, key screens, and launch checks.",
         documentation_index_sections,
     )
 
-    print(DOCS_DIR / "NDOH_Full_Scope_Platform_User_Guide_20260507.pdf")
-    print(DOCS_DIR / "NDOH_Documentation_Index_20260507.pdf")
+    launch_package_dir = DOCS_DIR / "government_launch_package"
+    launch_package_files = [
+        "README.md",
+        "01_system_requirements.md",
+        "02_technical_architecture.md",
+        "03_data_governance_and_dictionary.md",
+        "04_security_privacy_controls_matrix.md",
+        "05_role_access_matrix.md",
+        "06_workflow_engine_spec.md",
+        "07_document_records_management_sop.md",
+        "08_testing_qa_uat_checklist.md",
+        "09_deployment_backup_support_plan.md",
+        "10_staff_training_guide.md",
+        "11_maintenance_sla_change_request.md",
+        "12_gap_register_and_modular_roadmap.md",
+        "13_enterprise_ui_design_standard.md",
+        "14_ai_staff_assistant_and_import_cleansing.md",
+        "15_free_local_gpt_setup.md",
+    ]
+    government_launch_sections = [
+        (filename.replace(".md", "").replace("_", " ").title(), (launch_package_dir / filename).read_text(encoding="utf-8"))
+        for filename in launch_package_files
+    ]
+    build_pdf(
+        DOCS_DIR / "NDOH_Government_Launch_Package_20260601.pdf",
+        "Government Launch Package",
+        "Architecture, security, data governance, workflow, QA, deployment, support, training, AI, and change-control package.",
+        government_launch_sections,
+    )
+
+    print(DOCS_DIR / "NDOH_Full_Scope_Platform_User_Guide_20260601.pdf")
+    print(DOCS_DIR / "NDOH_Documentation_Index_20260601.pdf")
+    print(DOCS_DIR / "NDOH_Government_Launch_Package_20260601.pdf")
 
 
 if __name__ == "__main__":

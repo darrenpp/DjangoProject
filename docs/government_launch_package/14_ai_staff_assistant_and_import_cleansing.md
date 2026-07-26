@@ -47,6 +47,39 @@ AI_IMPORT_CLEANSING_EXTERNAL_ENABLED=True
 
 This separate switch prevents external GPT use for spreadsheet rows unless ICT deliberately enables it.
 
+## Optional Mode: Google ADK Agent
+
+The platform can also run staff-assistant and public-helpdesk responses through a Google Agent Development Kit agent. This uses the same provider interface as the existing modes, so the screens keep their local fallback if ADK is disabled, the package is missing, or the Google API key is not configured.
+
+For staff AI, the ADK agent receives a read-only Django ORM lookup tool for live registry and licence records. The tool reuses the platform's staff scope rules, caps results, and returns only summary fields. It does not expose raw SQL, date of birth, contact details, full addresses, raw import payloads, payment amounts, or any write operation.
+
+Install the ADK package with the project dependencies:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install google-adk
+```
+
+Enable only after ICT approves Google Gemini API use and the environment variables are configured:
+
+```text
+AI_ASSISTANT_PROVIDER=google_adk
+AI_GOOGLE_ADK_ENABLED=True
+GOOGLE_API_KEY=...
+AI_GOOGLE_ADK_MODEL=gemini-flash-latest
+```
+
+Import cleansing through ADK remains separately locked:
+
+```text
+AI_IMPORT_CLEANSING_MODEL_ENABLED=True
+```
+
+Check the provider status:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py ai_model_status
+```
+
 ## Recommended Free Mode: Ollama Local GPT
 
 For a free live chat model, the recommended first option is Ollama running locally or on an internal NDOH server. Ollama exposes a local API on port `11434`, can run without OpenAI billing, and supports local chat models once those models are downloaded.
@@ -89,6 +122,49 @@ AI_LOCAL_LLM_MODEL=approved-local-model-name
 ```
 
 The local model endpoint is expected to provide an OpenAI-compatible `/v1/chat/completions` API. This keeps the platform neutral: ICT may later approve a local runtime such as Ollama, llama.cpp server, or another internally hosted model gateway without changing staff screens.
+
+## Optional Mode: LocalAI (OpenAI-compatible endpoint)
+
+For deployments that already run LocalAI, use the `localai` provider so staff AI uses that server directly through the same OpenAI-compatible chat payload shape as Ollama and other local stacks.
+
+Enable when approved:
+
+```text
+AI_ASSISTANT_PROVIDER=localai
+AI_ASSISTANT_LOCALAI_ENABLED=True
+AI_LOCALAI_BASE_URL=http://127.0.0.1:8080
+AI_LOCALAI_MODEL=<installed localai model id>
+AI_LOCALAI_API_KEY=<if API auth is enabled>
+```
+
+Validate connectivity:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py ai_model_status
+```
+
+If the server is reachable and the model exists, the staff AI card will show "LocalAI model" and questions will be answered live through that backend.
+
+## Optional Local RAG Knowledge Search
+
+The staff assistant can also use a local retrieval index before calling the model. This lets it search approved platform knowledge such as FAQs, registration guidelines, workflow pathways, dynamic form definitions, fees, and policy records.
+
+Install the project dependencies, then build the index:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe manage.py build_ai_knowledge_index
+```
+
+Enable it with:
+
+```text
+AI_ASSISTANT_RAG_ENABLED=True
+AI_ASSISTANT_RAG_VECTOR_BACKEND=local_json
+AI_ASSISTANT_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+```
+
+Use `AI_ASSISTANT_RAG_VECTOR_BACKEND=chroma` only when ICT wants a Chroma persistent vector store. If the embedding package, model, or index is missing, the platform keeps using the safe keyword and rule-based retrieval path.
 
 ## Safety Rules
 
@@ -156,3 +232,5 @@ AI is an assistant, not the registrar. It can explain queues, suggest cleansing 
 - Ollama API reference: https://docs.ollama.com/api
 - Ollama OpenAI-compatible local API: https://docs.ollama.com/openai
 - llama.cpp OpenAI-compatible server: https://www.mintlify.com/ggml-org/llama.cpp/inference/server
+- Google ADK Python quickstart: https://google.github.io/adk-docs/get-started/python/
+- Google ADK installation guide: https://google.github.io/adk-docs/get-started/installation/

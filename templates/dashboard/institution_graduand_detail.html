@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ institution.name }} Graduands{% endblock %}
+{% block title_label %}Institution Graduands{% endblock %}
+
+{% block extra_css %}
+<style>
+    .institution-summary-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .institution-summary-tile {
+        background: #f8fafc;
+        border: 1px solid #dbe4ea;
+        border-radius: 8px;
+        padding: 12px 14px;
+    }
+    .institution-summary-label {
+        color: #526172;
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .institution-summary-value {
+        color: #08223a;
+        font-size: 1.45rem;
+        font-weight: 900;
+        line-height: 1.1;
+    }
+    .cadre-breakdown-pill {
+        background: #eef6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        color: #1e3a8a;
+        display: inline-block;
+        font-weight: 800;
+        margin: 0 6px 6px 0;
+        padding: 6px 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-0">{{ institution.name }}</h3>
+            <div class="small text-muted">{{ institution.type|default:"Training institution" }}{% if institution.location_name %} - {{ institution.location_name }}{% endif %}</div>
+        </div>
+        <div class="d-flex flex-wrap">
+            <a href="{% url 'workforce_map' %}" class="btn btn-sm btn-outline-secondary mr-2 mb-2">
+                <i class="fas fa-map-location-dot mr-1"></i> Map
+            </a>
+            <a href="{% url 'record_list' 'graduand' %}" class="btn btn-sm btn-outline-primary mb-2">
+                <i class="fas fa-users mr-1"></i> Graduand CRUD
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="institution-summary-grid">
+            <div class="institution-summary-tile">
+                <div class="institution-summary-label">Graduands</div>
+                <div class="institution-summary-value">{{ total_graduand_count }}</div>
+            </div>
+            <div class="institution-summary-tile">
+                <div class="institution-summary-label">Displayed</div>
+                <div class="institution-summary-value">{{ filtered_graduand_count }}</div>
+            </div>
+            <div class="institution-summary-tile">
+                <div class="institution-summary-label">Years</div>
+                <div class="institution-summary-value">{{ year_options|length }}</div>
+            </div>
+            <div class="institution-summary-tile">
+                <div class="institution-summary-label">Cadres</div>
+                <div class="institution-summary-value">{{ cadre_breakdown|length }}</div>
+            </div>
+            <div class="institution-summary-tile">
+                <div class="institution-summary-label">Accreditation</div>
+                <div class="institution-summary-value" style="font-size:1rem;">{{ institution_accreditation.status_label }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card card-outline card-info h-100">
+            <div class="card-header"><h3 class="card-title mb-0">Cadre Breakdown</h3></div>
+            <div class="card-body">
+                {% for item in cadre_breakdown %}
+                <span class="cadre-breakdown-pill">{{ item.label }}: {{ item.count }}</span>
+                {% empty %}
+                <span class="text-muted">No cadre captured.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card card-outline card-primary h-100">
+            <div class="card-header"><h3 class="card-title mb-0">Age Distribution</h3></div>
+            <div class="card-body">
+                {% for item in age_breakdown %}
+                <span class="cadre-breakdown-pill">{{ item.label }}: {{ item.count }}</span>
+                {% empty %}
+                <span class="text-muted">No age data captured.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card card-outline card-warning h-100">
+            <div class="card-header"><h3 class="card-title mb-0">Institution Accreditation</h3></div>
+            <div class="card-body">
+                <div class="font-weight-bold">{{ institution_accreditation.status_label }}</div>
+                <div class="text-muted">{{ institution_accreditation.detail }}</div>
+                {% if institution_accreditation.source_reference %}
+                <div class="small text-muted mt-2">{{ institution_accreditation.source_reference }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 mb-4">
+        <div class="card card-outline card-secondary h-100">
+            <div class="card-header"><h3 class="card-title mb-0">Year And Cadre Breakdown</h3></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead><tr><th>Year</th><th>Cadres</th><th class="text-right">Total</th></tr></thead>
+                        <tbody>
+                            {% for row in year_cadre_breakdown %}
+                            <tr>
+                                <td>{{ row.year }}</td>
+                                <td>
+                                    {% for item in row.cadres %}
+                                    <span class="badge bg-primary mr-1 mb-1">{{ item.label }}: {{ item.count }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td class="text-right">{{ row.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted">No graduand years found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-outline card-success">
+    <div class="card-header"><h3 class="card-title mb-0">Graduands</h3></div>
+    <div class="card-body">
+        <form method="get" class="row mb-3">
+            {% if scope %}<input type="hidden" name="scope" value="{{ scope }}">{% endif %}
+            <div class="col-lg-4 col-md-6 mb-2">
+                <label for="q">Search</label>
+                <input id="q" name="q" class="form-control" value="{{ filters.q }}" placeholder="Name, registration, cadre">
+            </div>
+            <div class="col-lg-2 col-md-6 mb-2">
+                <label for="year">Year</label>
+                <select id="year" name="year" class="form-control">
+                    <option value="">All Years</option>
+                    {% for year in year_options %}
+                    <option value="{{ year }}" {% if filters.year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-2">
+                <label for="cadre">Cadre</label>
+                <select id="cadre" name="cadre" class="form-control">
+                    <option value="">All Cadres</option>
+                    {% for cadre in cadre_options %}
+                    <option value="{{ cadre }}" {% if filters.cadre == cadre %}selected{% endif %}>{{ cadre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-2">
+                <label for="sort">Sort</label>
+                <select id="sort" name="sort" class="form-control">
+                    {% for value, label in sort_options %}
+                    <option value="{{ value }}" {% if filters.sort == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-1 col-md-12 mb-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-block" title="Apply filters">
+                    <i class="fas fa-filter"></i>
+                </button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover datatable">
+                <thead>
+                    <tr>
+                        <th>Graduand</th>
+                        <th>Age</th>
+                        <th>Year</th>
+                        <th>Cadre</th>
+                        <th>Status / Qualification</th>
+                        <th>Source</th>
+                        <th class="text-right">Open</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in graduand_rows %}
+                    <tr>
+                        <td>
+                            <div class="font-weight-bold">{{ row.name }}</div>
+                            <div class="small text-muted">{{ row.registration_no }}</div>
+                        </td>
+                        <td>
+                            <div>{{ row.age_label }}</div>
+                            <div class="small text-muted">{{ row.age_band }}</div>
+                        </td>
+                        <td>{{ row.year_label }}</td>
+                        <td>{{ row.cadre }}</td>
+                        <td>
+                            <div>{{ row.status }}</div>
+                            <div class="small text-muted">{{ row.qualification }}</div>
+                        </td>
+                        <td>
+                            <div>{{ row.source_label }}</div>
+                            <div class="small text-muted">{{ row.source_detail }}</div>
+                        </td>
+                        <td class="text-right">
+                            {% if row.detail_url %}
+                            <a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary" title="Open record">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted">No graduands match this institution.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Institution graduand pages">
+            <ul class="pagination mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query_string %}&{{ query_string }}{% endif %}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }} of {{ paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query_string %}&{{ query_string }}{% endif %}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

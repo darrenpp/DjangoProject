@@ -111,6 +111,22 @@
 
 {% include "dashboard/_dashboard_search_panel.html" with search_placeholder="Search Nursing/Medical records, applications, licence numbers, facilities, provinces, and imported workbook rows..." %}
 
+{% if registrar_scope == "medical" %}
+<div class="card card-outline card-primary mt-4" id="medical-dashboard-shortcuts">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <h3 class="card-title mb-0"><i class="fas fa-location-arrow mr-2"></i>Dashboard Shortcuts</h3>
+        <span class="badge badge-light border">Medical Board registrar</span>
+    </div>
+    <div class="card-body d-flex flex-wrap" style="gap:.55rem;">
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'medical_board_portal' %}"><i class="fas fa-gauge-high mr-1"></i>Medical Board Dashboard</a>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'facilities_directory' %}?scope=medical"><i class="fas fa-hospital mr-1"></i>Facilities &amp; Institutions</a>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'medical_board_register' %}"><i class="fas fa-file-medical mr-1"></i>Medical Forms</a>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'workforce_map' %}?office=medical"><i class="fas fa-map-location-dot mr-1"></i>Medical Map</a>
+        <a class="btn btn-sm btn-outline-primary" href="#registrar-worker-origin-table"><i class="fas fa-users mr-1"></i>Individual Records</a>
+    </div>
+</div>
+{% endif %}
+
 <div class="row mt-4">
     <div class="col-12">
         <div class="card card-outline card-warning table-card registrar-tools-card">
@@ -335,7 +351,7 @@
                     <tbody>
                         {% for item in graduand_by_institution %}
                         <tr>
-                            <td>{{ item.institution.name }}</td>
+                            <td><a href="{% url 'institution_graduand_detail' item.institution.pk %}{% if dashboard_scope %}?scope={{ dashboard_scope }}{% endif %}">{{ item.institution.name }}</a></td>
                             <td>
                                 <div class="font-weight-bold mb-2">{{ item.count }}</div>
                                 <ul class="mb-0 pl-3">
@@ -386,7 +402,7 @@
                         {% for item in imported_facility_workers %}
                         <tr>
                             <td>
-                                <div class="font-weight-bold">{{ item.facility_name }}</div>
+                                <div class="font-weight-bold"><a href="{% url 'imported_facility_worker_detail' %}?name={{ item.facility_name|urlencode }}{% if dashboard_scope %}&scope={{ dashboard_scope }}{% endif %}">{{ item.facility_name }}</a></div>
                                 <div class="small text-muted">{{ item.total }} imported worker/licence rows</div>
                             </td>
                             <td>
@@ -413,7 +429,7 @@
                         {% else %}
                         {% for item in workers_by_facility %}
                         <tr>
-                            <td>{{ item.facility.name }}</td>
+                            <td><a href="{% url 'facility_worker_detail' item.facility.pk %}{% if dashboard_scope %}?scope={{ dashboard_scope }}{% endif %}">{{ item.facility.name }}</a></td>
                             <td>
                                 <div class="font-weight-bold mb-2">{{ item.count }}</div>
                                 <ul class="mb-0 pl-3">

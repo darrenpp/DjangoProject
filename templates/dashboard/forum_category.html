@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }}{% endblock %}
+{% block title_label %}{{ category.name }}{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-0">{{ category.name }}</h3>
+            <div class="small text-muted">{{ category.description }}</div>
+        </div>
+        <a href="{% url 'forum_index' %}" class="btn btn-sm btn-light">
+            <i class="fas fa-arrow-left mr-1"></i> Forum
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead>
+            <tr>
+                <th>Topic</th>
+                <th>Status</th>
+                <th>Posts</th>
+                <th>Latest</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for topic in topics %}
+            <tr>
+                <td>
+                    <strong>{{ topic.title }}</strong>
+                    <div class="small text-muted">
+                        By {{ topic.author.username|default:topic.public_author_name|default:"Anonymous" }}
+                    </div>
+                </td>
+                <td>{{ topic.get_status_display }}</td>
+                <td>{{ topic.post_count }}</td>
+                <td>{{ topic.last_post_at|default:topic.created_at|date:"d M Y H:i" }}</td>
+                <td class="text-right">
+                    <a href="{% url 'forum_topic_detail' category.slug topic.slug %}" class="btn btn-sm btn-primary">Open</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted">No approved topics yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if can_post %}
+<div class="card card-outline card-success">
+    <div class="card-header"><h3 class="card-title mb-0">Start a Topic</h3></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% if not request.user.is_authenticated %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="public_author_name">Name</label>
+                    <input id="public_author_name" name="public_author_name" class="form-control" maxlength="120">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="public_author_email">Email</label>
+                    <input id="public_author_email" name="public_author_email" type="email" class="form-control">
+                </div>
+            </div>
+            {% endif %}
+            <div class="mb-3">
+                <label for="title">Topic title</label>
+                <input id="title" name="title" class="form-control" maxlength="220" required>
+            </div>
+            <div class="mb-3">
+                <label for="body">Message</label>
+                <textarea id="body" name="body" class="form-control" rows="5" required></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">
+                <i class="fas fa-paper-plane mr-1"></i> Submit
+            </button>
+            {% if category.requires_moderation %}
+            <span class="text-muted small ml-2">New public and practitioner posts may require moderation before appearing.</span>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

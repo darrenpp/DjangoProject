@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Request Professional Profile Update{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3" style="max-width: 1180px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+        <div>
+            <div class="text-uppercase text-muted small font-weight-bold">{{ professional_identity.title|default:"Professional profile" }}</div>
+            <h1 class="h3 mb-1">Request a verified profile update</h1>
+            <p class="text-muted mb-0">Your request is staged for the responsible regulatory office. It does not directly change the official register.</p>
+        </div>
+        <a href="{% url 'professional_dashboard' %}" class="btn btn-outline-secondary btn-sm mt-2">Back to dashboard</a>
+    </div>
+
+    {% include 'dashboard/_professional_regulatory_identity.html' %}
+
+    <div class="row">
+        <div class="col-lg-7 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white"><strong>New update request</strong></div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                        <div class="form-group">
+                            <label for="{{ form.update_type.id_for_label }}">{{ form.update_type.label }}</label>
+                            {{ form.update_type }}
+                            {% for error in form.update_type.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <div data-profile-fields="contact" class="profile-update-fields">
+                            <h2 class="h6 border-bottom pb-2">Contact and location</h2>
+                            <div class="row">
+                                <div class="col-md-6 form-group"><label>{{ form.primary_phone.label }}</label>{{ form.primary_phone }}{{ form.primary_phone.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.email.label }}</label>{{ form.email }}{{ form.email.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.province.label }}</label>{{ form.province }}{{ form.province.errors }}</div>
+                            </div>
+                        </div>
+
+                        <div data-profile-fields="workplace" class="profile-update-fields">
+                            <h2 class="h6 border-bottom pb-2">Employment and workplace</h2>
+                            <div class="row">
+                                <div class="col-md-6 form-group"><label>{{ form.employer_name.label }}</label>{{ form.employer_name }}{{ form.employer_name.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.workplace_name.label }}</label>{{ form.workplace_name }}{{ form.workplace_name.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.position_title.label }}</label>{{ form.position_title }}{{ form.position_title.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.employment_sector.label }}</label>{{ form.employment_sector }}{{ form.employment_sector.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.province.label }}</label>{{ form.province }}</div>
+                            </div>
+                        </div>
+
+                        <div data-profile-fields="qualification" class="profile-update-fields">
+                            <h2 class="h6 border-bottom pb-2">Qualification or specialist credential</h2>
+                            <div class="row">
+                                <div class="col-md-6 form-group"><label>{{ form.credential_type.label }}</label>{{ form.credential_type }}{{ form.credential_type.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.qualification_name.label }}</label>{{ form.qualification_name }}{{ form.qualification_name.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.institution_name.label }}</label>{{ form.institution_name }}{{ form.institution_name.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.specialty.label }}</label>{{ form.specialty }}{{ form.specialty.errors }}</div>
+                            </div>
+                        </div>
+
+                        <div data-profile-fields="cpd" class="profile-update-fields">
+                            <h2 class="h6 border-bottom pb-2">CPD activity</h2>
+                            <div class="row">
+                                <div class="col-md-6 form-group"><label>{{ form.cpd_training_type.label }}</label>{{ form.cpd_training_type }}{{ form.cpd_training_type.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.cpd_provider.label }}</label>{{ form.cpd_provider }}{{ form.cpd_provider.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.cpd_start_date.label }}</label>{{ form.cpd_start_date }}{{ form.cpd_start_date.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.cpd_hours.label }}</label>{{ form.cpd_hours }}{{ form.cpd_hours.errors }}</div>
+                            </div>
+                        </div>
+
+                        <div data-profile-fields="clinical_privilege" class="profile-update-fields">
+                            <h2 class="h6 border-bottom pb-2">Medical Board clinical privilege</h2>
+                            <div class="row">
+                                <div class="col-md-6 form-group"><label>{{ form.privilege_name.label }}</label>{{ form.privilege_name }}{{ form.privilege_name.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.privilege_facility.label }}</label>{{ form.privilege_facility }}{{ form.privilege_facility.errors }}</div>
+                                <div class="col-md-6 form-group"><label>{{ form.privilege_expiry_date.label }}</label>{{ form.privilege_expiry_date }}{{ form.privilege_expiry_date.errors }}</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group"><label>{{ form.reason.label }}</label>{{ form.reason }}{{ form.reason.errors }}</div>
+                        <div class="form-group"><label>{{ form.evidence.label }}</label>{{ form.evidence }}{{ form.evidence.errors }}<small class="form-text text-muted">Attach only evidence relevant to this request. The reviewer verifies it before an official update is made.</small></div>
+                        <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane mr-1"></i>Submit for regulatory review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white"><strong>My recent requests</strong></div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for item in profile_update_requests %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between"><strong>{{ item.get_update_type_display }}</strong><span class="badge badge-{% if item.status == 'approved' %}success{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ item.get_status_display }}</span></div>
+                            <div class="small text-muted">Submitted {{ item.submitted_at|date:"d M Y H:i" }}</div>
+                            {% if item.reviewer_note %}<div class="small mt-1"><strong>Reviewer:</strong> {{ item.reviewer_note }}</div>{% endif %}
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-muted">No profile-update requests submitted yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('{{ form.update_type.id_for_label }}');
+    const groups = document.querySelectorAll('[data-profile-fields]');
+    function updateFields() {
+        groups.forEach(function (group) {
+            group.style.display = group.dataset.profileFields === select.value ? '' : 'none';
+        });
+    }
+    if (select) {
+        select.classList.add('form-control');
+        select.addEventListener('change', updateFields);
+        updateFields();
+    }
+    document.querySelectorAll('input, textarea, select').forEach(function (element) {
+        if (element !== select && !element.classList.contains('form-control')) element.classList.add('form-control');
+    });
+});
+</script>
+{% endblock %}

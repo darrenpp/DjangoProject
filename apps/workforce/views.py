@@ -56,8 +56,15 @@ from .models import (
     NursingProfessional, MedicalDoctor, Midwife, CommunityHealthWorker, NurseAide,
     HealthStudent, Application, DataImportBatch, ProfessionalDocument, ProfessionalPhoto, PostingHistory, CPDRecord,
     Qualification, ApplicationChecklistItem, DeceasedNotification, EmployerVerificationRequest, SupervisorAssignment,
+    PracticingLicenseRecord,
 )
+from ..complaints.models import RegulatoryDecisionRecord
 from ..accounts.models import User
+from ..accounts.professional_linking import (
+    get_next_url_name_for_role,
+    link_authenticated_user_to_submission,
+    mark_users_linked_for_professional,
+)
 from ..dashboard.models import Receipt
 from ..dashboard.access import (
     can_manage_regulatory_operations,
@@ -94,9 +101,19 @@ from .services.nursing_council_workflows import (
     search_public_nursing_register,
     verify_application_payment,
 )
+from .services.licence_issuance import issue_application_licence_document
+from .services.data_quality import quality_approved_import_records
+from .profile_updates import build_professional_identity_context
 
 
 def _professional_queryset(model, user):
+    if getattr(user, "professional_record_status", "") != "linked":
+        return model.objects.none()
+
+    linked_professional = getattr(user, "professional_record", None)
+    if linked_professional and isinstance(linked_professional, model):
+        return model.objects.filter(pk=linked_professional.pk)
+
     identifiers = [
         value for value in [
             getattr(user, "registration_number", None),
@@ -105,9 +122,18 @@ def _professional_queryset(model, user):
         ]
         if value
     ]
-    if not identifiers:
+    email = str(getattr(user, "email", "") or "").strip()
+    if not identifiers and not email:
         return model.objects.none()
-    return model.objects.filter(Q(registration_no__in=identifiers) | Q(email=user.email))
+
+    query = Q()
+    if identifiers:
+        query |= Q(registration_no__in=identifiers)
+    if email:
+        query |= Q(email__iexact=email)
+    if not query:
+        return model.objects.none()
+    return model.objects.filter(query)
 
 
 def _application_queryset_for(obj):
@@ -122,6 +148,14 @@ def _get_professional_by_pk(pk):
         obj = model.objects.filter(pk=pk).first()
         if obj:
             return obj
+    return None
+
+
+def _model_form_instance_for_user(user, form_class):
+    model = getattr(getattr(form_class, "Meta", None), "model", None)
+    professional = getattr(user, "professional_record", None)
+    if model and professional and isinstance(professional, model):
+        return professional
     return None
 
 
@@ -310,6 +344,8 @@ class PublicRegistrationView(View):
         "NC9": NC9TemporaryChecklistForm,
         "NC10": NC10ChildNursingCompetencyForm,
         "NC11": NC11DoubleMajorChecklistForm,
+        "MD1": MedicalDoctorPublicRegistrationForm,
+        "MD2": MedicalBoardRenewalRegistrationForm,
         "MBSP": MedicalBoardSpecialistApplicationForm,
         "MBRN": MedicalBoardRenewalRegistrationForm,
         "MBAC": MedicalBoardAccreditationChecklistForm,
@@ -361,7 +397,7 @@ class PublicRegistrationView(View):
             ("NC5", "Application for Full Registration & Licence"),
             ("NC10", "Competency for Full Licence Child Nursing"),
             ("NC8", "Application for Temporary Licence"),
-            ("NC9", "Checklist for Temporary Licence"),
+            ("NC9", "Temporary Licence to Practise Criteria for Overseas Nurses Checklist (Revised 2023)"),
         ],
         "overseas_midwife": [
             ("NC1", "Application for Provisional Licence"),
@@ -369,21 +405,32 @@ class PublicRegistrationView(View):
             ("NC7", "Competency for Full Licence Midwifery"),
             ("NC5", "Application for Full Registration & Licence"),
             ("NC8", "Application for Temporary Licence"),
-            ("NC9", "Checklist for Temporary Licence"),
+            ("NC9", "Temporary Licence to Practise Criteria for Overseas Nurses Checklist (Revised 2023)"),
         ],
         "special_case": [
             ("NC11", "Double Major Full Registration Checklist"),
         ],
+        "Special application forms": [
+            ("NC9", "Temporary Licence to Practise Criteria for Overseas Nurses Checklist (Revised 2023)"),
+        ],
     }
     MEDICAL_BOARD_FORM_GUIDE = {
-        "practitioners": [
+        "Initial registration": [
+            ("MD1", "Initial Medical Practitioner Registration"),
             ("CHW1", "Community Health Worker Registration"),
-            ("MBRN", "Renewal Registration for Doctors, Specialists and CHWs"),
+        ],
+        "Renewal and practising certificate": [
+            ("MBRN", "Renewal Registration for Doctors, Specialists, and CHWs"),
+            ("MD2", "Medical Practitioner Renewal"),
+        ],
+        "Specialist registration": [
             ("MBSP", "Application for Specialist Registration"),
         ],
-        "facilities": [
+        "Facility accreditation": [
             ("MBAC", "Accreditation Checklist for Facilities"),
             ("MBPF", "Private Health Facilities Checklist"),
+        ],
+        "Training facility": [
             ("MBTC", "Training Colleges Facilities Form"),
         ],
     }
@@ -465,15 +512,22 @@ class PublicRegistrationView(View):
         url_name = request.resolver_match.url_name
         form_class = self.get_form_class(form_code, url_name)
         descriptor = self.get_form_descriptor(form_class, url_name)
-        form = form_class(request.POST, request.FILES)
+        form_instance = _model_form_instance_for_user(request.user, form_class)
+        if form_instance is not None:
+            form = form_class(request.POST, request.FILES, instance=form_instance)
+        else:
+            form = form_class(request.POST, request.FILES)
         template_name = self.template_for_request(form_code, url_name)
         is_medical_board = self.is_medical_board_request(form_code, url_name)
         nursing_form_guide = build_public_form_guide() or self.FORM_GUIDE
 
         if form.is_valid():
             result = form.save()
-            if not isinstance(form, CouncilApplicationForm):
+            link_authenticated_user_to_submission(request.user, result)
+            if not isinstance(form, CouncilApplicationForm) and not isinstance(result, Application):
                 application_code = self.LEGACY_APPLICATION_CODES.get(url_name)
+                if not application_code and is_medical_board and descriptor and descriptor.get("code"):
+                    application_code = descriptor["code"]
                 if application_code:
                     Application.objects.create(
                         content_type=ContentType.objects.get_for_model(result),
@@ -577,6 +631,13 @@ class ApplicationDetailView(LoginRequiredMixin, DetailView):
             application=application,
         ).select_related("document_requirement", "document", "verified_by")
         context["application_receipts"] = Receipt.objects.filter(application=application).order_by("-transaction_date")
+        context["issued_documents"] = application.issued_documents.select_related(
+            "issued_by",
+            "recipient_user",
+            "mailbox_thread",
+            "practicing_record",
+        )
+        context["can_issue_licence_document"] = context["can_edit_application"] and application.status == "approved"
         context["status_history"] = application.status_history.select_related("changed_by").all()[:20]
         context["supervisor_assignments"] = SupervisorAssignment.objects.filter(application=application).select_related("supervisor_user")
         context["is_nursing_application"] = is_nursing_council_application(application)
@@ -611,6 +672,7 @@ class ApplicationUpdateView(LoginRequiredMixin, UpdateView):
                 for error in result.get("errors", []):
                     messages.error(self.request, error)
                 return redirect('application_detail', pk=application.pk)
+            mark_users_linked_for_professional(application.professional)
             messages.success(self.request, "Application approved through the configured workflow.")
             return redirect('application_detail', pk=application.pk)
         if application.status == "rejected" and old_status != "rejected":
@@ -622,6 +684,8 @@ class ApplicationUpdateView(LoginRequiredMixin, UpdateView):
         if application.status in {'approved', 'rejected'} and not application.reviewed_by:
             application.reviewed_by = self.request.user
         application.save()
+        if application.status == "approved":
+            mark_users_linked_for_professional(application.professional)
         messages.success(self.request, "Application updated successfully.")
         return redirect('application_detail', pk=application.pk)
 
@@ -661,13 +725,23 @@ def upload_professional_media(request, pk):
 
 @login_required
 def professional_dashboard(request):
-    professional = _professional_queryset(NursingProfessional, request.user).first()
+    professional = getattr(request.user, "professional_record", None)
+    if professional is None:
+        for model in [NursingProfessional, MedicalDoctor, Midwife, CommunityHealthWorker, NurseAide, HealthStudent]:
+            professional = _professional_queryset(model, request.user).first()
+            if professional:
+                break
     applications = _application_queryset_for(professional)
 
-    return render(request, 'workforce/professional_dashboard.html', {
+    context = {
         'applications': applications,
         'professional': professional,
-    })
+        'professional_record_status': getattr(request.user, 'professional_record_status', 'unmatched'),
+        'professional_link_review_note': getattr(request.user, 'professional_link_review_note', ''),
+        'next_registration_url_name': get_next_url_name_for_role(getattr(request.user, 'role', '')),
+    }
+    context.update(build_professional_identity_context(professional))
+    return render(request, 'workforce/professional_dashboard.html', context)
 
 
 @login_required
@@ -708,9 +782,36 @@ def approve_application(request, pk):
         return redirect('application_detail', pk=app.pk)
 
     send_application_status_email(app)
+    mark_users_linked_for_professional(app.professional)
 
-    messages.success(request, "Application approved.")
-    return redirect('registrar_dashboard')
+    messages.success(request, "Application approved. You can now issue the official practice document.")
+    return redirect('application_detail', pk=app.pk)
+
+
+@login_required
+@user_passes_test(is_registrar)
+@require_POST
+def issue_application_document(request, pk):
+    app = get_object_or_404(Application, pk=pk)
+    if not can_access_application_record(request.user, app):
+        raise Http404("Application not found")
+
+    try:
+        issued = issue_application_licence_document(
+            app,
+            issuer=request.user,
+            delivery_channel=request.POST.get("delivery_channel", "both"),
+            request=request,
+        )
+    except ValueError as exc:
+        messages.error(request, str(exc))
+    else:
+        delivery = issued.get_delivery_channel_display().lower()
+        if issued.status == "sent":
+            messages.success(request, f"{issued.get_document_type_display()} issued and sent by {delivery}.")
+        else:
+            messages.warning(request, f"{issued.get_document_type_display()} was generated, but delivery by {delivery} did not complete.")
+    return redirect('application_detail', pk=app.pk)
 
 
 @login_required
@@ -820,15 +921,226 @@ def complete_supervisor_assignment_view(request, assignment_id):
     return redirect("application_detail", pk=assignment.application.pk)
 
 
-def public_nursing_register_search(request):
-    rows = search_public_nursing_register(
-        query=request.GET.get("name", "") or request.GET.get("q", ""),
-        registration_number=request.GET.get("registration_number", ""),
-        practitioner_number=request.GET.get("practitioner_number", ""),
-        professional_category=request.GET.get("professional_category", ""),
-        licence_status=request.GET.get("licence_status", ""),
+def _medical_public_licence_status(professional):
+    if not getattr(professional, "is_active", True):
+        return "Inactive"
+    expiry = getattr(professional, "license_expiry_date", None)
+    if expiry:
+        return "Active" if expiry >= date.today() else "Expired"
+    if isinstance(professional, CommunityHealthWorker):
+        return "Registered"
+    return "Registration recorded"
+
+
+def _medical_professional_conditions(professional):
+    registration_number = (getattr(professional, "registration_no", "") or "").strip()
+    content_type = ContentType.objects.get_for_model(professional)
+    query = Q(subject_content_type=content_type, subject_object_id=professional.pk)
+    if registration_number:
+        query |= Q(subject_identifier__iexact=registration_number)
+    return RegulatoryDecisionRecord.objects.filter(
+        query,
+        office_scope="medical",
+        status="final",
+    ).exclude(conditions="").filter(
+        Q(expiry_date__isnull=True) | Q(expiry_date__gte=date.today())
     )
-    return JsonResponse({"count": len(rows), "results": rows})
+
+
+def _safe_public_medical_professional(professional, category):
+    status = _medical_public_licence_status(professional)
+    conditions_count = _medical_professional_conditions(professional).count()
+    specialty_or_training = getattr(professional, "specialty", "") or getattr(professional, "training_level", "")
+    return {
+        "full_name": f"{professional.first_name} {professional.last_name}".strip(),
+        "registration_number": professional.registration_no or "",
+        "practitioner_number": professional.registration_number or getattr(professional, "community_id", "") or "",
+        "professional_category": category,
+        "specialty_or_training": specialty_or_training or "",
+        "licence_status": status,
+        "licence_expiry_date": getattr(professional, "license_expiry_date", None).isoformat() if getattr(professional, "license_expiry_date", None) else "",
+        "eligible_to_practice": status in {"Active", "Registered"},
+        "conditions_summary": "Active conditions recorded" if conditions_count else "No active public conditions recorded",
+        "source": "Operational Medical Board register",
+    }
+
+
+def _medical_import_record_status(record):
+    if record.record_type == "practicing_license":
+        return "Practising certificate"
+    if record.record_type in {"full", "full_approved", "workforce_listing"}:
+        return "Registered"
+    return record.get_record_type_display()
+
+
+def _safe_public_medical_import_record(record):
+    status = _medical_import_record_status(record)
+    category = "Community Health Worker" if record.target_model == "communityhealthworker" else "Medical Doctor / Specialist"
+    if record.target_model == "other":
+        category = record.category or "Medical Board practitioner"
+    return {
+        "full_name": record.full_name,
+        "registration_number": record.registration_no or "",
+        "practitioner_number": record.practitioner_number or "",
+        "professional_category": category,
+        "specialty_or_training": record.qualification_name or record.category or "",
+        "licence_status": status,
+        "licence_expiry_date": "",
+        "eligible_to_practice": status in {"Practising certificate", "Registered"},
+        "conditions_summary": "Check with Medical Board for current conditions",
+        "source": f"Medical Board import {record.record_year or ''}".strip(),
+    }
+
+
+def _medical_public_row_identity(row):
+    return (
+        (row.get("registration_number") or "").strip().upper(),
+        (row.get("practitioner_number") or "").strip().upper(),
+        (row.get("full_name") or "").strip().upper(),
+        (row.get("professional_category") or "").strip().upper(),
+    )
+
+
+def search_public_medical_board_register(*, query="", registration_number="", practitioner_number="", professional_category="", licence_status=""):
+    rows = []
+    model_category = [
+        (MedicalDoctor, "Medical Doctor / Specialist"),
+        (CommunityHealthWorker, "Community Health Worker"),
+    ]
+    for model, category in model_category:
+        queryset = model.objects.all()
+        if query:
+            queryset = queryset.filter(
+                Q(first_name__icontains=query)
+                | Q(last_name__icontains=query)
+                | Q(registration_no__icontains=query)
+                | Q(registration_number__icontains=query)
+            )
+            if model is CommunityHealthWorker:
+                queryset = queryset | model.objects.filter(community_id__icontains=query)
+            if model is MedicalDoctor:
+                queryset = queryset | model.objects.filter(specialty__icontains=query)
+        if registration_number:
+            queryset = queryset.filter(registration_no__icontains=registration_number)
+        if practitioner_number:
+            filters = Q(registration_number__icontains=practitioner_number)
+            if model is CommunityHealthWorker:
+                filters |= Q(community_id__icontains=practitioner_number)
+            queryset = queryset.filter(filters)
+        if professional_category and professional_category.lower() not in category.lower():
+            continue
+        for obj in queryset.distinct().order_by("last_name", "first_name")[:100]:
+            safe = _safe_public_medical_professional(obj, category)
+            if licence_status and safe["licence_status"].lower() != licence_status.lower():
+                continue
+            rows.append(safe)
+
+    imported_records = quality_approved_import_records(
+        PracticingLicenseRecord.objects.filter(
+            batch__source_kind="medical_board_workbook",
+            target_model__in=["medicaldoctor", "communityhealthworker", "other"],
+            record_type__in=["full", "full_approved", "workforce_listing", "practicing_license"],
+        )
+    )
+    if query:
+        imported_records = imported_records.filter(
+            Q(full_name__icontains=query)
+            | Q(registration_no__icontains=query)
+            | Q(practitioner_number__icontains=query)
+            | Q(category__icontains=query)
+            | Q(qualification_name__icontains=query)
+        )
+    if registration_number:
+        imported_records = imported_records.filter(registration_no__icontains=registration_number)
+    if practitioner_number:
+        imported_records = imported_records.filter(practitioner_number__icontains=practitioner_number)
+    if professional_category:
+        imported_records = imported_records.filter(
+            Q(category__icontains=professional_category)
+            | Q(target_model__icontains=professional_category.replace(" ", "").lower())
+        )
+
+    for record in imported_records.order_by("-record_year", "-issued_date", "full_name")[:150]:
+        safe = _safe_public_medical_import_record(record)
+        if licence_status and safe["licence_status"].lower() != licence_status.lower():
+            continue
+        rows.append(safe)
+
+    deduped = []
+    seen = set()
+    for row in rows:
+        identity = _medical_public_row_identity(row)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        deduped.append(row)
+    return deduped[:100]
+
+
+def public_medical_board_register_search(request):
+    search_params = {
+        "q": request.GET.get("name", "") or request.GET.get("q", ""),
+        "registration_number": request.GET.get("registration_number", ""),
+        "practitioner_number": request.GET.get("practitioner_number", ""),
+        "professional_category": request.GET.get("professional_category", ""),
+        "licence_status": request.GET.get("licence_status", ""),
+    }
+    rows = search_public_medical_board_register(
+        query=search_params["q"],
+        registration_number=search_params["registration_number"],
+        practitioner_number=search_params["practitioner_number"],
+        professional_category=search_params["professional_category"],
+        licence_status=search_params["licence_status"],
+    )
+    payload = {"count": len(rows), "results": rows}
+    wants_json = (
+        request.GET.get("format") == "json"
+        or request.headers.get("x-requested-with") == "XMLHttpRequest"
+        or "application/json" in request.headers.get("accept", "")
+    )
+    if wants_json:
+        return JsonResponse(payload)
+
+    searched = any(value.strip() for value in search_params.values())
+    return render(request, "workforce/public_medical_board_register_search.html", {
+        "search_params": search_params,
+        "results": rows,
+        "result_count": len(rows),
+        "searched": searched,
+    })
+
+
+def public_nursing_register_search(request):
+    search_params = {
+        "q": request.GET.get("name", "") or request.GET.get("q", ""),
+        "registration_number": request.GET.get("registration_number", ""),
+        "practitioner_number": request.GET.get("practitioner_number", ""),
+        "professional_category": request.GET.get("professional_category", ""),
+        "licence_status": request.GET.get("licence_status", ""),
+    }
+    rows = search_public_nursing_register(
+        query=search_params["q"],
+        registration_number=search_params["registration_number"],
+        practitioner_number=search_params["practitioner_number"],
+        professional_category=search_params["professional_category"],
+        licence_status=search_params["licence_status"],
+    )
+    payload = {"count": len(rows), "results": rows}
+    wants_json = (
+        request.GET.get("format") == "json"
+        or request.headers.get("x-requested-with") == "XMLHttpRequest"
+        or "application/json" in request.headers.get("accept", "")
+    )
+    if wants_json:
+        return JsonResponse(payload)
+
+    searched = any(value.strip() for value in search_params.values())
+    return render(request, "workforce/public_nursing_register_search.html", {
+        "search_params": search_params,
+        "results": rows,
+        "result_count": len(rows),
+        "searched": searched,
+    })
 
 
 @login_required

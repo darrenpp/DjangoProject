@@ -1,0 +1,1242 @@
+{% extends "base.html" %}
+
+{% block title %}{{ workbook.title }} - NHWA Web Workbook{% endblock %}
+{% block title_label %}NHWA Web Workbook{% endblock %}
+
+{% block extra_css %}
+<style>
+  .nhwa-workbook-toolbar {
+    align-items: flex-start;
+    background: linear-gradient(135deg, #12304a 0%, #0f8b8d 100%);
+    border-radius: 10px 10px 0 0;
+    color: #fff;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: .85rem 1rem;
+  }
+
+  .nhwa-workbook-toolbar h2,
+  .nhwa-workbook-toolbar p {
+    color: #fff;
+    margin: 0;
+  }
+
+  .nhwa-workbook-toolbar p {
+    margin-top: .25rem;
+  }
+
+  .nhwa-workbook-toolbar h2 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  .nhwa-workbook-kicker {
+    color: rgba(255, 255, 255, .82);
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    margin-bottom: .18rem;
+    text-transform: uppercase;
+  }
+
+  .nhwa-action-buttons {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    justify-content: flex-end;
+    min-width: min(42rem, 100%);
+  }
+
+  .nhwa-action-buttons .btn,
+  .nhwa-action-buttons button {
+    border-radius: 7px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .nhwa-action-buttons form {
+    margin: 0;
+  }
+
+  .nhwa-status-strip {
+    background: #f8fafc;
+    border-bottom: 1px solid #d9e3ee;
+    display: grid;
+    gap: .6rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    padding: .75rem 1rem;
+  }
+
+  .nhwa-status-card {
+    background: #fff;
+    border: 1px solid #d9e3ee;
+    border-radius: 8px;
+    padding: .62rem .7rem;
+  }
+
+  .nhwa-status-card--success {
+    border-left: 4px solid #159947;
+  }
+
+  .nhwa-status-card--warning {
+    border-left: 4px solid #d79a16;
+  }
+
+  .nhwa-status-card--danger {
+    border-left: 4px solid #c53030;
+  }
+
+  .nhwa-status-card--primary,
+  .nhwa-status-card--info {
+    border-left: 4px solid #0f8b8d;
+  }
+
+  .nhwa-status-card__label {
+    color: #64748b;
+    display: block;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .nhwa-status-card__value {
+    color: #102b45;
+    display: block;
+    font-size: 1rem;
+    font-weight: 950;
+    line-height: 1.15;
+    margin: .12rem 0;
+  }
+
+  .nhwa-status-card__detail {
+    color: #64748b;
+    display: block;
+    font-size: .74rem;
+    line-height: 1.25;
+  }
+
+  .nhwa-workbook-layout {
+    display: grid;
+    grid-template-columns: minmax(200px, 250px) minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .nhwa-sheet-outline {
+    background: #f8fafc;
+    border-right: 1px solid #d9e3ee;
+    padding: .9rem;
+  }
+
+  .nhwa-sheet-outline h3 {
+    color: #102b45;
+    font-size: .78rem;
+    font-weight: 950;
+    letter-spacing: .08em;
+    margin: 0 0 .6rem;
+    text-transform: uppercase;
+  }
+
+  .nhwa-sheet-outline p {
+    color: #64748b;
+    font-size: .76rem;
+    line-height: 1.35;
+    margin: -.25rem 0 .8rem;
+  }
+
+  .nhwa-sheet-group {
+    margin-bottom: .9rem;
+  }
+
+  .nhwa-sheet-group__title {
+    color: #64748b;
+    font-size: .72rem;
+    font-weight: 900;
+    margin-bottom: .3rem;
+    text-transform: uppercase;
+  }
+
+  .nhwa-outline-link {
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid #d9e3ee;
+    border-radius: 8px;
+    color: #102b45;
+    display: flex;
+    gap: .5rem;
+    justify-content: space-between;
+    margin-bottom: .35rem;
+    padding: .48rem .55rem;
+    text-decoration: none;
+  }
+
+  .nhwa-outline-link:hover,
+  .nhwa-outline-link.active {
+    border-color: #0f8b8d;
+    box-shadow: 0 6px 18px rgba(15, 139, 141, .1);
+    color: #102b45;
+    text-decoration: none;
+  }
+
+  .nhwa-outline-link.active {
+    background: #eef9f6;
+  }
+
+  .nhwa-outline-link strong {
+    display: block;
+    font-size: .82rem;
+    line-height: 1.2;
+  }
+
+  .nhwa-outline-link small {
+    color: #64748b;
+    display: block;
+    font-size: .7rem;
+    margin-top: .12rem;
+  }
+
+  .nhwa-workbook-main {
+    min-width: 0;
+  }
+
+  .nhwa-sheet-shell {
+    background: #fff;
+    border: 1px solid #d9e3ee;
+    border-radius: 10px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
+    overflow: hidden;
+  }
+
+  .nhwa-sheet-tabs {
+    background: #f4f8fb;
+    border-bottom: 1px solid #d9e3ee;
+    display: flex;
+    gap: .4rem;
+    overflow-x: auto;
+    padding: .7rem .9rem 0;
+  }
+
+  .nhwa-sheet-tabs a {
+    align-items: center;
+    border: 1px solid #d9e3ee;
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+    color: #12304a;
+    display: inline-flex;
+    gap: .4rem;
+    font-weight: 800;
+    padding: .55rem .7rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .nhwa-sheet-tabs a.active {
+    background: #12304a;
+    border-color: #12304a;
+    color: #fff;
+  }
+
+  .nhwa-sheet-meta {
+    align-items: center;
+    background: #fff;
+    border-bottom: 1px solid #d9e3ee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+    justify-content: space-between;
+    padding: .7rem 1rem;
+  }
+
+  .nhwa-sheet-help {
+    background: #f8fafc;
+    border-bottom: 1px solid #d9e3ee;
+    color: #334155;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    padding: .7rem 1rem;
+  }
+
+  .nhwa-sheet-help .nhwa-chip {
+    align-items: center;
+    background: #fff;
+    border: 1px solid #d9e3ee;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: .78rem;
+    font-weight: 800;
+    gap: .35rem;
+    padding: .28rem .6rem;
+  }
+
+  .nhwa-scope-note {
+    background: #eef9f6;
+    border-bottom: 1px solid #c8efe6;
+    border-left: 4px solid #0f8b8d;
+    color: #102b45;
+    font-size: .86rem;
+    font-weight: 800;
+    line-height: 1.45;
+    padding: .75rem 1rem;
+  }
+
+  .nhwa-chip::before {
+    border-radius: 999px;
+    content: "";
+    display: inline-block;
+    height: .72rem;
+    width: .72rem;
+  }
+
+  .nhwa-chip-editable::before {
+    background: #fff1b8;
+    border: 1px solid #d79a16;
+  }
+
+  .nhwa-chip-formula::before {
+    background: #e2e8f0;
+    border: 1px solid #94a3b8;
+  }
+
+  .nhwa-chip-reference::before {
+    background: #12304a;
+  }
+
+  .nhwa-logic-panel {
+    background: #ffffff;
+    border-bottom: 1px solid #d9e3ee;
+    display: grid;
+    gap: .7rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    padding: .8rem 1rem;
+  }
+
+  .nhwa-governance-panel {
+    background: #ffffff;
+    border-bottom: 1px solid #d9e3ee;
+    display: grid;
+    gap: .85rem;
+    grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr);
+    padding: .85rem 1rem;
+  }
+
+  .nhwa-panel-box {
+    border: 1px solid #d9e3ee;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .nhwa-panel-box__header {
+    align-items: center;
+    background: #f4f8fb;
+    border-bottom: 1px solid #d9e3ee;
+    color: #102b45;
+    display: flex;
+    justify-content: space-between;
+    padding: .55rem .65rem;
+  }
+
+  .nhwa-panel-box__header strong {
+    font-size: .86rem;
+    font-weight: 950;
+  }
+
+  .nhwa-validation-list,
+  .nhwa-audit-list {
+    margin: 0;
+    padding: .55rem .65rem;
+  }
+
+  .nhwa-validation-item,
+  .nhwa-audit-item {
+    align-items: flex-start;
+    border-bottom: 1px solid #edf2f7;
+    display: flex;
+    gap: .55rem;
+    padding: .42rem 0;
+  }
+
+  .nhwa-validation-item:last-child,
+  .nhwa-audit-item:last-child {
+    border-bottom: 0;
+  }
+
+  .nhwa-validation-item i {
+    margin-top: .18rem;
+  }
+
+  .nhwa-validation-item strong,
+  .nhwa-audit-item strong {
+    color: #102b45;
+    display: block;
+    font-size: .82rem;
+  }
+
+  .nhwa-validation-item span,
+  .nhwa-audit-item span {
+    color: #465f78;
+    display: block;
+    font-size: .75rem;
+    line-height: 1.35;
+  }
+
+  .nhwa-logic-panel__item {
+    background: #f8fafc;
+    border: 1px solid #d9e3ee;
+    border-radius: 8px;
+    color: #334155;
+    padding: .65rem .75rem;
+  }
+
+  .nhwa-logic-panel__item strong {
+    color: #102b45;
+    display: block;
+    font-size: .86rem;
+    margin-bottom: .2rem;
+  }
+
+  .nhwa-logic-panel__item span {
+    display: block;
+    font-size: .78rem;
+    line-height: 1.35;
+  }
+
+  .nhwa-header-fields {
+    background: #ffffff;
+    border-bottom: 1px solid #d9e3ee;
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    padding: .95rem 1rem;
+  }
+
+  .nhwa-header-fields__item {
+    background: #fffdf2;
+    border: 1px solid #e4c568;
+    border-radius: 8px;
+    box-shadow: inset 3px 0 0 #d79a16;
+    padding: .65rem .7rem;
+  }
+
+  .nhwa-header-fields__item label {
+    color: #102b45;
+    display: block;
+    font-size: .78rem;
+    font-weight: 900;
+    letter-spacing: .01em;
+    margin-bottom: .32rem;
+  }
+
+  .nhwa-header-fields__item input {
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, .35);
+    border-radius: 6px;
+    color: #102b45;
+    font-weight: 800;
+    min-height: 2.35rem;
+    padding: .4rem .55rem;
+    width: 100%;
+  }
+
+  .nhwa-header-fields__item input:focus {
+    border-color: #0f8b8d;
+    box-shadow: 0 0 0 .16rem rgba(15, 139, 141, .15);
+    outline: 0;
+  }
+
+  .nhwa-header-fields__cell {
+    color: #64748b;
+    display: block;
+    font-size: .72rem;
+    font-weight: 800;
+    margin-top: .28rem;
+  }
+
+  .nhwa-sheet-meta h3 {
+    color: #102b45;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .nhwa-sheet-meta p {
+    color: #465f78;
+    margin: .2rem 0 0;
+  }
+
+  .nhwa-progress {
+    background: #eef2f7;
+    border-radius: 999px;
+    height: .65rem;
+    min-width: 180px;
+    overflow: hidden;
+  }
+
+  .nhwa-progress span {
+    background: #159947;
+    display: block;
+    height: 100%;
+  }
+
+  .nhwa-grid-wrap {
+    background: #f8fafc;
+    border-top: 1px solid #d9e3ee;
+    max-height: calc(100vh - 335px);
+    min-height: 420px;
+    overflow: auto;
+    padding: 0;
+  }
+
+  .nhwa-grid-commandbar {
+    align-items: center;
+    background: #fff;
+    border-top: 1px solid #d9e3ee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+    justify-content: space-between;
+    padding: .58rem .8rem;
+  }
+
+  .nhwa-grid-commandbar__meta {
+    color: #102b45;
+    font-size: .82rem;
+    font-weight: 850;
+  }
+
+  .nhwa-grid-commandbar__tools {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    justify-content: flex-end;
+  }
+
+  .nhwa-grid-commandbar input {
+    border: 1px solid #b8c7d6;
+    border-radius: 7px;
+    min-height: 2rem;
+    padding: .2rem .45rem;
+    width: 7.5rem;
+  }
+
+  .nhwa-grid {
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 100%;
+    table-layout: fixed;
+    width: 100% !important;
+  }
+
+  .nhwa-grid th,
+  .nhwa-grid td {
+    border-bottom: 1px solid #d9e3ee;
+    border-right: 1px solid #e5edf4;
+    max-width: 18rem;
+    min-width: 8.5rem;
+    padding: .42rem .5rem;
+    vertical-align: middle;
+    width: 8.5rem;
+  }
+
+  .nhwa-grid th {
+    background: #102b45;
+    color: #fff;
+    font-size: .8rem;
+    line-height: 1.2;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+  }
+
+  .nhwa-grid th:nth-child(2),
+  .nhwa-grid td:nth-child(2) {
+    left: 3.8rem;
+    min-width: 15rem;
+    position: sticky;
+    width: 15rem;
+    z-index: 2;
+  }
+
+  .nhwa-grid th:nth-child(2) {
+    z-index: 4;
+  }
+
+  .nhwa-grid .row-number {
+    background: #eaf1f7;
+    color: #334155;
+    font-weight: 900;
+    left: 0;
+    min-width: 3.8rem;
+    position: sticky;
+    text-align: center;
+    z-index: 2;
+  }
+
+  .nhwa-grid thead .row-number {
+    z-index: 4;
+  }
+
+  .nhwa-grid td.nhwa-blank-cell {
+    background: #fff !important;
+    color: #102b45 !important;
+  }
+
+  .nhwa-grid td.nhwa-dark-cell {
+    background: #12304a !important;
+    color: #fff !important;
+  }
+
+  .nhwa-grid td.nhwa-dark-cell .nhwa-locked-cell,
+  .nhwa-grid td.nhwa-dark-cell .nhwa-formula-value {
+    color: inherit !important;
+  }
+
+  .nhwa-grid td.nhwa-dark-empty-cell {
+    background: #f8fafc !important;
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(16, 43, 69, .045) 0,
+      rgba(16, 43, 69, .045) 6px,
+      transparent 6px,
+      transparent 12px
+    ) !important;
+    color: #64748b !important;
+  }
+
+  .nhwa-grid td.nhwa-heading-cell {
+    border-color: rgba(255, 255, 255, .22);
+    letter-spacing: .01em;
+  }
+
+  .nhwa-grid td.nhwa-editable-cell {
+    background: #fffdf2 !important;
+    box-shadow: inset 3px 0 0 #d79a16;
+    color: #102b45 !important;
+  }
+
+  .nhwa-grid td.nhwa-formula-cell {
+    background: #eef2f7 !important;
+    box-shadow: inset 3px 0 0 #64748b;
+    color: #102b45 !important;
+  }
+
+  .nhwa-grid td.nhwa-formula-cell.nhwa-dark-cell {
+    background: #e8f1f4 !important;
+    color: #102b45 !important;
+  }
+
+  .nhwa-grid input,
+  .nhwa-grid textarea {
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, .34);
+    border-radius: 6px;
+    color: #102b45;
+    font-weight: 700;
+    min-height: 2.15rem;
+    padding: .35rem .45rem;
+    width: 100%;
+  }
+
+  .nhwa-grid input:focus,
+  .nhwa-grid textarea:focus {
+    border-color: #0f8b8d;
+    box-shadow: 0 0 0 .16rem rgba(15, 139, 141, .15);
+    outline: 0;
+  }
+
+  .nhwa-cell-dirty {
+    outline: 2px solid #0f8b8d;
+    outline-offset: -2px;
+  }
+
+  .nhwa-cell-target {
+    animation: nhwaTargetPulse 1.6s ease;
+    outline: 3px solid #d79a16;
+    outline-offset: -3px;
+  }
+
+  @keyframes nhwaTargetPulse {
+    0% { background-color: #fff3cd; }
+    100% { background-color: inherit; }
+  }
+
+  .nhwa-grid textarea {
+    min-width: 15rem;
+    resize: vertical;
+  }
+
+  .nhwa-locked-cell {
+    display: block;
+    max-width: 32rem;
+    min-height: 1.8rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .nhwa-formula-value {
+    color: inherit;
+    display: block;
+    font-weight: 800;
+    min-height: 2rem;
+    padding: .38rem .45rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .nhwa-metadata-grid-note {
+    color: #334155;
+    font-style: italic;
+  }
+
+  .nhwa-savebar {
+    align-items: center;
+    background: #f8fafc;
+    border-top: 1px solid #d9e3ee;
+    display: flex;
+    gap: .75rem;
+    justify-content: space-between;
+    padding: .85rem 1rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+  }
+
+  .nhwa-unsaved-indicator {
+    color: #0f766e;
+    display: none;
+    font-weight: 900;
+    margin-left: .45rem;
+  }
+
+  .nhwa-unsaved-indicator.is-visible {
+    display: inline;
+  }
+
+  .nhwa-sheet-shell .dataTables_wrapper {
+    background: #fff;
+    padding: .85rem 1rem 0;
+  }
+
+  .nhwa-sheet-shell .dataTables_length,
+  .nhwa-sheet-shell .dataTables_filter,
+  .nhwa-sheet-shell .dataTables_info,
+  .nhwa-sheet-shell .dataTables_paginate {
+    color: #102b45;
+    font-weight: 800;
+  }
+
+  .nhwa-sheet-shell .dataTables_filter input,
+  .nhwa-sheet-shell .dataTables_length select {
+    border: 1px solid #b8c7d6;
+    border-radius: 8px;
+    color: #102b45;
+    margin-left: .35rem;
+    min-height: 2.15rem;
+    padding: .25rem .55rem;
+  }
+
+  .nhwa-sheet-shell .dataTables_scroll {
+    border: 1px solid #d9e3ee;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .nhwa-sheet-shell .dataTables_scrollBody {
+    background: #fff;
+  }
+
+  .nhwa-sheet-shell .dataTables_paginate .paginate_button {
+    border-radius: 6px;
+  }
+
+  @media (max-width: 991.98px) {
+    .nhwa-workbook-toolbar,
+    .nhwa-governance-panel,
+    .nhwa-workbook-layout {
+      display: block;
+    }
+
+    .nhwa-action-buttons {
+      justify-content: flex-start;
+      margin-top: .75rem;
+      min-width: 0;
+    }
+
+    .nhwa-sheet-outline {
+      border-bottom: 1px solid #d9e3ee;
+      border-right: 0;
+    }
+
+    .nhwa-grid-wrap {
+      max-height: 62vh;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .nhwa-grid-commandbar__tools {
+      justify-content: flex-start;
+      width: 100%;
+    }
+
+    .nhwa-grid-commandbar input {
+      width: calc(50% - .3rem);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="nhwa-sheet-shell">
+  <div class="nhwa-workbook-toolbar">
+    <div>
+      <div class="nhwa-workbook-kicker">NHWA controlled web workbook</div>
+      <h2>{{ workbook.title }}</h2>
+      <p>{{ workbook.get_office_scope_display }} &middot; {{ workbook.source_title }} &middot; {{ workbook.source_version }} &middot; Reporting year {{ workbook.reporting_year }}</p>
+    </div>
+    <div class="nhwa-action-buttons" aria-label="Workbook actions">
+      <a class="btn btn-light btn-sm" href="{% url 'nhwa_workbook_index' %}">
+        <i class="fas fa-arrow-left"></i> Workbooks
+      </a>
+      <a class="btn btn-outline-light btn-sm" href="#nhwaValidationPanel">
+        <i class="fas fa-list-check"></i> Validate
+      </a>
+      <a class="btn btn-outline-light btn-sm" href="#nhwaAuditTrail">
+        <i class="fas fa-clock-rotate-left"></i> Audit
+      </a>
+      {% if can_edit %}
+      <button type="submit" form="nhwaWorkbookForm" class="btn btn-success btn-sm">
+        <i class="fas fa-save"></i> Save Sheet
+      </button>
+      {% endif %}
+      {% if can_run_actions %}
+        {% if can_lock_signoff %}
+        <form method="post" action="{% url 'nhwa_alignment_action' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="lock_signoff">
+          <input type="hidden" name="scope" value="{{ workbook.office_scope }}">
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="btn btn-warning btn-sm">
+            <i class="fas fa-lock"></i> Lock For Sign-off
+          </button>
+        </form>
+        {% else %}
+        <button type="button" class="btn btn-outline-light btn-sm" disabled>
+          <i class="fas fa-lock"></i> Lock Blocked
+        </button>
+        {% endif %}
+        {% if can_unlock_workbook %}
+        <form method="post" action="{% url 'nhwa_alignment_action' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="unlock">
+          <input type="hidden" name="scope" value="{{ workbook.office_scope }}">
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="btn btn-outline-light btn-sm">
+            <i class="fas fa-unlock"></i> Reopen
+          </button>
+        </form>
+        {% endif %}
+        {% if can_export_submission_pack %}
+        <a class="btn btn-light btn-sm" href="{% url 'nhwa_submission_pack_export' %}?scope={{ workbook.office_scope }}">
+          <i class="fas fa-file-export"></i> Export Pack
+        </a>
+        {% else %}
+        <button type="button" class="btn btn-outline-light btn-sm" disabled>
+          <i class="fas fa-file-export"></i> Export Blocked
+        </button>
+        {% endif %}
+        <a class="btn btn-outline-light btn-sm" href="{% url 'nhwa_alignment_centre' %}">
+          <i class="fas fa-diagram-project"></i> Alignment Centre
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="nhwa-status-strip" aria-label="Workbook status">
+    {% for card in workbook_status_cards %}
+    <div class="nhwa-status-card nhwa-status-card--{{ card.tone }}">
+      <span class="nhwa-status-card__label">{{ card.label }}</span>
+      <strong class="nhwa-status-card__value">{{ card.value }}</strong>
+      <span class="nhwa-status-card__detail">{{ card.detail }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="nhwa-workbook-layout">
+    <aside class="nhwa-sheet-outline" aria-label="Workbook sheet outline">
+      <h3>Sheet Outline</h3>
+      <p>Controlled sheet status by NHWA section.</p>
+      {% regroup sheet_tab_rows by group as grouped_sheet_rows %}
+      {% for group in grouped_sheet_rows %}
+      <div class="nhwa-sheet-group">
+        <div class="nhwa-sheet-group__title">{{ group.grouper }}</div>
+        {% for row in group.list %}
+        <a class="nhwa-outline-link{% if row.is_current %} active{% endif %}" href="{% url 'nhwa_workbook_detail' workbook.slug %}?sheet={{ row.sheet.id }}">
+          <span>
+            <strong>{{ row.sheet.title }}</strong>
+            <small>{{ row.completion.percent }}% complete &middot; {{ row.completion.filled }}/{{ row.completion.editable }} cells</small>
+          </span>
+          <span class="badge bg-{{ row.status.tone }}">{{ row.status.label }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </aside>
+
+    <div class="nhwa-workbook-main">
+      <nav class="nhwa-sheet-tabs" aria-label="NHWA workbook sheets">
+        {% for row in sheet_tab_rows %}
+        <a href="{% url 'nhwa_workbook_detail' workbook.slug %}?sheet={{ row.sheet.id }}"
+           class="{% if row.is_current %}active{% endif %}">
+          <span>{{ row.sheet.title }}</span>
+          <span class="badge bg-{{ row.status.tone }}">{{ row.status.label }}</span>
+        </a>
+        {% endfor %}
+      </nav>
+
+      <div class="nhwa-sheet-meta">
+        <div>
+          <h3>{{ sheet.title }}</h3>
+          <p>
+            {% if sheet.editable %}
+              Controlled entry worksheet aligned to the NHWA source workbook.
+            {% else %}
+              Reference-only worksheet retained for classification and source guidance.
+            {% endif %}
+            Source documents are retained internally and not downloadable from this page.
+          </p>
+        </div>
+        <div>
+          <div><strong>{{ sheet_completion.percent }}%</strong> sheet completion</div>
+          <div class="nhwa-progress" aria-hidden="true"><span style="width: {{ sheet_completion.percent }}%;"></span></div>
+        </div>
+      </div>
+
+      <div class="nhwa-sheet-help">
+        <span class="nhwa-chip nhwa-chip-editable">Editable entry cell</span>
+        <span class="nhwa-chip nhwa-chip-formula">Calculated locked cell</span>
+        <span class="nhwa-chip nhwa-chip-reference">Workbook heading/reference</span>
+        <span class="nhwa-chip">Use validation and audit before sign-off.</span>
+      </div>
+
+      {% if scope_note %}
+      <div class="nhwa-scope-note">
+        <i class="fas fa-filter"></i> {{ scope_note }}
+      </div>
+      {% endif %}
+
+      <div class="nhwa-governance-panel">
+        <section class="nhwa-panel-box" id="nhwaValidationPanel" aria-label="Workbook validation panel">
+          <div class="nhwa-panel-box__header">
+            <strong><i class="fas fa-list-check"></i> Validation Panel</strong>
+            <span class="badge bg-{{ readiness.ready_for_signoff|yesno:'success,warning' }}">
+              {% if readiness.ready_for_signoff %}Sign-off ready{% else %}Checks active{% endif %}
+            </span>
+          </div>
+          <div class="nhwa-validation-list">
+            {% for issue in validation_issues %}
+            <div class="nhwa-validation-item text-{{ issue.tone }}">
+              <i class="{{ issue.icon }}"></i>
+              <div>
+                <strong>{{ issue.title }}</strong>
+                <span>{{ issue.detail }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="nhwa-panel-box" id="nhwaAuditTrail" aria-label="Workbook audit and sign-off visibility">
+          <div class="nhwa-panel-box__header">
+            <strong><i class="fas fa-signature"></i> Sign-off And Audit</strong>
+            <span class="badge {% if workbook.status == 'locked' %}bg-primary{% elif workbook.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ workbook.get_status_display }}
+            </span>
+          </div>
+          <div class="nhwa-audit-list">
+            <div class="nhwa-audit-item">
+              <i class="fas fa-shield-halved text-primary"></i>
+              <div>
+                <strong>Sign-off control</strong>
+                <span>
+                  {% if workbook.status == "locked" %}
+                    Workbook is locked for submission pack export.
+                  {% else %}
+                    Workbook remains open until System Admin locks it after registrar review.
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+            {% for event in recent_audit_events %}
+            <div class="nhwa-audit-item">
+              <i class="fas fa-clock-rotate-left text-info"></i>
+              <div>
+                <strong>{{ event.get_action_display }}</strong>
+                <span>
+                  {{ event.created_at|date:"d M Y H:i" }}
+                  {% if event.actor %} by {{ event.actor.get_full_name|default:event.actor.username }}{% endif %}
+                  {% if event.sheet %} &middot; {{ event.sheet.title }}{% endif %}
+                </span>
+              </div>
+            </div>
+            {% empty %}
+            <div class="nhwa-audit-item">
+              <i class="fas fa-circle-info text-secondary"></i>
+              <div>
+                <strong>No audit events yet</strong>
+                <span>Save, lock, unlock, and export actions will appear here.</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+
+      <div class="nhwa-logic-panel" aria-label="Workbook entry logic">
+        <div class="nhwa-logic-panel__item">
+          <strong>Entry flow</strong>
+          <span>Enter values in yellow cells, save the sheet, then calculated fields refresh from the stored workbook data.</span>
+        </div>
+        <div class="nhwa-logic-panel__item">
+          <strong>Protected logic</strong>
+          <span>Formula cells are locked and calculated by the platform, so users see results instead of raw Excel formulas.</span>
+        </div>
+        <div class="nhwa-logic-panel__item">
+          <strong>Readable workbook styling</strong>
+          <span>Dense headers, status badges, and validation panels make the workbook suitable for controlled NHWA reporting.</span>
+        </div>
+      </div>
+
+      <form method="post" id="nhwaWorkbookForm">
+        {% csrf_token %}
+        {% if header_fields %}
+        <div class="nhwa-header-fields" aria-label="Workbook reporting details">
+          {% for field in header_fields %}
+          <div class="nhwa-header-fields__item">
+            <label for="{{ field.input_name }}">{{ field.label }}:</label>
+            {% if can_edit and field.is_editable %}
+            <input id="{{ field.input_name }}" name="{{ field.input_name }}" value="{{ field.value }}">
+            {% else %}
+            <input id="{{ field.input_name }}" value="{{ field.value }}" readonly>
+            {% endif %}
+            <span class="nhwa-header-fields__cell">Workbook cell {{ field.coordinate }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="nhwa-grid-commandbar" aria-label="Workbook grid controls">
+          <div class="nhwa-grid-commandbar__meta">
+            <strong>{{ sheet.title }}</strong>
+            &middot; {{ sheet_completion.filled }}/{{ sheet_completion.editable }} editable cells
+            &middot; {{ sheet_completion.percent }}% complete
+            <span id="nhwaUnsavedIndicator" class="nhwa-unsaved-indicator">Unsaved changes</span>
+          </div>
+          <div class="nhwa-grid-commandbar__tools">
+            <input id="nhwaJumpRow" type="number" min="1" inputmode="numeric" placeholder="Row">
+            <button type="button" id="nhwaJumpRowButton" class="btn btn-outline-primary btn-sm">Go Row</button>
+            <input id="nhwaJumpCell" placeholder="Cell e.g. D13">
+            <button type="button" id="nhwaJumpCellButton" class="btn btn-outline-primary btn-sm">Go Cell</button>
+            <button type="reset" form="nhwaWorkbookForm" class="btn btn-outline-secondary btn-sm">Reset Edits</button>
+          </div>
+        </div>
+
+        <div class="nhwa-grid-wrap">
+          <table class="nhwa-grid nhwa-workbook-datatable" id="nhwaWorkbookGrid">
+            <thead>
+              <tr>
+                <th class="row-number">Row</th>
+                {% if grid_rows %}
+                  {% for cell in grid_rows.0.cells %}
+                  <th>{{ cell.template.column_letter }}</th>
+                  {% endfor %}
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in grid_rows %}
+              <tr>
+                <td class="row-number">{{ row.index }}</td>
+                {% for cell in row.cells %}
+                <td class="{% if cell.is_blank_locked %}nhwa-blank-cell{% endif %}{% if cell.template.is_heading %} nhwa-heading-cell{% endif %}{% if cell.is_editable %} nhwa-editable-cell{% endif %}{% if cell.is_formula %} nhwa-formula-cell{% endif %}{% if cell.is_dark_fill %} nhwa-dark-cell{% endif %}{% if cell.is_dark_empty %} nhwa-dark-empty-cell{% endif %}"
+                    data-row="{{ row.index }}"
+                    data-column="{{ cell.template.column_letter }}"
+                    data-coordinate="{{ cell.template.coordinate }}"
+                    title="{{ sheet.source_sheet_name }}!{{ cell.template.coordinate }}"
+                    style="{{ cell.css }}">
+                  {% if cell.template.id in header_field_ids %}
+                    <span class="nhwa-locked-cell nhwa-metadata-grid-note">
+                      {{ cell.value|default:"Use the reporting details panel above." }}
+                    </span>
+                  {% elif can_edit and cell.is_editable %}
+                    {% if cell.value|length > 70 %}
+                    <textarea name="{{ cell.input_name }}" rows="2">{{ cell.value }}</textarea>
+                    {% else %}
+                    <input name="{{ cell.input_name }}" value="{{ cell.value }}">
+                    {% endif %}
+                  {% elif cell.is_formula %}
+                    <span class="nhwa-formula-value">{{ cell.value }}</span>
+                  {% else %}
+                    <span class="nhwa-locked-cell">{{ cell.value }}</span>
+                  {% endif %}
+                </td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="nhwa-savebar">
+          <span>
+            <strong>Controlled save:</strong>
+            Yellow cells are editable, calculated cells are locked, and every save is audit logged against this workbook.
+          </span>
+          {% if can_edit %}
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Save Sheet
+          </button>
+          {% else %}
+          <span class="badge bg-secondary">Read only</span>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function initializeNHWAWorkbookTable(attempt) {
+    attempt = attempt || 1;
+    if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) {
+      if (attempt < 12) {
+        window.setTimeout(function () {
+          initializeNHWAWorkbookTable(attempt + 1);
+        }, 250);
+      }
+      return;
+    }
+
+    const $table = jQuery('#nhwaWorkbookGrid');
+    if (!$table.length || $table.attr('data-ndoh-datatables-ready') === '1') {
+      return;
+    }
+
+    const workbookTable = $table.DataTable({
+      autoWidth: false,
+      deferRender: false,
+      dom: '<"row align-items-center mb-2"<"col-md-6"l><"col-md-6"f>>rt<"row align-items-center mt-2"<"col-md-6"i><"col-md-6"p>>',
+      lengthMenu: [[15, 25, 50, -1], [15, 25, 50, 'All']],
+      pageLength: 25,
+      ordering: false,
+      paging: true,
+      responsive: false,
+      scrollCollapse: true,
+      scrollX: true,
+      scrollY: '52vh',
+      searchDelay: 200,
+      language: {
+        emptyTable: 'No workbook rows are available for this sheet.',
+        info: 'Showing workbook rows _START_ to _END_ of _TOTAL_',
+        lengthMenu: 'Show _MENU_ rows',
+        search: 'Search workbook rows:',
+        zeroRecords: 'No matching workbook rows found'
+      }
+    });
+
+    $table.attr('data-ndoh-datatables-ready', '1');
+
+    const form = document.getElementById('nhwaWorkbookForm');
+    const unsavedIndicator = document.getElementById('nhwaUnsavedIndicator');
+    const jumpRow = document.getElementById('nhwaJumpRow');
+    const jumpRowButton = document.getElementById('nhwaJumpRowButton');
+    const jumpCell = document.getElementById('nhwaJumpCell');
+    const jumpCellButton = document.getElementById('nhwaJumpCellButton');
+
+    function markUnsaved(input) {
+      const cell = input.closest('td');
+      if (cell) {
+        cell.classList.add('nhwa-cell-dirty');
+      }
+      if (unsavedIndicator) {
+        unsavedIndicator.style.display = 'inline-flex';
+      }
+    }
+
+    function revealCell(cell) {
+      if (!cell) {
+        return;
+      }
+      cell.scrollIntoView({ block: 'center', inline: 'center' });
+      cell.classList.remove('nhwa-cell-target');
+      void cell.offsetWidth;
+      cell.classList.add('nhwa-cell-target');
+      const control = cell.querySelector('input, textarea');
+      if (control) {
+        control.focus({ preventScroll: true });
+      }
+    }
+
+    function revealCellBySelector(selector) {
+      workbookTable.page.len(-1).draw(false);
+      window.setTimeout(function () {
+        revealCell(document.querySelector(selector));
+      }, 80);
+    }
+
+    $table.on('input change', 'input, textarea', function () {
+      markUnsaved(this);
+    });
+
+    if (jumpRowButton && jumpRow) {
+      jumpRowButton.addEventListener('click', function () {
+        const rowNumber = String(jumpRow.value || '').trim();
+        if (!rowNumber) {
+          return;
+        }
+        revealCellBySelector('#nhwaWorkbookGrid td[data-row="' + rowNumber + '"]');
+      });
+      jumpRow.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          jumpRowButton.click();
+        }
+      });
+    }
+
+    if (jumpCellButton && jumpCell) {
+      jumpCellButton.addEventListener('click', function () {
+        const coordinate = String(jumpCell.value || '').trim().toUpperCase();
+        if (!coordinate) {
+          return;
+        }
+        revealCellBySelector('#nhwaWorkbookGrid td[data-coordinate="' + coordinate + '"]');
+      });
+      jumpCell.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          jumpCellButton.click();
+        }
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', function () {
+        workbookTable.page.len(-1).draw(false);
+      });
+      form.addEventListener('reset', function () {
+        window.setTimeout(function () {
+          document.querySelectorAll('#nhwaWorkbookGrid .nhwa-cell-dirty').forEach(function (cell) {
+            cell.classList.remove('nhwa-cell-dirty');
+          });
+          if (unsavedIndicator) {
+            unsavedIndicator.style.display = 'none';
+          }
+        }, 0);
+      });
+    }
+  })();
+</script>
+{% endblock %}

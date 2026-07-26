@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Nursing Analytics Record{% endblock %}
+{% block title_label %}Nursing Analytics Record{% endblock %}
+
+{% block content %}
+<div class="card card-outline card-primary mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="card-title mb-0">{{ fact.full_name|default:fact.person_group_key }}</h3>
+            <div class="small text-muted">
+                {{ fact.lifecycle_stage }}{% if fact.registration_no %} &middot; {{ fact.registration_no }}{% endif %}
+            </div>
+        </div>
+        <a href="{{ back_url }}" class="btn btn-sm btn-light">
+            <i class="fas fa-arrow-left mr-1"></i> Back
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info mb-4">
+            This is a read-only Nursing Council analytics snapshot record. It verifies the cleansed workbook data and does not change the legal operational registry.
+        </div>
+
+        <div class="row">
+            <div class="col-lg-7 mb-4">
+                <div class="card card-outline card-info h-100">
+                    <div class="card-header"><h4 class="card-title mb-0">Lifecycle Details</h4></div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped mb-0">
+                            <tbody>
+                            {% for label, value in summary_fields %}
+                                <tr>
+                                    <th style="width: 230px;">{{ label }}</th>
+                                    <td>{{ value|default:"-" }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 mb-4">
+                <div class="card card-outline card-secondary h-100">
+                    <div class="card-header"><h4 class="card-title mb-0">Source and Quality</h4></div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped mb-0">
+                            <tbody>
+                            {% for label, value in source_fields %}
+                                <tr>
+                                    <th style="width: 190px;">{{ label }}</th>
+                                    <td>{{ value|default:"-" }}</td>
+                                </tr>
+                            {% endfor %}
+                            {% for label, value in quality_fields %}
+                                <tr>
+                                    <th>{{ label }}</th>
+                                    <td>{{ value|default:"-" }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-outline card-dark">
+            <div class="card-header"><h4 class="card-title mb-0">Workbook Payload</h4></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <tbody>
+                    {% for key, value in raw_payload_rows %}
+                        <tr>
+                            <th style="width: 260px;">{{ key }}</th>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td class="text-muted text-center">No raw workbook payload was stored for this record.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

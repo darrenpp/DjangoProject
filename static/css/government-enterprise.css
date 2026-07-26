@@ -184,6 +184,81 @@ h1, h2, h3 {
     padding: 18px 24px 34px !important;
 }
 
+body.app-shell .content-wrapper p,
+body.app-shell .content-wrapper li,
+body.app-shell .content-wrapper label,
+body.app-shell .content-wrapper .form-label,
+body.app-shell .content-wrapper .help-block,
+body.app-shell .content-wrapper .form-text,
+body.app-shell .content-wrapper .card-body p,
+body.app-shell .content-wrapper .card-text,
+body.app-shell .content-wrapper .small,
+body.public-body .content-wrapper p,
+body.public-body .content-wrapper li,
+body.public-body .content-wrapper label,
+body.public-body .content-wrapper .form-label,
+body.public-body .content-wrapper .help-block,
+body.public-body .content-wrapper .form-text,
+body.public-body .content-wrapper .card-body p,
+body.public-body .content-wrapper .card-text {
+    color: var(--hm-text) !important;
+    -webkit-text-fill-color: var(--hm-text) !important;
+    line-height: 1.62 !important;
+    margin-bottom: 0.72rem !important;
+    max-width: min(74ch, 100%);
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+body.app-shell .content-wrapper h1,
+body.app-shell .content-wrapper h2,
+body.app-shell .content-wrapper h3,
+body.app-shell .content-wrapper h4,
+body.app-shell .content-wrapper h5,
+body.app-shell .content-wrapper h6,
+body.public-body .content-wrapper h1,
+body.public-body .content-wrapper h2,
+body.public-body .content-wrapper h3,
+body.public-body .content-wrapper h4,
+body.public-body .content-wrapper h5,
+body.public-body .content-wrapper h6 {
+    line-height: 1.28 !important;
+    margin-top: 0.05rem !important;
+    margin-bottom: 0.56rem !important;
+}
+
+body.app-shell .content-wrapper h1,
+body.public-body .content-wrapper h1 {
+    line-height: 1.2 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.72rem !important;
+}
+
+body.app-shell .content-wrapper h2,
+body.public-body .content-wrapper h2 {
+    line-height: 1.22 !important;
+    margin-top: 1.05rem !important;
+    margin-bottom: 0.55rem !important;
+}
+
+body.app-shell .content-wrapper h3,
+body.public-body .content-wrapper h3 {
+    line-height: 1.24 !important;
+    margin-top: 0.9rem !important;
+    margin-bottom: 0.46rem !important;
+}
+
+body.app-shell .content-wrapper h4,
+body.app-shell .content-wrapper h5,
+body.app-shell .content-wrapper h6,
+body.public-body .content-wrapper h4,
+body.public-body .content-wrapper h5,
+body.public-body .content-wrapper h6 {
+    line-height: 1.28 !important;
+    margin-top: 0.72rem !important;
+    margin-bottom: 0.4rem !important;
+}
+
 .card,
 .table-card,
 .official-info-card,
@@ -408,6 +483,17 @@ h1, h2, h3 {
 .card .text-muted,
 .lead.text-muted {
     color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
+    opacity: 1 !important;
+}
+
+body.app-shell .content-wrapper small,
+body.public-body .content-wrapper small,
+body.app-shell .content-wrapper .small,
+body.public-body .content-wrapper .small {
+    color: #4b5563 !important;
+    -webkit-text-fill-color: #4b5563 !important;
+    opacity: 1 !important;
 }
 
 .content-wrapper,
@@ -461,6 +547,855 @@ h1, h2, h3 {
     background: rgba(15,118,110,0.05) !important;
 }
 
+.data-quality-datatable-shell {
+    min-width: 0;
+}
+
+.data-quality-table-toolbar {
+    align-items: flex-end;
+    background: #f8fafc;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 12px;
+}
+
+.data-quality-table-toolbar .form-group {
+    flex: 1 1 170px;
+}
+
+.data-quality-table-toolbar label {
+    color: var(--gov-ink);
+    display: block;
+    font-size: .78rem;
+    font-weight: 900;
+    margin-bottom: 4px;
+}
+
+.data-quality-table-toolbar .btn {
+    min-height: 34px;
+}
+
+.professional-profile-page {
+    min-width: 0;
+}
+
+.profile-hero {
+    border: 1px solid var(--gov-line);
+    border-radius: 8px !important;
+    overflow: hidden;
+}
+
+.profile-hero-cover {
+    background: linear-gradient(90deg, #0b2a44 0%, #0f766e 54%, #f6c21a 100%);
+    min-height: 126px;
+}
+
+.profile-hero-body {
+    align-items: flex-start;
+    display: flex;
+    gap: 24px;
+    padding: 0 24px 24px;
+}
+
+.profile-avatar-wrap {
+    flex: 0 0 auto;
+    margin-top: -66px;
+}
+
+.profile-avatar {
+    background: #ffffff;
+    border: 5px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 16px 34px rgba(15, 35, 54, 0.18);
+    height: 144px;
+    object-fit: cover;
+    width: 144px;
+}
+
+.profile-hero-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-top: 18px;
+}
+
+.profile-hero-main h2 {
+    color: var(--gov-ink);
+    font-size: clamp(1.8rem, 3vw, 2.55rem);
+    line-height: 1.05;
+}
+
+.profile-headline {
+    color: var(--gov-muted);
+    font-size: 1.04rem;
+    font-weight: 800;
+}
+
+.profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profile-meta span,
+.profile-visibility-badge {
+    border: 1px solid var(--gov-line);
+    border-radius: 999px;
+    color: var(--gov-ink);
+    font-weight: 850;
+    padding: 6px 10px;
+}
+
+.profile-completion {
+    background: #f8fafc;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.profile-completion .progress {
+    background: #dbe7ee;
+    border-radius: 999px;
+    height: 10px;
+}
+
+.profile-completion .progress-bar {
+    border-radius: 999px;
+}
+
+.profile-completion-alert {
+    border-color: rgba(245, 158, 11, 0.45);
+    border-radius: 8px;
+}
+
+.profile-settings-trigger {
+    white-space: normal;
+}
+
+.modal-backdrop {
+    z-index: 5000 !important;
+}
+
+.modal {
+    z-index: 5010 !important;
+}
+
+body.modal-open .helpdesk-launcher,
+body.modal-open .helpdesk-widget,
+body.modal-open .page-section-navigator {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+.profile-settings-dialog {
+    max-width: min(1080px, calc(100vw - 32px)) !important;
+}
+
+.profile-settings-modal .modal-content {
+    background: #f8fafc;
+    border: 1px solid rgba(15, 35, 54, 0.16);
+    border-radius: 8px;
+    box-shadow: 0 24px 70px rgba(5, 20, 35, 0.34);
+    color: var(--gov-ink);
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+}
+
+.profile-settings-modal .modal-header {
+    align-items: flex-start;
+    background: #ffffff;
+    border-bottom: 1px solid var(--gov-line);
+    gap: 16px;
+    padding: 20px 24px;
+}
+
+.profile-settings-heading {
+    min-width: 0;
+}
+
+.profile-settings-kicker {
+    color: var(--gov-teal);
+    font-size: .74rem;
+    font-weight: 950;
+    letter-spacing: 0;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.profile-settings-modal .modal-title {
+    color: var(--gov-ink);
+    font-size: 1.32rem;
+    font-weight: 950;
+    line-height: 1.2;
+}
+
+.profile-settings-subtitle {
+    color: #475569;
+    font-size: .93rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-top: 4px;
+}
+
+.profile-settings-close {
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid var(--gov-line-strong);
+    border-radius: 8px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 40px;
+    justify-content: center;
+    margin: 0 !important;
+    opacity: 1;
+    width: 40px;
+}
+
+.profile-settings-close:hover,
+.profile-settings-close:focus {
+    background-color: #eef6f5;
+    border-color: var(--gov-teal);
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+}
+
+.profile-settings-body {
+    background: #f8fafc;
+    padding: 20px 24px 0;
+}
+
+.profile-settings-overview {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-bottom: 16px;
+    padding: 16px;
+}
+
+.profile-settings-overview-main {
+    min-width: 0;
+}
+
+.profile-settings-overview-label {
+    color: #475569;
+    display: block;
+    font-size: .75rem;
+    font-weight: 950;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.profile-settings-overview-main strong {
+    color: var(--gov-ink);
+    display: block;
+    font-size: 1.55rem;
+    font-weight: 950;
+    line-height: 1.1;
+}
+
+.profile-settings-overview-main small {
+    color: #475569;
+    display: block;
+    font-weight: 750;
+    margin-top: 6px;
+}
+
+.profile-settings-overview-progress {
+    background: #dbe7ee;
+    border-radius: 999px;
+    height: 9px;
+    margin-top: 10px;
+    max-width: 420px;
+}
+
+.profile-settings-overview-progress .progress-bar {
+    border-radius: 999px;
+}
+
+.profile-settings-overview-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.profile-settings-overview-meta span {
+    background: #eef6f5;
+    border: 1px solid rgba(15, 118, 110, 0.24);
+    border-radius: 999px;
+    color: #102033;
+    font-size: .78rem;
+    font-weight: 900;
+    padding: 7px 10px;
+}
+
+.profile-settings-tabs {
+    background: #f8fafc;
+    border-bottom: 1px solid var(--gov-line);
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 0 0 12px;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.profile-settings-tabs .nav-link {
+    align-items: center;
+    border: 1px solid var(--gov-line-strong);
+    border-radius: 8px;
+    color: var(--gov-ink);
+    display: inline-flex;
+    font-weight: 900;
+    min-height: 42px;
+    padding: 9px 14px;
+}
+
+.profile-settings-tabs .nav-link.active {
+    background: var(--gov-blue) !important;
+    border-color: var(--gov-blue) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.profile-settings-form {
+    color: var(--gov-ink);
+}
+
+.profile-settings-form .form-row {
+    background: #ffffff;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    margin: 0 0 18px;
+    padding: 16px 14px 2px;
+}
+
+.profile-settings-form .form-group {
+    margin-bottom: 14px;
+}
+
+.profile-settings-form label {
+    color: #102033;
+    font-size: .82rem;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.profile-settings-modal .form-control,
+.profile-settings-modal .custom-select,
+.profile-settings-modal select,
+.profile-settings-modal textarea,
+.profile-settings-modal input[type="text"],
+.profile-settings-modal input[type="email"],
+.profile-settings-modal input[type="password"] {
+    background-color: #ffffff !important;
+    border-color: var(--gov-line-strong) !important;
+    border-radius: 8px !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    min-height: 42px;
+}
+
+.profile-settings-modal .form-control[readonly],
+.profile-settings-modal input[readonly] {
+    background-color: #eef3f8 !important;
+    color: #334155 !important;
+    -webkit-text-fill-color: #334155 !important;
+}
+
+.profile-settings-modal textarea.form-control {
+    min-height: 98px;
+    resize: vertical;
+}
+
+.profile-photo-upload {
+    align-items: center;
+    background: #f8fafc;
+    border: 1px dashed var(--gov-line-strong);
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    min-height: 78px;
+    padding: 10px;
+}
+
+.profile-photo-upload-preview {
+    flex: 0 0 auto;
+}
+
+.profile-photo-upload-preview img {
+    background: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 8px 20px rgba(15, 35, 54, 0.14);
+    display: block;
+    height: 56px;
+    object-fit: cover;
+    width: 56px;
+}
+
+.profile-photo-upload-control {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.profile-photo-upload-control .form-control-file {
+    color: #102033;
+    display: block;
+    font-weight: 800;
+    max-width: 100%;
+    width: 100%;
+}
+
+.profile-photo-upload-control small {
+    color: #475569;
+    display: block;
+    font-size: .78rem;
+    font-weight: 750;
+    line-height: 1.35;
+    margin-top: 6px;
+}
+
+.modal-form-footer {
+    align-items: center;
+    border-top: 1px solid var(--gov-line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    margin-top: 18px;
+    padding-top: 16px;
+}
+
+.profile-settings-form .modal-form-footer {
+    background: #ffffff;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    bottom: 0;
+    box-shadow: 0 -12px 26px rgba(15, 35, 54, 0.08);
+    margin-top: 20px;
+    padding: 14px 16px;
+    position: sticky;
+    z-index: 2;
+}
+
+.profile-side-card .card-header,
+.profile-side-card .card-body {
+    color: var(--gov-ink);
+}
+
+.profile-bio {
+    color: var(--gov-muted);
+    font-size: .96rem;
+    line-height: 1.55;
+}
+
+.profile-detail-list {
+    display: grid;
+    gap: 10px;
+}
+
+.profile-detail-list > div {
+    background: #f8fafc;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.profile-detail-list span {
+    color: var(--gov-muted);
+    display: block;
+    font-size: .76rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.profile-detail-list strong {
+    color: var(--gov-ink);
+    display: block;
+    font-size: .94rem;
+    overflow-wrap: anywhere;
+}
+
+.profile-form-section-title {
+    border-bottom: 1px solid var(--gov-line);
+    color: var(--gov-ink);
+    font-size: 1.02rem;
+    font-weight: 950;
+    margin: 22px 0 16px;
+    padding-bottom: 8px;
+}
+
+.profile-settings-form .profile-form-section-title {
+    align-items: center;
+    border-bottom: 0;
+    color: #102033;
+    display: flex;
+    gap: 8px;
+    margin: 20px 0 10px;
+    padding: 0;
+}
+
+.profile-settings-form .profile-form-section-title::before {
+    background: var(--gov-teal);
+    border-radius: 999px;
+    content: "";
+    display: inline-block;
+    flex: 0 0 auto;
+    height: 10px;
+    width: 10px;
+}
+
+.profile-form-section-title:first-child {
+    margin-top: 0;
+}
+
+.profile-settings-form .profile-form-section-title:first-child {
+    margin-top: 0;
+}
+
+.profile-privacy-options {
+    background: #f8fafc;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+}
+
+.profile-privacy-options .form-check {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding-left: 0;
+}
+
+.profile-privacy-options .form-check-input {
+    accent-color: var(--gov-blue);
+    appearance: auto;
+    -webkit-appearance: auto;
+    cursor: pointer;
+    flex: 0 0 16px;
+    height: 16px;
+    margin: 0;
+    position: static;
+    width: 16px;
+}
+
+.profile-privacy-options .form-check-label {
+    color: #102033;
+    cursor: pointer;
+    font-weight: 850;
+    line-height: 1.35;
+    margin: 0;
+    user-select: none;
+}
+
+.professional-profile-page textarea.form-control {
+    min-height: 92px;
+}
+
+@media (max-width: 768px) {
+    .profile-settings-dialog {
+        max-width: calc(100vw - 1rem) !important;
+        margin: 0.5rem auto;
+    }
+
+    .profile-settings-modal .modal-content {
+        max-height: calc(100vh - 1rem);
+    }
+
+    .profile-settings-modal .modal-header,
+    .profile-settings-body {
+        padding: 16px;
+    }
+
+    .profile-settings-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-settings-overview-meta {
+        justify-content: flex-start;
+    }
+
+    .profile-settings-tabs {
+        flex-wrap: nowrap;
+        margin-left: -16px;
+        margin-right: -16px;
+        overflow-x: auto;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .profile-settings-tabs .nav-item,
+    .profile-settings-tabs .nav-link {
+        flex: 0 0 auto;
+    }
+
+    .profile-settings-form .form-row {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .profile-photo-upload {
+        align-items: flex-start;
+    }
+
+    .profile-settings-form .modal-form-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .profile-settings-form .modal-form-footer .btn {
+        width: 100%;
+    }
+}
+
+.mailbox-page {
+    align-items: flex-start;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+}
+
+.ndoh-notification-menu {
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    box-shadow: 0 18px 42px rgba(14, 32, 49, 0.14);
+    max-height: min(70vh, 520px);
+    min-width: min(360px, calc(100vw - 28px));
+    overflow-y: auto;
+    padding: 0;
+}
+
+.ndoh-notification-menu .dropdown-header {
+    background: linear-gradient(135deg, var(--gov-blue) 0%, var(--gov-green) 100%);
+    color: #ffffff;
+    font-weight: 900;
+    padding: 10px 14px;
+}
+
+.ndoh-notification-menu .dropdown-header.ndoh-notification-subheader {
+    background: #f8fafc;
+    color: var(--gov-muted);
+    font-size: .76rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.ndoh-notification-item {
+    border-bottom: 1px solid var(--gov-line);
+    display: grid;
+    gap: 3px;
+    padding: 10px 14px;
+    white-space: normal;
+}
+
+.ndoh-notification-item.is-unread {
+    background: #eef5ff;
+}
+
+.ndoh-notification-item.is-unread strong::before {
+    background: var(--gov-blue);
+    border-radius: 999px;
+    content: "";
+    display: inline-block;
+    height: 8px;
+    margin-right: 7px;
+    width: 8px;
+}
+
+.ndoh-notification-item strong {
+    color: var(--gov-ink);
+    font-size: .92rem;
+}
+
+.ndoh-notification-item span {
+    color: var(--gov-muted);
+    font-size: .82rem;
+    line-height: 1.35;
+}
+
+.ndoh-notification-item em {
+    color: var(--gov-blue);
+    font-size: .78rem;
+    font-style: normal;
+    font-weight: 850;
+}
+
+.mailbox-sidebar {
+    position: sticky;
+    top: 84px;
+}
+
+.mailbox-folder-list {
+    display: grid;
+    gap: 4px;
+}
+
+.mailbox-folder-link {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--gov-ink);
+    display: flex;
+    font-weight: 850;
+    justify-content: space-between;
+    min-height: 38px;
+    padding: 8px 10px;
+    text-decoration: none;
+}
+
+.mailbox-folder-link:hover,
+.mailbox-folder-link:focus {
+    background: #eef4f7;
+    color: var(--gov-blue);
+    text-decoration: none;
+}
+
+.mailbox-folder-link.active {
+    background: #dbeafe;
+    border-color: rgba(37, 99, 235, 0.22);
+    color: var(--gov-blue);
+}
+
+.mailbox-folder-count {
+    background: #ffffff;
+    border: 1px solid var(--gov-line);
+    border-radius: 999px;
+    color: var(--gov-muted);
+    font-size: .78rem;
+    font-weight: 900;
+    min-width: 28px;
+    padding: 2px 7px;
+    text-align: center;
+}
+
+.mailbox-folder-link.active .mailbox-folder-count {
+    border-color: rgba(37, 99, 235, 0.3);
+    color: var(--gov-blue);
+}
+
+.mailbox-sidebar-summary {
+    border-top: 1px solid var(--gov-line);
+    padding-top: 12px;
+}
+
+.mailbox-sidebar-summary > div:not(.small) {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+
+.mailbox-content,
+.mailbox-thread-content {
+    min-width: 0;
+}
+
+.mailbox-content-header {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.mailbox-recipient-search .input-group {
+    max-width: 760px;
+}
+
+.mailbox-delivery-options {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mailbox-delivery-options .form-check {
+    align-items: center;
+    border: 1px solid var(--gov-line);
+    border-radius: 8px;
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    min-height: 42px;
+    padding: 8px 10px;
+}
+
+.mailbox-delivery-options .form-check-input {
+    appearance: auto;
+    margin: 0;
+    position: static;
+}
+
+.mailbox-delivery-options .form-check-label {
+    line-height: 1.25;
+    margin: 0;
+}
+
+.mailbox-table td {
+    vertical-align: middle;
+}
+
+.mailbox-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.mailbox-actions form,
+.mailbox-thread-actions form {
+    display: inline-block;
+    margin: 0;
+}
+
+.mailbox-thread-actions {
+    display: grid;
+    gap: 8px;
+}
+
+@media (max-width: 992px) {
+    .mailbox-page {
+        grid-template-columns: 1fr;
+    }
+
+    .mailbox-sidebar {
+        position: static;
+    }
+
+    .mailbox-delivery-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-hero-body {
+        display: block;
+        padding: 0 16px 20px;
+    }
+
+    .profile-avatar {
+        height: 124px;
+        width: 124px;
+    }
+
+    .profile-hero-main {
+        padding-top: 10px;
+    }
+
+    .profile-meta span {
+        width: 100%;
+    }
+}
+
 .btn {
     border-radius: 12px !important;
     font-weight: 850 !important;
@@ -468,35 +1403,262 @@ h1, h2, h3 {
 }
 
 .btn-primary,
-.btn-info {
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary:focus-visible,
+.btn-info,
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+.btn-info:focus-visible {
+    background: var(--gov-blue) !important;
+    border-color: var(--gov-blue) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28) !important;
+}
+
+.btn-success,
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success:focus-visible {
+    background: var(--gov-green) !important;
+    border-color: var(--gov-green) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28) !important;
+}
+
+.btn-warning,
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:active,
+.btn-warning:focus-visible {
+    background: var(--gov-gold) !important;
+    border-color: var(--gov-gold) !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+    text-shadow: none !important;
+}
+
+.btn-danger,
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active,
+.btn-danger:focus-visible {
+    background: var(--gov-red) !important;
+    border-color: var(--gov-red) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28) !important;
+}
+
+.btn-secondary,
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active,
+.btn-secondary:focus-visible {
+    background: var(--gov-navy-strong) !important;
+    border-color: var(--gov-navy-strong) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28) !important;
+}
+
+.auth-shell .btn-primary,
+.auth-shell .btn-primary:hover,
+.auth-shell .btn-primary:focus,
+.auth-shell .btn-primary:active,
+.auth-shell .btn-success,
+.auth-shell .btn-success:hover,
+.auth-shell .btn-success:focus,
+.auth-shell .btn-success:active,
+.auth-shell .btn-info,
+.auth-shell .btn-info:hover,
+.auth-shell .btn-info:focus,
+.auth-shell .btn-info:active,
+.auth-shell .btn-warning,
+.auth-shell .btn-warning:hover,
+.auth-shell .btn-warning:focus,
+.auth-shell .btn-warning:active,
+.auth-shell .btn-danger,
+.auth-shell .btn-danger:hover,
+.auth-shell .btn-danger:focus,
+.auth-shell .btn-danger:active,
+.auth-shell .btn-secondary,
+.auth-shell .btn-secondary:hover,
+.auth-shell .btn-secondary:focus,
+.auth-shell .btn-secondary:active,
+.auth-card .btn-primary,
+.auth-card .btn-primary:hover,
+.auth-card .btn-primary:focus,
+.auth-card .btn-primary:active,
+.auth-card .btn-success,
+.auth-card .btn-success:hover,
+.auth-card .btn-success:focus,
+.auth-card .btn-success:active,
+.auth-card .btn-info,
+.auth-card .btn-info:hover,
+.auth-card .btn-info:focus,
+.auth-card .btn-info:active,
+.auth-card .btn-warning,
+.auth-card .btn-warning:hover,
+.auth-card .btn-warning:focus,
+.auth-card .btn-warning:active,
+.auth-card .btn-danger,
+.auth-card .btn-danger:hover,
+.auth-card .btn-danger:focus,
+.auth-card .btn-danger:active,
+.auth-card .btn-secondary,
+.auth-card .btn-secondary:hover,
+.auth-card .btn-secondary:focus,
+.auth-card .btn-secondary:active,
+.verify-card .btn-primary,
+.verify-card .btn-primary:hover,
+.verify-card .btn-primary:focus,
+.verify-card .btn-primary:active,
+.verify-card .btn-success,
+.verify-card .btn-success:hover,
+.verify-card .btn-success:focus,
+.verify-card .btn-success:active,
+.verify-card .btn-info,
+.verify-card .btn-info:hover,
+.verify-card .btn-info:focus,
+.verify-card .btn-info:active,
+.verify-card .btn-warning,
+.verify-card .btn-warning:hover,
+.verify-card .btn-warning:focus,
+.verify-card .btn-warning:active,
+.verify-card .btn-danger,
+.verify-card .btn-danger:hover,
+.verify-card .btn-danger:focus,
+.verify-card .btn-danger:active,
+.verify-card .btn-secondary,
+.verify-card .btn-secondary:hover,
+.verify-card .btn-secondary:focus,
+.verify-card .btn-secondary:active,
+.data-collection-card .btn-primary,
+.data-collection-card .btn-primary:hover,
+.data-collection-card .btn-primary:focus,
+.data-collection-card .btn-primary:active,
+.data-collection-card .btn-success,
+.data-collection-card .btn-success:hover,
+.data-collection-card .btn-success:focus,
+.data-collection-card .btn-success:active,
+.data-collection-card .btn-info,
+.data-collection-card .btn-info:hover,
+.data-collection-card .btn-info:focus,
+.data-collection-card .btn-info:active,
+.data-collection-card .btn-warning,
+.data-collection-card .btn-warning:hover,
+.data-collection-card .btn-warning:focus,
+.data-collection-card .btn-warning:active,
+.data-collection-card .btn-danger,
+.data-collection-card .btn-danger:hover,
+.data-collection-card .btn-danger:focus,
+.data-collection-card .btn-danger:active,
+.data-collection-card .btn-secondary,
+.data-collection-card .btn-secondary:hover,
+.data-collection-card .btn-secondary:focus,
+.data-collection-card .btn-secondary:active,
+.card-shell .btn-primary,
+.card-shell .btn-primary:hover,
+.card-shell .btn-primary:focus,
+.card-shell .btn-primary:active,
+.card-shell .btn-success,
+.card-shell .btn-success:hover,
+.card-shell .btn-success:focus,
+.card-shell .btn-success:active,
+.card-shell .btn-info,
+.card-shell .btn-info:hover,
+.card-shell .btn-info:focus,
+.card-shell .btn-info:active,
+.card-shell .btn-warning,
+.card-shell .btn-warning:hover,
+.card-shell .btn-warning:focus,
+.card-shell .btn-warning:active,
+.card-shell .btn-danger,
+.card-shell .btn-danger:hover,
+.card-shell .btn-danger:focus,
+.card-shell .btn-danger:active,
+.card-shell .btn-secondary {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28) !important;
+}
+
+.btn-light,
+.btn-white,
+.btn-outline-primary,
+.btn-outline-info,
+.btn-outline-success,
+.btn-outline-secondary,
+.btn-outline-dark,
+.btn-outline-danger {
+    background: #ffffff !important;
+    border-color: var(--gov-line-strong) !important;
+    color: var(--gov-ink) !important;
+    -webkit-text-fill-color: var(--gov-ink) !important;
+    text-shadow: none !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active,
+.btn-outline-info:hover,
+.btn-outline-info:focus,
+.btn-outline-info:active,
+.btn-outline-success:hover,
+.btn-outline-success:focus,
+.btn-outline-success:active,
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
+.btn-outline-secondary:active,
+.btn-outline-dark:hover,
+.btn-outline-dark:focus,
+.btn-outline-dark:active,
+.btn-outline-danger:hover,
+.btn-outline-danger:focus,
+.btn-outline-danger:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active,
+.btn-outline-info:hover,
+.btn-outline-info:focus,
+.btn-outline-info:active {
     background: var(--gov-blue) !important;
     border-color: var(--gov-blue) !important;
 }
 
-.btn-success {
+.btn-outline-success:hover,
+.btn-outline-success:focus,
+.btn-outline-success:active {
     background: var(--gov-green) !important;
     border-color: var(--gov-green) !important;
 }
 
-.btn-warning {
-    background: var(--gov-gold) !important;
-    border-color: var(--gov-gold) !important;
-    color: #111827 !important;
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
+.btn-outline-secondary:active,
+.btn-outline-dark:hover,
+.btn-outline-dark:focus,
+.btn-outline-dark:active {
+    background: var(--gov-navy-strong) !important;
+    border-color: var(--gov-navy-strong) !important;
 }
 
-.btn-danger {
+.btn-outline-danger:hover,
+.btn-outline-danger:focus,
+.btn-outline-danger:active {
     background: var(--gov-red) !important;
     border-color: var(--gov-red) !important;
-}
-
-.btn-light,
-.btn-outline-primary,
-.btn-outline-success,
-.btn-outline-secondary,
-.btn-outline-dark {
-    background: #ffffff !important;
-    border-color: var(--gov-line-strong) !important;
-    color: var(--gov-ink) !important;
 }
 
 .form-control,
@@ -829,8 +1991,7 @@ code,
 .main-header .navbar-nav.ml-auto {
     gap: 0.25rem;
     max-width: calc(100vw - 72px);
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: visible;
     scrollbar-width: thin;
 }
 
@@ -1019,14 +2180,51 @@ textarea {
     background: rgba(255, 255, 255, 0.96);
     border: 1px solid var(--gov-line);
     border-radius: 999px;
-    bottom: 18px;
+    bottom: 92px;
     box-shadow: 0 16px 34px rgba(15, 35, 54, 0.18);
     display: flex;
     gap: 6px;
-    left: 18px;
+    left: auto;
+    max-width: calc(100vw - 32px);
     padding: 6px;
+    pointer-events: none;
     position: fixed;
-    z-index: 4100;
+    right: 24px;
+    touch-action: none;
+    user-select: none;
+    z-index: 4300;
+}
+
+.page-section-navigator.is-dragging {
+    box-shadow: 0 20px 42px rgba(15, 35, 54, 0.24);
+}
+
+.page-section-nav-drag {
+    align-items: center;
+    background: #eef4f7;
+    border: 1px dashed var(--gov-line-strong);
+    border-radius: 999px;
+    color: var(--gov-muted);
+    cursor: grab;
+    display: inline-flex;
+    justify-content: center;
+    min-height: 36px;
+    min-width: 32px;
+    padding: 8px 9px;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.page-section-nav-drag:active,
+.page-section-navigator.is-dragging .page-section-nav-drag {
+    cursor: grabbing;
+}
+
+.page-section-nav-drag:hover,
+.page-section-nav-drag:focus {
+    background: #e2ecef;
+    color: var(--gov-ink);
+    outline: none;
 }
 
 .page-section-navigator.is-hidden {
@@ -1047,6 +2245,7 @@ textarea {
     min-height: 36px;
     min-width: 42px;
     padding: 8px 10px;
+    pointer-events: auto;
     text-decoration: none;
 }
 
@@ -1067,26 +2266,35 @@ textarea {
 
 @media (min-width: 992px) {
     body.app-shell .page-section-navigator {
-        left: calc(var(--ndoh-fixed-sidebar-width, 250px) + 18px);
+        left: auto;
+        right: 24px;
     }
 
     body.app-shell.sidebar-collapse .page-section-navigator,
     body.app-shell.ndoh-sidebar-collapsed .page-section-navigator {
-        left: 18px;
+        left: auto;
+        right: 24px;
     }
 }
 
 @media (max-width: 576px) {
     .page-section-navigator {
-        bottom: 12px;
+        bottom: 84px;
         gap: 4px;
-        left: 12px;
+        left: auto;
         padding: 5px;
+        right: 12px;
     }
 
     .page-section-nav-button {
         min-height: 34px;
         min-width: 36px;
+        padding: 7px 8px;
+    }
+
+    .page-section-nav-drag {
+        min-height: 34px;
+        min-width: 30px;
         padding: 7px 8px;
     }
 
@@ -1124,10 +2332,47 @@ textarea {
 }
 
 @media (max-width: 991.98px) {
+    body.app-shell .app-wrapper {
+        display: block !important;
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    body.app-shell .main-header,
+    body.app-shell .content-wrapper,
+    body.app-shell .main-footer {
+        grid-column: auto !important;
+        margin-left: 0 !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+    }
+
     body.app-shell .app-sidebar,
     body.app-shell .main-sidebar {
+        bottom: 0 !important;
+        left: 0 !important;
+        position: fixed !important;
+        top: 0 !important;
+        transform: translateX(-105%) !important;
+        transition: transform 180ms ease, box-shadow 180ms ease !important;
+        pointer-events: none;
         width: min(84vw, 320px) !important;
         max-width: 320px !important;
+        z-index: 1045;
+    }
+
+    body.app-shell.sidebar-open .app-sidebar,
+    body.app-shell.sidebar-open .main-sidebar {
+        box-shadow: 14px 0 36px rgba(15, 35, 54, 0.26) !important;
+        pointer-events: auto;
+        transform: translateX(0) !important;
+    }
+
+    body.app-shell.sidebar-collapse .app-sidebar,
+    body.app-shell.sidebar-collapse .main-sidebar,
+    body.app-shell.ndoh-sidebar-collapsed .app-sidebar,
+    body.app-shell.ndoh-sidebar-collapsed .main-sidebar {
+        transform: translateX(-105%) !important;
     }
 
     body.app-shell .main-sidebar .sidebar {
@@ -1157,10 +2402,14 @@ textarea {
 
     .content > .container-fluid {
         padding: 14px 16px 30px !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        width: 100% !important;
     }
 
     .page-toolbar {
         align-items: stretch;
+        flex-wrap: wrap;
     }
 }
 
@@ -1517,6 +2766,499 @@ body.app-shell .content-wrapper .modal-header.bg-warning * {
 }
 
 /*
+ * PNG Health Registries visual refresh.
+ * Matches the supplied government dashboard references: navy command shell,
+ * teal/green operational surfaces, gold emphasis, dense cards, and clear tables.
+ */
+:root {
+    --hm-navy-950: #052b5c;
+    --hm-navy-900: #0b3a73;
+    --hm-navy-800: #163a63;
+    --hm-teal-800: #0f5e5a;
+    --hm-teal-700: #0f756f;
+    --hm-green-700: #1f6b57;
+    --hm-gold-600: #c89a2b;
+    --hm-sky-100: #e9f1f7;
+    --hm-mist-50: #f4f6f8;
+    --hm-line: #d8e2ea;
+    --hm-text: #13293f;
+    --hm-muted: #5b6b7a;
+    --hm-shadow: 0 14px 34px rgba(10, 34, 56, 0.10);
+    --hm-shadow-strong: 0 20px 50px rgba(10, 34, 56, 0.16);
+}
+
+body.app-shell .main-sidebar {
+    background:
+        linear-gradient(180deg, #052b5c 0%, #0b3a73 52%, #0f5e5a 100%) !important;
+    box-shadow: 10px 0 30px rgba(5, 43, 92, 0.18) !important;
+}
+
+body.app-shell .brand-link {
+    min-height: 76px;
+    padding: 13px 14px !important;
+}
+
+body.app-shell .brand-link .brand-image {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 13px !important;
+    height: 46px !important;
+    padding: 5px;
+    width: 46px !important;
+}
+
+body.app-shell .brand-link .brand-text {
+    color: #ffffff !important;
+    font-size: .94rem !important;
+    line-height: 1.15;
+    white-space: normal;
+}
+
+body.app-shell .nav-sidebar {
+    padding-top: 8px;
+}
+
+body.app-shell .nav-sidebar .nav-link {
+    border-left: 4px solid transparent;
+    border-radius: 10px !important;
+    margin: 3px 10px !important;
+    min-height: 42px;
+    padding: 10px 13px !important;
+}
+
+body.app-shell .nav-sidebar .nav-link.active {
+    background: rgba(31, 107, 87, 0.88) !important;
+    border-left-color: var(--hm-gold-600);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+body.app-shell .nav-sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.13) !important;
+    transform: translateX(2px);
+}
+
+body.app-shell .main-header {
+    min-height: 64px;
+    background: rgba(255, 255, 255, 0.97) !important;
+    box-shadow: 0 8px 26px rgba(10, 34, 56, 0.08) !important;
+}
+
+body.app-shell .navbar-search {
+    flex: 1 1 auto;
+    max-width: 660px;
+    padding-left: 16px;
+}
+
+body.app-shell .navbar-search .input-group {
+    background: #ffffff;
+    border: 1px solid var(--hm-line);
+    border-radius: 8px;
+    box-shadow: 0 6px 14px rgba(10, 34, 56, 0.04);
+    overflow: hidden;
+}
+
+body.app-shell .navbar-search .form-control,
+body.app-shell .navbar-search .btn {
+    border: 0 !important;
+    border-radius: 0 !important;
+    min-height: 38px;
+}
+
+.navbar-user-chip {
+    background: #f1f6fa;
+    border: 1px solid var(--hm-line);
+    border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(10, 34, 56, 0.06);
+    padding: 5px 11px 5px 5px;
+}
+
+.navbar-user-chip img {
+    border: 2px solid #ffffff;
+}
+
+body.app-shell .content-wrapper {
+    position: relative;
+    background:
+        radial-gradient(circle at 82% 7%, rgba(15, 117, 111, 0.10), transparent 27%),
+        linear-gradient(180deg, #f8fbfd 0%, #eef3f6 100%) !important;
+}
+
+body.app-shell .content-wrapper::before {
+    background-image: url("/static/img/National_emblem_of_Papua_New_Guinea_(variant).svg.png");
+    background-position: top right;
+    background-repeat: no-repeat;
+    background-size: contain;
+    content: "";
+    height: min(520px, 58vh);
+    opacity: .055;
+    pointer-events: none;
+    position: absolute;
+    right: 28px;
+    top: 88px;
+    width: min(520px, 42vw);
+    z-index: 0;
+}
+
+body.app-shell .content-wrapper > * {
+    position: relative;
+    z-index: 1;
+}
+
+.content-header.ndoh-platform-header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(203, 213, 225, 0.75) !important;
+    min-height: 148px !important;
+}
+
+.content-header.ndoh-platform-header::before {
+    display: none !important;
+}
+
+.content-header.ndoh-platform-header::after {
+    background-image: url("/static/img/National_emblem_of_Papua_New_Guinea_(variant).svg.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    content: "";
+    filter: drop-shadow(0 10px 18px rgba(15, 38, 56, 0.14));
+    height: 76px;
+    opacity: .32;
+    pointer-events: none;
+    position: absolute;
+    right: 22px;
+    top: 10px;
+    transition: width .22s ease, height .22s ease, opacity .22s ease, top .22s ease;
+    width: 76px;
+    z-index: 2;
+}
+
+.content-header.ndoh-platform-header h1 {
+    color: var(--hm-text) !important;
+    font-size: clamp(1.75rem, 3.1vw, 2.65rem) !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.02em;
+    -webkit-text-fill-color: var(--hm-text) !important;
+}
+
+body.app-shell .content-wrapper .content-header.ndoh-platform-header,
+body.app-shell .content-wrapper .content-header.ndoh-platform-header .container-fluid {
+    color: var(--hm-text) !important;
+    -webkit-text-fill-color: var(--hm-text) !important;
+}
+
+body.app-shell .content-wrapper .content-header.ndoh-platform-header .text-muted {
+    color: var(--hm-muted) !important;
+    -webkit-text-fill-color: var(--hm-muted) !important;
+    opacity: 1 !important;
+}
+
+.gov-dashboard-shell,
+.medical-form-shell,
+.nursing-portal,
+.nurse-shell,
+.chw-shell,
+.doctor-shell,
+.student-shell {
+    color: var(--hm-text);
+}
+
+.gov-dashboard-intro {
+    align-items: center;
+    background:
+        linear-gradient(135deg, #ffffff 0%, #f3f8fb 100%);
+    border: 1px solid var(--hm-line);
+    border-left: 6px solid var(--hm-teal-700);
+    border-radius: 8px;
+    box-shadow: var(--hm-shadow);
+    display: flex;
+    gap: 18px;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding: 17px 20px;
+}
+
+.gov-dashboard-intro h2 {
+    color: var(--hm-text) !important;
+    font-size: 1.15rem !important;
+    font-weight: 950 !important;
+    margin: 0 0 3px;
+}
+
+.gov-dashboard-intro p {
+    color: var(--hm-muted) !important;
+    margin: 0;
+}
+
+.gov-entity-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.gov-entity-pills span,
+.gov-chip {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid var(--hm-line);
+    border-radius: 999px;
+    color: var(--hm-text);
+    display: inline-flex;
+    font-size: .8rem;
+    font-weight: 900;
+    gap: 6px;
+    padding: 7px 10px;
+}
+
+.gov-dashboard-shell > .row.g-4:first-of-type,
+.hm-metric-grid {
+    row-gap: 16px;
+}
+
+.gov-dashboard-shell > .row.g-4:first-of-type .card,
+.hm-metric-card {
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: var(--hm-shadow) !important;
+    min-height: 126px;
+    overflow: hidden;
+}
+
+.gov-dashboard-shell > .row.g-4:first-of-type .card .card-body,
+.hm-metric-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 126px;
+    padding: 20px !important;
+    position: relative;
+}
+
+.gov-dashboard-shell > .row.g-4:first-of-type .card .card-body::after,
+.hm-metric-card .card-body::after {
+    bottom: 16px;
+    color: rgba(255, 255, 255, 0.27);
+    content: "\f1c0";
+    font-family: "Font Awesome 6 Free";
+    font-size: 2.2rem;
+    font-weight: 900;
+    position: absolute;
+    right: 18px;
+}
+
+.gov-dashboard-shell > .row.g-4:first-of-type .card.bg-success .card-body::after { content: "\f0f0"; }
+.gov-dashboard-shell > .row.g-4:first-of-type .card.bg-info .card-body::after { content: "\f0fa"; }
+.gov-dashboard-shell > .row.g-4:first-of-type .card.bg-warning .card-body::after { content: "\f19d"; color: rgba(17, 24, 39, 0.22); }
+.gov-dashboard-shell > .row.g-4:first-of-type .card.bg-danger .card-body::after { content: "\f071"; }
+.gov-dashboard-shell > .row.g-4:first-of-type .card.bg-dark .card-body::after,
+.gov-dashboard-shell > .row.g-4:first-of-type .card.bg-secondary .card-body::after { content: "\f1ad"; }
+
+.gov-dashboard-shell > .row.g-4:first-of-type .card h5,
+.hm-metric-card h5 {
+    clear: both;
+    display: block;
+    float: none !important;
+    font-size: .88rem !important;
+    font-weight: 900 !important;
+    line-height: 1.25;
+    margin: 0;
+    max-width: calc(100% - 42px);
+    min-height: 2.25em;
+    position: relative;
+    z-index: 1;
+}
+
+.gov-dashboard-shell > .row.g-4:first-of-type .card h3,
+.hm-metric-card h3 {
+    clear: both;
+    display: block;
+    font-size: clamp(2rem, 3vw, 2.8rem) !important;
+    font-weight: 950 !important;
+    line-height: 1;
+    margin: 14px 0 0;
+    position: relative;
+    z-index: 1;
+}
+
+.gov-search-panel {
+    background: #ffffff;
+    border: 1px solid var(--hm-line);
+    border-radius: 8px;
+    box-shadow: var(--hm-shadow);
+    margin-top: 18px;
+    padding: 14px;
+}
+
+.gov-search-panel .form-control,
+.gov-search-panel .custom-select,
+.gov-search-panel select {
+    min-height: 42px;
+}
+
+.card,
+.table-card,
+.official-info-card,
+.portal-card,
+.auth-card,
+.verify-card,
+.medical-form-card,
+.mb-panel {
+    border-radius: 8px !important;
+    box-shadow: var(--hm-shadow) !important;
+}
+
+.card-header {
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.table thead th,
+.dataTable thead th {
+    background: #e9f1f7 !important;
+    color: var(--hm-text) !important;
+    font-size: .88rem;
+    letter-spacing: 0;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button,
+.pagination .page-link {
+    border-radius: 7px !important;
+}
+
+.nav-tabs .nav-link,
+.nav-pills .nav-link {
+    border-radius: 7px 7px 0 0 !important;
+    color: var(--hm-text) !important;
+    font-weight: 850;
+}
+
+.nav-tabs .nav-link.active,
+.nav-pills .nav-link.active {
+    background: #ffffff !important;
+    border-bottom: 3px solid var(--hm-navy-900) !important;
+    color: var(--hm-navy-900) !important;
+}
+
+/*
+ * Profile settings tab contrast.
+ * The generic nav-pills active rule above uses a white active tab; reset
+ * -webkit-text-fill-color too so Chrome does not keep an earlier white fill.
+ */
+.profile-settings-tabs .nav-link,
+.profile-settings-tabs .nav-link :where(i, span) {
+    color: #102033 !important;
+    -webkit-text-fill-color: #102033 !important;
+    text-shadow: none !important;
+}
+
+.profile-settings-tabs .nav-link.active,
+.profile-settings-tabs .nav-link.active :where(i, span) {
+    background: #ffffff !important;
+    border-color: var(--gov-line-strong) !important;
+    border-bottom: 3px solid #0f3f73 !important;
+    color: #0f2538 !important;
+    -webkit-text-fill-color: #0f2538 !important;
+    text-shadow: none !important;
+}
+
+.medical-form-hero,
+.mb-hero,
+.portal-header,
+.nc-hero,
+.hero {
+    background:
+        linear-gradient(135deg, rgba(5, 43, 92, 0.97) 0%, rgba(15, 94, 90, 0.96) 100%) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--hm-shadow-strong) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.medical-form-hero::after,
+.mb-hero::after,
+.portal-header::after,
+.nc-hero::after,
+.hero::after {
+    background-image: url("/static/img/National_emblem_of_Papua_New_Guinea_(variant).svg.png");
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    bottom: 14px;
+    content: "";
+    opacity: .12;
+    pointer-events: none;
+    position: absolute;
+    right: 18px;
+    top: 14px;
+    width: min(220px, 28vw);
+}
+
+.medical-board-form-link,
+.mb-action,
+.nursing-shortcut-link,
+.operation-guide-card {
+    border-radius: 8px !important;
+    box-shadow: 0 8px 20px rgba(10, 34, 56, 0.06);
+}
+
+@media (max-width: 991.98px) {
+    .gov-dashboard-intro {
+        align-items: flex-start;
+        display: block;
+    }
+
+    .gov-entity-pills {
+        justify-content: flex-start;
+        margin-top: 12px;
+    }
+
+    .platform-standards-badges {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .content-header.ndoh-platform-header {
+        min-height: 124px;
+    }
+
+    .content-header.ndoh-platform-header::after {
+        height: 52px;
+        opacity: .34;
+        right: 12px;
+        top: 8px;
+        width: 52px;
+    }
+
+    body.app-shell .content-wrapper::before {
+        height: 220px;
+        opacity: .04;
+        right: 8px;
+        top: 96px;
+        width: 220px;
+    }
+
+    .gov-dashboard-shell > .row.g-4:first-of-type .card,
+    .hm-metric-card {
+        min-height: 112px;
+    }
+
+    .gov-dashboard-shell > .row.g-4:first-of-type .card .card-body,
+    .hm-metric-card .card-body {
+        min-height: 112px;
+        padding: 16px !important;
+    }
+
+    .medical-form-hero::after,
+    .mb-hero::after,
+    .portal-header::after,
+    .nc-hero::after,
+    .hero::after {
+        opacity: .08;
+        width: 150px;
+    }
+}
+
+/*
  * Dark hero/banner text override.
  * Keep custom dashboard hero sections readable, including selected text, while
  * leaving buttons inside those heroes with their proper button colors.
@@ -1534,6 +3276,7 @@ body.app-shell .content-wrapper .card.bg-dark,
 body.app-shell .content-wrapper .card.bg-secondary,
 body.app-shell .content-wrapper .card.bg-danger {
     color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }
 
 body.app-shell .content-wrapper .mb-hero h1,
@@ -1623,6 +3366,7 @@ body.app-shell .content-wrapper .card.bg-danger p,
 body.app-shell .content-wrapper .card.bg-danger span:not(.badge) {
     color: #ffffff !important;
     opacity: 1 !important;
+    -webkit-text-fill-color: #ffffff !important;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
 }
 
@@ -1643,6 +3387,109 @@ body.app-shell .content-wrapper .card.bg-danger ::selection {
     text-shadow: none !important;
 }
 
+/*
+ * NHWA toolkit contrast guard.
+ * The toolkit renders spreadsheet colours and a dark hero after page-specific
+ * CSS, while shared table/body guards force normal ink with !important. Keep
+ * the operational copy readable and preserve white text on dark workbook rows.
+ */
+body.app-shell .content-wrapper .nhwa-toolkit-page,
+body.app-shell .content-wrapper .nhwa-toolkit-page :where(
+    .nhwa-section,
+    .nhwa-section-body,
+    .nhwa-alignment-card,
+    .nhwa-source-card,
+    .nhwa-slide-card,
+    .nhwa-gate-list li,
+    .nhwa-metric-pill,
+    .nhwa-workbook-table td
+) {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    text-shadow: none !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page :where(
+    .nhwa-section-heading h3,
+    .nhwa-alignment-card h4,
+    .nhwa-source-card h4,
+    .nhwa-slide-card h4,
+    .nhwa-metric-pill strong
+) {
+    color: #102b45 !important;
+    -webkit-text-fill-color: #102b45 !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page :where(
+    .nhwa-section-heading p,
+    .nhwa-workbook-meta,
+    .nhwa-metric-pill span
+) {
+    color: #40556b !important;
+    -webkit-text-fill-color: #40556b !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page :where(
+    .nhwa-alignment-card .module,
+    .nhwa-source-card .meta,
+    .nhwa-slide-card .meta,
+    .nhwa-slide-card summary
+) {
+    color: #0f766e !important;
+    -webkit-text-fill-color: #0f766e !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-hero,
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-hero :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span:not(.nhwa-access-badge),
+    strong,
+    small,
+    i
+) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-access-badge,
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-access-badge * {
+    color: #12304a !important;
+    -webkit-text-fill-color: #12304a !important;
+    text-shadow: none !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-tabs .nav-link {
+    color: #12304a !important;
+    -webkit-text-fill-color: #12304a !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-tabs .nav-link.active,
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-tabs .nav-link.active * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-workbook-table thead th,
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-workbook-table .sheet-section-row td {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28) !important;
+}
+
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-workbook-table .row-number,
+body.app-shell .content-wrapper .nhwa-toolkit-page .nhwa-workbook-table .formula-cell {
+    color: #334155 !important;
+    -webkit-text-fill-color: #334155 !important;
+    text-shadow: none !important;
+}
+
 body.app-shell .staff-alert-toast .toast-header,
 body.app-shell .staff-alert-toast .toast-header * {
     color: #ffffff !important;
@@ -1657,17 +3504,23 @@ body.app-shell .staff-alert-toast .toast-header ::selection {
 }
 
 .platform-standards-bar {
-    align-items: center;
+    align-items: flex-start;
     background: #ffffff;
     border: 1px solid var(--gov-line);
     border-left: 6px solid var(--gov-green);
     border-radius: 10px;
     box-shadow: var(--gov-shadow-soft);
     display: flex;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 10px 16px;
     justify-content: space-between;
     margin: 0 0 16px;
-    padding: 14px 16px;
+    padding: 12px 14px;
+}
+
+.platform-standards-bar > div:first-child {
+    flex: 1 1 360px;
+    min-width: min(100%, 280px);
 }
 
 .platform-standards-title {
@@ -1688,6 +3541,16 @@ body.app-shell .staff-alert-toast .toast-header ::selection {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+.platform-standards-badges {
+    flex: 2 1 520px;
+    justify-content: flex-end;
+}
+
+.platform-standards-bar > .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .platform-standard-badge {
@@ -1873,8 +3736,16 @@ body.app-shell .staff-alert-toast .toast-header ::selection {
         flex-direction: column;
     }
 
+    .platform-standards-bar > div:first-child {
+        flex: 0 1 auto;
+        min-width: 0;
+        width: 100%;
+    }
+
     .platform-standards-badges {
+        flex: 0 1 auto;
         justify-content: flex-start;
+        width: 100%;
     }
 }
 
@@ -1941,4 +3812,506 @@ body.app-shell .content-wrapper .contact-card-header :where(.card-title, h1, h2,
     -webkit-text-fill-color: #071827 !important;
     opacity: 1 !important;
     text-shadow: none !important;
+}
+
+/*
+ * Dark surface contrast guard.
+ * Keep metric cards and dark dashboard panels readable even when Bootstrap or
+ * generic content rules try to push body ink colors into nested text.
+ */
+body.app-shell .content-wrapper :where(
+    .small-box.bg-primary,
+    .small-box.bg-success,
+    .small-box.bg-info,
+    .small-box.bg-dark,
+    .small-box.bg-secondary,
+    .small-box.bg-danger,
+    .card.bg-primary,
+    .card.bg-success,
+    .card.bg-info,
+    .card.bg-dark,
+    .card.bg-secondary,
+    .card.bg-danger,
+    .bg-primary:not(.badge):not(.btn):not(.alert),
+    .bg-success:not(.badge):not(.btn):not(.alert),
+    .bg-info:not(.badge):not(.btn):not(.alert),
+    .bg-dark:not(.badge):not(.btn):not(.alert),
+    .bg-secondary:not(.badge):not(.btn):not(.alert),
+    .bg-danger:not(.badge):not(.btn):not(.alert)
+) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+body.app-shell .content-wrapper :where(
+    .small-box.bg-primary,
+    .small-box.bg-success,
+    .small-box.bg-info,
+    .small-box.bg-dark,
+    .small-box.bg-secondary,
+    .small-box.bg-danger,
+    .card.bg-primary,
+    .card.bg-success,
+    .card.bg-info,
+    .card.bg-dark,
+    .card.bg-secondary,
+    .card.bg-danger,
+    .bg-primary:not(.badge):not(.btn):not(.alert),
+    .bg-success:not(.badge):not(.btn):not(.alert),
+    .bg-info:not(.badge):not(.btn):not(.alert),
+    .bg-dark:not(.badge):not(.btn):not(.alert),
+    .bg-secondary:not(.badge):not(.btn):not(.alert),
+    .bg-danger:not(.badge):not(.btn):not(.alert)
+) :where(h1, h2, h3, h4, h5, h6, p, div, span, strong, small, i, a):not(.badge):not(.btn):not(.navbar-badge):not(.page-section-nav-button) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+body.app-shell .content-wrapper :where(
+    .small-box.bg-primary,
+    .small-box.bg-success,
+    .small-box.bg-info,
+    .small-box.bg-dark,
+    .small-box.bg-secondary,
+    .small-box.bg-danger,
+    .card.bg-primary,
+    .card.bg-success,
+    .card.bg-info,
+    .card.bg-dark,
+    .card.bg-secondary,
+    .card.bg-danger
+) :where(.text-muted, .text-secondary, small) {
+    color: rgba(255, 255, 255, 0.84) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.84) !important;
+}
+
+body.app-shell .content-wrapper .small-box :where(.icon, .icon i) {
+    color: rgba(255, 255, 255, 0.72) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+body.app-shell .content-wrapper :where(
+    .small-box.bg-primary,
+    .small-box.bg-success,
+    .small-box.bg-info,
+    .small-box.bg-dark,
+    .small-box.bg-secondary,
+    .small-box.bg-danger,
+    .card.bg-primary,
+    .card.bg-success,
+    .card.bg-info,
+    .card.bg-dark,
+    .card.bg-secondary,
+    .card.bg-danger
+) :where(.badge, .btn) {
+    -webkit-text-fill-color: currentColor !important;
+}
+
+/*
+ * Public registration header contrast guard.
+ * Public pages do not use `body.app-shell`, so keep form section headers light
+ * when they use AdminLTE outline/gradient headers.
+ */
+body.public-body .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white),
+body.public-body .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+body.public-body .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge),
+body.public-body .content-wrapper .table-card > .card-header:first-child:not(.bg-light):not(.bg-white) :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.36) !important;
+}
+
+/*
+ * Overall dashboard licence records header.
+ * This header uses the dark card-outline gradient, so keep all descriptive
+ * copy white even when generic Bootstrap/card-header guards run later.
+ */
+body.app-shell .content-wrapper #dashboard-license-records .dashboard-license-records-header,
+body.app-shell .content-wrapper #dashboard-license-records .dashboard-license-records-header :where(.card-title, h1, h2, h3, h4, h5, h6, p, span, strong, small, i):not(.badge):not(.btn):not(.navbar-badge) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.36) !important;
+}
+
+body.app-shell .content-wrapper #dashboard-license-records .dashboard-license-records-header ::selection {
+    background: rgba(37, 99, 235, 0.78);
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+}
+
+/*
+ * Engagement and review contrast guard.
+ * Forum, FAQ, and review pages use dark teal/navy surfaces while generic
+ * `.text-muted`, `.small`, and body-copy rules are also loaded globally. Keep
+ * all descriptive text readable on those dark surfaces.
+ */
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white),
+body.public-body .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) :where(.card-title, h1, h2, h3, h4, h5, h6, p, div, span, strong, small, .small, .text-muted, i):not(.badge):not(.btn):not(.btn *):not(.navbar-badge),
+body.public-body .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) :where(.card-title, h1, h2, h3, h4, h5, h6, p, div, span, strong, small, .small, .text-muted, i):not(.badge):not(.btn):not(.btn *):not(.navbar-badge) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.36) !important;
+}
+
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) .btn,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) .btn *,
+body.public-body .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) .btn,
+body.public-body .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) .btn * {
+    -webkit-text-fill-color: currentColor !important;
+    text-shadow: none !important;
+}
+
+body.app-shell .content-wrapper .review-centre-hero,
+body.app-shell .content-wrapper .review-centre-hero :where(h1, h2, h3, h4, h5, h6, p, label, div, span, strong, small, .small):not(.btn):not(.form-control):not(option) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.38) !important;
+}
+
+body.app-shell .content-wrapper .review-centre-hero .form-control,
+body.app-shell .content-wrapper .review-centre-hero .btn-light,
+body.app-shell .content-wrapper .review-centre-hero .btn-light * {
+    color: #071827 !important;
+    -webkit-text-fill-color: #071827 !important;
+    text-shadow: none !important;
+}
+
+body.app-shell .content-wrapper .review-centre-hero ::selection,
+body.app-shell .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) ::selection,
+body.public-body .content-wrapper .card.card-outline > .card-header:first-child:not(.bg-light):not(.bg-white) ::selection {
+    background: #dbeafe !important;
+    color: #071827 !important;
+    -webkit-text-fill-color: #071827 !important;
+    text-shadow: none !important;
+}
+
+.platform-standard-badge {
+    -webkit-text-fill-color: currentColor !important;
+    text-shadow: none !important;
+}
+
+.platform-standard-badge * {
+    color: inherit !important;
+    -webkit-text-fill-color: currentColor !important;
+}
+
+.platform-standard-badge.badge-primary {
+    background: #eaf3ff !important;
+    border-color: #9cc1df !important;
+    color: #0a3a68 !important;
+}
+
+.platform-standard-badge.badge-success {
+    background: #0f6b57 !important;
+    border-color: #0f6b57 !important;
+    color: #ffffff !important;
+}
+
+.platform-standard-badge.badge-info {
+    background: #0b6f95 !important;
+    border-color: #0b6f95 !important;
+    color: #ffffff !important;
+}
+
+.platform-standard-badge.badge-warning {
+    background: #f59e0b !important;
+    border-color: #d97706 !important;
+    color: #071827 !important;
+}
+
+.platform-standard-badge.badge-danger {
+    background: #b91c1c !important;
+    border-color: #991b1b !important;
+    color: #ffffff !important;
+}
+
+/*
+ * Narrow practitioner screens need content-first behavior. Hide the section
+ * jump control and keep the assistant as a compact icon so fixed controls do
+ * not cover primary form/dashboard actions.
+ */
+@media (max-width: 767.98px) {
+    .page-section-navigator {
+        display: none !important;
+    }
+
+    .helpdesk-launcher {
+        display: none !important;
+    }
+}
+
+/*
+ * System administration command centre contrast.
+ * The admin command-centre uses white operational panels rather than dark
+ * Bootstrap cards, so keep its text on the normal government ink palette even
+ * after the platform-wide dark-surface guardrails have run.
+ */
+body.app-shell .content-wrapper .admin-command-centre,
+body.app-shell .content-wrapper .admin-command-centre :where(
+    .admin-hero,
+    .admin-status-panel,
+    .admin-section,
+    .admin-priority-item,
+    .admin-metric-card,
+    .admin-board-row,
+    .admin-command-row,
+    .admin-standard-row,
+    .admin-chart-card,
+    .admin-mini-stat,
+    .admin-table,
+    .admin-table th,
+    .admin-table td
+) {
+    color: #102033 !important;
+    -webkit-text-fill-color: #102033 !important;
+    text-shadow: none !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    div,
+    span,
+    strong,
+    small,
+    td,
+    th,
+    li
+):not(.admin-badge):not(.admin-chip):not(.admin-op-button):not(.admin-action-link) {
+    color: inherit !important;
+    -webkit-text-fill-color: inherit !important;
+    text-shadow: none !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-kicker {
+    color: #0f766e !important;
+    -webkit-text-fill-color: #0f766e !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre :where(
+    .admin-section-subtitle,
+    .admin-priority-detail,
+    .admin-metric-detail,
+    .admin-board-scope,
+    .admin-command-detail,
+    .admin-standard-detail,
+    .admin-command-meta,
+    .admin-mini-stat span
+) {
+    color: #5b6a7c !important;
+    -webkit-text-fill-color: #5b6a7c !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-action-link {
+    color: #102033 !important;
+    -webkit-text-fill-color: #102033 !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-op-button {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-badge-success,
+body.app-shell .content-wrapper .admin-command-centre .admin-chip-success {
+    color: #0f5132 !important;
+    -webkit-text-fill-color: #0f5132 !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-badge-warning,
+body.app-shell .content-wrapper .admin-command-centre .admin-chip-warning {
+    color: #7a4b00 !important;
+    -webkit-text-fill-color: #7a4b00 !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-badge-danger,
+body.app-shell .content-wrapper .admin-command-centre .admin-chip-danger {
+    color: #842029 !important;
+    -webkit-text-fill-color: #842029 !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-badge-info,
+body.app-shell .content-wrapper .admin-command-centre .admin-chip-info {
+    color: #164866 !important;
+    -webkit-text-fill-color: #164866 !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre :where(.admin-badge-neutral, .admin-chip-neutral, .admin-chip-dark, .admin-chip-primary) {
+    color: #263445 !important;
+    -webkit-text-fill-color: #263445 !important;
+}
+
+/*
+ * Nursing Council Board sign-in contrast guard.
+ * The board sign-in page loads this shared stylesheet after its template CSS,
+ * so keep final page-specific rules here as well. Chrome can preserve an
+ * earlier -webkit text fill, which is why every text group sets both color and
+ * -webkit-text-fill-color.
+ */
+body.board-auth-page {
+    color: #102033 !important;
+    -webkit-text-fill-color: #102033 !important;
+}
+
+body.board-auth-page .board-auth-panel,
+body.board-auth-page .board-auth-panel :where(h1, h2, h3, h4, h5, h6, p, span, strong, small, li, div) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-shadow: none !important;
+}
+
+body.board-auth-page .board-auth-panel .board-governance-list i {
+    color: #f4c95d !important;
+    -webkit-text-fill-color: #f4c95d !important;
+}
+
+body.board-auth-page .board-auth-form,
+body.board-auth-page .board-auth-form :where(h1, h2, h3, h4, h5, h6, label, p, span, strong, small, div) {
+    color: #102033 !important;
+    -webkit-text-fill-color: #102033 !important;
+    text-shadow: none !important;
+}
+
+body.board-auth-page .board-auth-form .text-muted,
+body.board-auth-page .board-access-note {
+    color: #334155 !important;
+    -webkit-text-fill-color: #334155 !important;
+    opacity: 1 !important;
+}
+
+body.board-auth-page .portal-pill,
+body.board-auth-page .portal-pill :where(i, span) {
+    color: #17443b !important;
+    -webkit-text-fill-color: #17443b !important;
+}
+
+body.board-auth-page .form-control,
+body.board-auth-page .form-control::placeholder {
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+    opacity: 1 !important;
+}
+
+body.board-auth-page a.field-note {
+    color: #164866 !important;
+    -webkit-text-fill-color: #164866 !important;
+}
+
+body.board-auth-page .btn-board-primary,
+body.board-auth-page .btn-board-primary:hover,
+body.board-auth-page .btn-board-primary:focus,
+body.board-auth-page .btn-board-primary:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+body.board-auth-page .btn-outline-board {
+    color: #102033 !important;
+    -webkit-text-fill-color: #102033 !important;
+}
+
+body.board-auth-page .btn-outline-board:hover,
+body.board-auth-page .btn-outline-board:focus,
+body.board-auth-page .btn-outline-board:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/*
+ * System admin tablet layout.
+ * The command centre mixes CSS grid cards with Bootstrap rows and DataTables.
+ * On Samsung tablet widths the default grid min-content sizing can let a wide
+ * table stretch every admin section beyond the viewport. Keep the shell track
+ * constrained and let only table wrappers scroll horizontally.
+ */
+body.app-shell .content-wrapper .admin-command-centre,
+body.app-shell .content-wrapper .admin-command-centre .admin-shell {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    width: 100% !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-shell {
+    grid-template-columns: minmax(0, 1fr) !important;
+    overflow-x: clip;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-shell > *,
+body.app-shell .content-wrapper .admin-command-centre :where(
+    .admin-hero,
+    .admin-section,
+    .admin-two-column,
+    .admin-priority-grid,
+    .admin-metric-grid,
+    .admin-chart-grid,
+    .admin-board-stats,
+    .admin-actions-row,
+    .admin-command-row,
+    .admin-board-row,
+    .admin-standard-row,
+    .admin-metric-card,
+    .admin-priority-item
+) {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    width: 100% !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-shell > .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre .admin-shell > .row > [class*="col-"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+body.app-shell .content-wrapper .admin-command-centre :where(
+    .admin-table-wrap,
+    .table-responsive,
+    .dataTables_wrapper
+) {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 991.98px) {
+    body.app-shell .content-wrapper .admin-command-centre :where(
+        .admin-section-header,
+        .admin-status-line,
+        .admin-board-main,
+        .admin-command-main,
+        .admin-standard-main,
+        .admin-metric-group-head
+    ) {
+        align-items: stretch !important;
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    body.app-shell .content-wrapper .admin-command-centre .admin-actions-row {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
 }

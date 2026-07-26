@@ -3,22 +3,76 @@
 
 {% block title_label %}{{ model_plural_label }}{% endblock %}
 
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .records-hub-datatable th,
+    .records-hub-datatable td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .records-crud-actions {
+        display: inline-flex;
+        justify-content: flex-end;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+    .records-table-thumb {
+        width: 42px;
+        height: 42px;
+        object-fit: cover;
+    }
+
+    .records-table-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+    }
+
+    .records-table-filter-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .records-table-filter-form .form-control,
+    .records-table-filter-form .custom-select {
+        min-height: 34px;
+    }
+
+    .records-page-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .records-page-controls .pagination {
+        margin-bottom: 0;
+    }
+
+    .records-pagination-summary {
+        color: #475569;
+        font-size: 0.88rem;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="card table-card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <div>
             <h3 class="card-title mb-0">{{ model_plural_label }}</h3>
-            <small class="text-white-50">Search, sort, and filter records directly in the table.</small>
+            <small class="text-white-50">Search, sort, filter, and page through the full registry table.</small>
         </div>
         <div class="d-flex">
-            <form method="get" class="form-inline mr-2">
-                <div class="input-group input-group-sm">
-                    <input type="search" name="q" value="{{ search_term }}" class="form-control" placeholder="Search records">
-                    <div class="input-group-append">
-                        <button class="btn btn-light" type="submit">Search</button>
-                    </div>
-                </div>
-            </form>
             {% if can_create_records %}
                 <a href="{% url 'record_create' model_slug %}" class="btn btn-sm btn-success">
                     <i class="fas fa-plus mr-1"></i>Add New
@@ -27,20 +81,68 @@
         </div>
     </div>
     <div class="card-body">
+        <div class="records-table-toolbar">
+            <form method="get" class="records-table-filter-form" id="recordsTableFilterForm">
+                <label class="mb-0" for="recordsPageLength">Show</label>
+                <select name="per_page" id="recordsPageLength" class="custom-select custom-select-sm">
+                    {% for option in page_size_options %}
+                    <option value="{{ option }}" {% if per_page == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+                <span class="text-muted small">records</span>
+                <div class="input-group input-group-sm">
+                    <input type="search" id="recordsGlobalSearch" name="q" value="{{ search_term }}" class="form-control" placeholder="Search records">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+            <div class="records-page-controls" aria-label="Record pagination">
+                <span class="records-pagination-summary">
+                    {% if paginator.count %}
+                        Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ paginator.count }}
+                    {% else %}
+                        No records found
+                    {% endif %}
+                </span>
+                <ul class="pagination pagination-sm">
+                    <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                        <a class="page-link" href="{{ first_page_url }}">First</a>
+                    </li>
+                    <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                        <a class="page-link" href="{{ previous_page_url|default:'#' }}">Previous</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                    </li>
+                    <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ next_page_url|default:'#' }}">Next</a>
+                    </li>
+                    <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ last_page_url }}">Last</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
+            <table
+                id="recordsHubTable"
+                class="table table-bordered table-striped table-hover datatable records-hub-datatable"
+                data-server-side="1"
+                data-ajax-url="{{ datatable_ajax_url }}"
+            >
                 <thead>
                     <tr>
                         {% if is_professional_model %}
-                            <th>Image</th>
+                            <th data-column-name="">Image</th>
                         {% endif %}
                         {% for field in fields %}
-                            <th>{{ field|title }}</th>
+                            <th data-column-name="{{ field }}">{{ field|title }}</th>
                         {% endfor %}
                         {% if is_professional_model %}
-                            <th>Document</th>
+                            <th data-column-name="">Document</th>
                         {% endif %}
-                        <th class="text-right">Actions</th>
+                        <th class="text-right" data-column-name="">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -94,10 +196,10 @@
     </div>
 </div>
 {% if page_obj and page_obj.paginator.num_pages > 1 %}
-<nav aria-label="Record pages" class="mt-3">
+<nav aria-label="Record pages" class="mt-3 record-server-pagination">
     <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?q={{ search_term }}&page={{ page_obj.previous_page_number }}">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="{{ previous_page_url }}">Previous</a></li>
         {% else %}
             <li class="page-item disabled"><span class="page-link">Previous</span></li>
         {% endif %}
@@ -105,11 +207,102 @@
             <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
         </li>
         {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?q={{ search_term }}&page={{ page_obj.next_page_number }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="{{ next_page_url }}">Next</a></li>
         {% else %}
             <li class="page-item disabled"><span class="page-link">Next</span></li>
         {% endif %}
     </ul>
 </nav>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.getElementById('recordsHubTable');
+    if (!table) {
+        return;
+    }
+    const ajaxUrl = table.getAttribute('data-ajax-url');
+    if (!ajaxUrl) {
+        return;
+    }
+    const filterForm = document.getElementById('recordsTableFilterForm');
+    const searchInput = document.getElementById('recordsGlobalSearch');
+    const pageLengthSelect = document.getElementById('recordsPageLength');
+
+    const columns = [
+        {% if is_professional_model %}
+        { data: 'image', name: '', orderable: false, searchable: false },
+        {% endif %}
+        {% for field in fields %}
+        { data: '{{ field }}', name: '{{ field }}' },
+        {% endfor %}
+        {% if is_professional_model %}
+        { data: 'document', name: '', orderable: false, searchable: false },
+        {% endif %}
+        { data: 'actions', name: '', orderable: false, searchable: false }
+    ];
+
+    function initializeRecordsTable(attempt) {
+        attempt = attempt || 1;
+        if (!(window.jQuery && jQuery.fn && jQuery.fn.DataTable)) {
+            if (attempt < 12) {
+                window.setTimeout(function () {
+                    initializeRecordsTable(attempt + 1);
+                }, 250);
+            }
+            return;
+        }
+        const $table = jQuery(table);
+        if ($table.attr('data-ndoh-datatables-ready') === '1') {
+            return;
+        }
+        const dataTable = $table.DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: ajaxUrl,
+            columns: columns,
+            dom: 'rtip',
+            pageLength: Number(pageLengthSelect ? pageLengthSelect.value : '{{ per_page }}') || {{ per_page }},
+            lengthMenu: [[25, 50, 100, 250], [25, 50, 100, 250]],
+            order: [[{% if is_professional_model %}1{% else %}0{% endif %}, 'desc']],
+            search: { search: '{{ search_term|escapejs }}' },
+            searchDelay: 350,
+            autoWidth: false,
+            scrollX: true,
+            language: {
+                search: 'Search all records:',
+                lengthMenu: 'Show _MENU_ records',
+                info: 'Showing _START_ to _END_ of _TOTAL_ records',
+                processing: 'Loading records...'
+            }
+        });
+        $table.attr('data-ndoh-datatables-ready', '1');
+        if (filterForm) {
+            filterForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                dataTable.search(searchInput ? searchInput.value : '').draw();
+            });
+        }
+        if (searchInput) {
+            let searchTimer = null;
+            searchInput.addEventListener('input', function () {
+                window.clearTimeout(searchTimer);
+                searchTimer = window.setTimeout(function () {
+                    dataTable.search(searchInput.value).draw();
+                }, 350);
+            });
+        }
+        if (pageLengthSelect) {
+            pageLengthSelect.addEventListener('change', function () {
+                dataTable.page.len(Number(pageLengthSelect.value) || {{ per_page }}).draw();
+            });
+        }
+    }
+
+    initializeRecordsTable();
+});
+</script>
 {% endblock %}

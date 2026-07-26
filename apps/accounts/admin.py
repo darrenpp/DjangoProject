@@ -4,7 +4,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django import forms
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
-from django.urls import path
+from django.urls import path, reverse
+from django.utils.html import format_html
 from django.utils import timezone
 import csv
 from io import BytesIO
@@ -31,50 +32,108 @@ class UserAdminForm(forms.ModelForm):
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     form = UserAdminForm
-    list_display = ('username', 'email', 'role', 'applicant_type', 'department', 'license_number', 'registration_number', 'operations_approved', 'is_active')
-    list_filter = ('role', 'is_active', 'is_staff', 'operations_approved')
-    search_fields = ('username', 'email', 'first_name', 'last_name', 'department', 'license_number', 'registration_number')
-    actions = ['approve_selected_admin_accounts', 'export_as_csv', 'export_as_xlsx', 'export_as_pdf']
+    list_display = (
+        'username',
+        'email',
+        'role',
+        'applicant_type',
+        'department',
+        'role_approved',
+        'system_admin_approved',
+        'board_registration_token',
+        'operations_approved',
+        'professional_record_status',
+        'is_active',
+        'open_record',
+    )
+    list_display_links = ('username', 'email')
+    list_filter = (
+        'role',
+        'role_approved',
+        'system_admin_approved',
+        'professional_record_status',
+        'is_active',
+        'is_staff',
+        'operations_approved',
+    )
+    search_fields = ('username', 'email', 'first_name', 'middle_name', 'last_name', 'department', 'cadre_name', 'license_number', 'registration_number', 'board_registration_token')
+    actions = [
+        'registrar_approve_selected_staff_accounts',
+        'system_admin_approve_selected_staff_accounts',
+        'export_as_csv',
+        'export_as_xlsx',
+        'export_as_pdf',
+    ]
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'email', 'phone', 'department', 'employee_details', 'profile_image', 'passport_photo', 'id_document_image')}),
+        ('Personal Info', {'fields': ('first_name', 'middle_name', 'last_name', 'email', 'phone', 'department', 'employee_details', 'profile_image', 'passport_photo', 'id_document_image')}),
         ('Role & Permissions',
-         {'fields': ('role', 'applicant_type', 'license_number', 'registration_number', 'national_id', 'role_approved', 'approved_by', 'approved_at', 'operations_approved', 'operations_approved_by', 'operations_approved_at', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+         {'fields': ('role', 'applicant_type', 'cadre_name', 'license_number', 'registration_number', 'national_id', 'professional_content_type', 'professional_object_id', 'professional_record_status', 'professional_linked_at', 'professional_link_review_note', 'role_approved', 'approved_by', 'approved_at', 'system_admin_approved', 'system_admin_approved_by', 'system_admin_approved_at', 'board_registration_token', 'board_registration_token_created_at', 'operations_approved', 'operations_approved_by', 'operations_approved_at', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important Dates', {'fields': ('last_login', 'date_joined')}),
     )
 
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2', 'role', 'applicant_type', 'department', 'employee_details', 'profile_image', 'passport_photo', 'id_document_image', 'license_number', 'registration_number'),
+            'fields': ('username', 'email', 'password1', 'password2', 'role', 'applicant_type', 'department', 'employee_details', 'profile_image', 'passport_photo', 'id_document_image', 'cadre_name', 'license_number', 'registration_number'),
         }),
     )
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if getattr(request.user, "role", None) != "registrar":
-            actions.pop("approve_selected_admin_accounts", None)
+        user = request.user
+        if not (
+            getattr(user, "role", None) == "registrar"
+            and getattr(user, "role_approved", False)
+            and getattr(user, "system_admin_approved", False)
+        ):
+            actions.pop("registrar_approve_selected_staff_accounts", None)
+        if not (getattr(user, "role", None) == "admin" and getattr(user, "is_superuser", False)):
+            actions.pop("system_admin_approve_selected_staff_accounts", None)
         return actions
 
-    def approve_selected_admin_accounts(self, request, queryset):
-        if getattr(request.user, "role", None) != "registrar":
-            self.message_user(request, "Only a registrar can approve admin accounts.", level="error")
+    def registrar_approve_selected_staff_accounts(self, request, queryset):
+        if not (
+            getattr(request.user, "role", None) == "registrar"
+            and getattr(request.user, "role_approved", False)
+            and getattr(request.user, "system_admin_approved", False)
+        ):
+            self.message_user(request, "Only an approved registrar can grant registrar approval.", level="error")
             return
         approved = 0
-        for user in queryset.filter(role='admin'):
+        for user in queryset.filter(role__in=User.STAFF_LOGIN_APPROVAL_ROLES):
             user.role_approved = True
             user.approved_by = request.user
             user.approved_at = timezone.now()
             user.is_active = True
-            user.is_staff = True
             user.save()
             approved += 1
-        self.message_user(request, f"Approved {approved} admin account(s).")
-    approve_selected_admin_accounts.short_description = "Approve selected admin accounts"
+        self.message_user(request, f"Registrar approval recorded for {approved} staff account(s).")
+    registrar_approve_selected_staff_accounts.short_description = "Registrar-approve selected staff accounts"
+
+    def system_admin_approve_selected_staff_accounts(self, request, queryset):
+        if not (getattr(request.user, "role", None) == "admin" and getattr(request.user, "is_superuser", False)):
+            self.message_user(request, "Only an approved System Admin can grant system admin approval.", level="error")
+            return
+        approved = 0
+        for user in queryset.filter(role__in=User.STAFF_LOGIN_APPROVAL_ROLES):
+            user.system_admin_approved = True
+            user.system_admin_approved_by = request.user
+            user.system_admin_approved_at = timezone.now()
+            user.is_active = True
+            user.save()
+            approved += 1
+        self.message_user(request, f"System Admin approval recorded for {approved} staff account(s).")
+    system_admin_approve_selected_staff_accounts.short_description = "System Admin-approve selected staff accounts"
 
     def _selected_rows(self, queryset):
         return queryset.values_list('username', 'email', 'role', 'applicant_type', 'department', 'license_number', 'registration_number', 'is_active')
+
+    def open_record(self, obj):
+        url = reverse('admin:accounts_user_change', args=[obj.pk])
+        return format_html('<a class="button" href="{}">Open</a>', url)
+    open_record.short_description = "Open"
 
     def export_as_csv(self, request, queryset):
         response = HttpResponse(content_type='text/csv')

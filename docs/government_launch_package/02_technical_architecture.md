@@ -15,6 +15,9 @@ flowchart LR
     RBAC[Role-Based Access and MFA]
     Workflow[Regulatory Workflow Engine]
     Docs[OpenKM-Style Document Repository]
+    Cases[ICMS, Discipline, and Decisions]
+    NHWA[NHWA Reporting Workbooks]
+    Map[Mapped Reference Layer]
     Reports[Reporting and Analytics Engine]
     AI[AI Staff Assistant]
     Email[Email and Notification System]
@@ -32,10 +35,16 @@ flowchart LR
     Web --> RBAC
     RBAC --> Workflow
     RBAC --> Docs
+    RBAC --> Cases
+    RBAC --> NHWA
+    RBAC --> Map
     RBAC --> Reports
     RBAC --> AI
     Workflow --> DB
     Docs --> DB
+    Cases --> DB
+    NHWA --> DB
+    Map --> DB
     Reports --> DB
     AI --> DB
     Workflow --> Email
@@ -55,9 +64,9 @@ flowchart TB
     Medical[Medical Board workspace]
     General[General Registry workspace]
 
-    NursingData[(Nursing records, receipts, documents, reports)]
-    MedicalData[(Medical records, receipts, documents, reports)]
-    GeneralData[(Shared public/reference data)]
+    NursingData[(Nursing records, receipts, documents, cases, analytics, reports)]
+    MedicalData[(Medical records, receipts, documents, cases, reports)]
+    GeneralData[(Shared public/reference data, FAQs, forums, maps)]
 
     User --> Access
     Access -->|Nursing role or approved scope| Nursing
@@ -106,6 +115,7 @@ flowchart LR
     Issues[Missing data and duplicate review]
     Approve[Registrar or authorised staff approval]
     Live[Live registry records]
+    Snapshot[Analytics snapshot / reporting tables]
     Reports[Dashboards and reports]
     Audit[Source and audit trail]
 
@@ -116,7 +126,9 @@ flowchart LR
     Validate -->|Problems found| Issues
     Issues --> Approve
     Approve --> Live
+    Stage --> Snapshot
     Live --> Reports
+    Snapshot --> Reports
     Stage --> Audit
     Approve --> Audit
 ```
@@ -146,11 +158,15 @@ flowchart TB
 | Public portal | Public sign-in, registration, password reset, register search, help guidance |
 | Staff dashboards | Registrar, reviewer, finance, data-quality, and System Admin work areas |
 | Workflow engine | Application statuses, checklist gating, payment gating, registrar decisions, licence actions |
-| Document repository | Official record storage, metadata, OCR/search, versions, retention, office scope, audit events |
-| Data import layer | Source tracking, staging rows, workbook import, ATP/N-DATA alignment, cleansing queues |
-| Reporting engine | Monthly analytics, yearly analytics, financial forecast, management brief outputs |
+| Document repository | Official record storage, metadata, OCR/search, versions, approval/rejection sign-off, retention, office scope, audit events |
+| Case management layer | ICMS complaint cases, disciplinary cases, regulatory decisions, case events, attachments, and evidence links |
+| Data import layer | Source tracking, staging rows, analytics snapshots, workbook import, ATP/N-DATA alignment, Catherine workbook alignment, cleansing queues |
+| NHWA reporting layer | NHWA workbook templates, population from verified data, review, sign-off, and export |
+| Mapping/reference layer | Mapped schools, institutions, facilities, aliases, verification status, and stored coordinates |
+| Reporting engine | Monthly analytics, yearly analytics, active Nursing Council snapshot analytics, financial forecast, management brief outputs |
 | Security layer | Role checks, MFA, secure password reset, secure cookies, session timeout, admin restriction |
-| Notification layer | Staff inbox, chat, operational access requests, email notifications |
-| Database | Master registry, application, licence, receipt, document, audit, import, and user data |
+| Notification layer | Staff inbox, chat, mailbox folders, notification history, unread badge clearing, opened/read status, operational access requests, email notifications |
+| Records table layer | Records Hub and duplicate-review queue table functions for authorised registrar, admin, reviewer, and data-quality workflows |
+| Database | Master registry, application, licence, receipt, document, case, decision, NHWA, map, audit, import, and user data |
 | Backup server | Scheduled database and media backups with restore testing |
 | Government hosting | Future production hosting under approved NDOH ICT infrastructure |

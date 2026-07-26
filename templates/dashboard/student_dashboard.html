@@ -1,334 +1,275 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Graduand Portal - {{ request.user.username|upper }}{% endblock %}
+{% block title %}Graduand Portal - {{ dashboard_account_display_name|upper }}{% endblock %}
+{% block title_label %}{{ dashboard_platform_title }}{% endblock %}
+
+{% block extra_css %}
+{% include "dashboard/_practitioner_portal_styles.html" %}
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <div class="card card-info card-outline">
-            <div class="card-header bg-info">
-                <h3 class="card-title">
-                    <i class="fas fa-graduation-cap mr-2"></i>
-                    Graduand Portal - Welcome {{ request.user.get_full_name|default:request.user.username }}
-                </h3>
-            </div>
-            <div class="card-body">
-                {% if student %}
-                {% include "dashboard/_profile_notifications.html" %}
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h5><strong>Graduand Information</strong></h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <td><strong>Full Name:</strong></td>
-                                <td>{{ student.first_name }} {{ student.last_name }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Graduand ID:</strong></td>
-                                <td>{{ student.registration_no }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Program:</strong></td>
-                                <td>{{ student.program }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Institution:</strong></td>
-                                <td>{{ student.institution|default:"Not assigned" }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Email:</strong></td>
-                                <td>{{ student.email }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Phone:</strong></td>
-                                <td>{{ student.primary_phone|default:"Not provided" }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h5><strong>Academic Status</strong></h5>
-                        <div class="alert {% if student.is_graduate %}alert-success{% else %}alert-info{% endif %}">
-                            <strong>Current Status:</strong>
-                            {% if student.is_graduate %}
-                                <span class="badge badge-success">GRADUATE</span>
-                                <p class="mb-0">Congratulations! You have completed your program and are eligible for professional registration.</p>
-                            {% else %}
-                                <span class="badge badge-info">CURRENT GRADUAND</span>
-                                <p class="mb-0">Expected Graduation: {{ student.expected_graduation_date|date:'d M Y'|default:'Not set' }}</p>
-                            {% endif %}
-                        </div>
+<div class="practitioner-shell practitioner-nursing">
+    {% if student %}
+    {% include "dashboard/_profile_notifications.html" %}
+    {% include "dashboard/_record_link_prompt.html" %}
 
-                        {% if not student.is_graduate %}
-                        <div class="mt-3">
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Track your academic progress and prepare for graduation.
-                            </small>
-                        </div>
+    <div class="practitioner-hero mb-3">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="practitioner-kicker">PNG Nursing Council Graduand Self-Service</div>
+                <h2>My graduand profile, provisional pathway evidence, applications, receipts, and registration readiness</h2>
+                <div class="d-flex flex-wrap align-items-center mt-2">
+                    <span class="practitioner-status-badge practitioner-status-{{ nursing_status.theme|default:'info' }} mr-2">
+                        {% if student.is_graduate %}Graduate{% else %}Current graduand{% endif %}
+                    </span>
+                    <span class="text-muted">
+                        {% if student.expected_graduation_date %}
+                            Expected graduation {{ student.expected_graduation_date|date:'d M Y' }}
+                        {% else %}
+                            Expected graduation not set
                         {% endif %}
-                    </div>
+                    </span>
                 </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="practitioner-hero-actions">
+                    <a href="{{ nursing_forms_url }}" class="btn btn-primary"><i class="fas fa-file-signature mr-1"></i>Open Nursing Forms</a>
+                    <a href="{% url 'enquiry_create' %}" class="btn btn-outline-secondary"><i class="fas fa-envelope mr-1"></i>Ask Registrar</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <hr>
+    <div class="practitioner-summary-grid mb-3">
+        {% for card in nursing_assurance_cards %}
+        <div class="practitioner-tile">
+            <strong>{{ card.value }}</strong>
+            <span>{{ card.label }}</span>
+            <small>{{ card.detail }}</small>
+        </div>
+        {% endfor %}
+    </div>
 
-                <h5><strong>Application Status</strong></h5>
-                {% if applications %}
+    <div class="row">
+        <div class="col-lg-4 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Graduand Information</h3>
+                <table class="table table-sm table-borderless practitioner-profile-table mb-0">
+                    <tr><th>Name</th><td>{{ student.first_name }} {{ student.last_name }}</td></tr>
+                    <tr><th>Graduand ID</th><td>{{ student.registration_no|default:"-" }}</td></tr>
+                    <tr><th>Program</th><td>{{ student.program|default:"-" }}</td></tr>
+                    <tr><th>Institution</th><td>{{ student.institution|default:"Not assigned" }}</td></tr>
+                    <tr><th>Email</th><td>{{ student.email|default:"-" }}</td></tr>
+                    <tr><th>Phone</th><td>{{ student.primary_phone|default:"-" }}</td></tr>
+                    <tr><th>Graduate</th><td>{% if student.is_graduate %}Yes{% else %}Not yet{% endif %}</td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Provisional Pathway</h3>
+                <div class="practitioner-step-grid">
+                    {% for code in graduand_pathway_forms %}
+                    <div class="practitioner-step">
+                        <strong>{{ code }}</strong>
+                        <span>
+                            {% if code == "NC1" %}
+                            Provisional licence application.
+                            {% elif code == "NC2" %}
+                            Full licence preparation after provisional evidence.
+                            {% elif code == "NC3" %}
+                            Renewal / ATP after full registration.
+                            {% else %}
+                            Supporting graduand pathway evidence.
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Nursing Council Provisional Pathway Readiness</h3>
+                <div class="practitioner-progress mb-3"><span style="width: {{ nursing_readiness_percent|default:0 }}%;"></span></div>
+                <ul class="list-unstyled mb-0">
+                    {% for item in nursing_readiness_items %}
+                    <li class="d-flex align-items-center justify-content-between border-bottom py-2">
+                        <span>{{ item.label }}</span>
+                        <span class="practitioner-check {% if item.complete %}practitioner-check-complete{% else %}practitioner-check-review{% endif %}">
+                            {% if item.complete %}Complete{% else %}Review{% endif %}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if nursing_status.latest_provisional_record %}
+                <div class="alert alert-info mt-3 mb-0">
+                    <strong>Latest provisional import:</strong> {{ nursing_status.latest_provisional_record.record_year|default:"Year not captured" }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Application Status</h3>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover datatable">
-                        <thead class="bg-light">
-                            <tr>
-                                <th>Application ID</th>
-                                <th>Form Type</th>
-                                <th>Status</th>
-                                <th>Submitted Date</th>
-                                <th>Notes</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-striped table-hover practitioner-table mb-0">
+                        <thead><tr><th>Application</th><th>Form</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead>
                         <tbody>
                             {% for app in applications %}
                             <tr>
                                 <td><strong>{{ app.id }}</strong></td>
-                                <td>
-                                    {% if app.form_code == 'G1' %}
-                                        <span class="badge badge-primary">Graduand Registration</span>
-                                    {% elif app.form_code == 'G4' %}
-                                        <span class="badge badge-info">Provisional License</span>
-                                    {% elif app.form_code == 'G5' %}
-                                        <span class="badge badge-success">Full License</span>
-                                    {% else %}
-                                        <span class="badge badge-secondary">{{ app.form_code }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if app.status == 'pending' %}
-                                        <span class="badge badge-warning">
-                                            <i class="fas fa-clock mr-1"></i>Pending Review
-                                        </span>
-                                    {% elif app.status == 'approved' %}
-                                        <span class="badge badge-success">
-                                            <i class="fas fa-check mr-1"></i>Approved
-                                        </span>
-                                    {% elif app.status == 'rejected' %}
-                                        <span class="badge badge-danger">
-                                            <i class="fas fa-times mr-1"></i>Rejected
-                                        </span>
-                                    {% endif %}
-                                </td>
+                                <td>{{ app.form_code }}<span class="text-muted d-block">{{ app.form_title|default:app.get_form_code_display }}</span></td>
+                                <td>{{ app.status|title }}</td>
                                 <td>{{ app.submitted_date|date:'d M Y' }}</td>
-                                <td>
-                                    {% if app.reviewer_notes %}
-                                        <small class="text-muted">{{ app.reviewer_notes|truncatechars:50 }}</small>
-                                    {% else %}
-                                        <small class="text-muted">No notes</small>
-                                    {% endif %}
-                                </td>
+                                <td><a href="{% url 'application_detail' app.pk %}" class="btn btn-sm btn-outline-primary">Open</a></td>
                             </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No graduand applications are linked yet.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                {% else %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    <strong>No Applications Found:</strong>
-                    {% if student.is_graduate %}
-                        You can now submit your graduand registration application.
-                        <a href="{% url 'nursing_forms_portal' %}" class="alert-link">Submit Application</a>
-                    {% else %}
-                        Applications will be available upon graduation. Focus on your studies!
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                {% if student.is_graduate %}
-                <div class="mt-4">
-                    <a href="{% url 'nursing_forms_portal' %}" class="btn btn-success">
-                        <i class="fas fa-plus-circle mr-2"></i>Submit Graduand Application
-                    </a>
-                </div>
-                {% endif %}
-
-                <div class="row mt-4">
-                    <div class="col-lg-5">
-                        <div class="card card-outline card-warning">
-                            <div class="card-header">
-                                <h3 class="card-title mb-0">Payment Details</h3>
-                            </div>
-                            <div class="card-body">
-                                <form method="post" action="{% url 'submit_receipt' %}" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    <div class="form-group">
-                                        <label>Application</label>
-                                        {{ receipt_form.application }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Official Receipt No</label>
-                                        {{ receipt_form.official_receipt_no }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Amount (PGK)</label>
-                                        {{ receipt_form.amount }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Payment Method</label>
-                                        {{ receipt_form.payment_method }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Receipt Date</label>
-                                        {{ receipt_form.receipt_date }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Receipt Image</label>
-                                        {{ receipt_form.receipt_image }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Notes</label>
-                                        {{ receipt_form.description }}
-                                    </div>
-                                    <button type="submit" class="btn btn-warning btn-block">Save Payment Record</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-7">
-                        <div class="card card-outline card-info">
-                            <div class="card-header">
-                                <h3 class="card-title mb-0">My Receipt Records</h3>
-                            </div>
-                            <div class="card-body table-responsive p-0">
-                                <table class="table table-striped mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Receipt No</th>
-                                            <th>Official No</th>
-                                            <th>Amount</th>
-                                            <th>Application</th>
-                                            <th>Image</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for receipt in receipts %}
-                                        <tr>
-                                            <td>{{ receipt.receipt_number }}</td>
-                                            <td>{{ receipt.official_receipt_no|default:"-" }}</td>
-                                            <td>PGK {{ receipt.amount }}</td>
-                                            <td>{{ receipt.application.form_code|default:"-" }}</td>
-                                            <td>
-                                                {% if receipt.receipt_image %}
-                                                <a href="{{ receipt.receipt_image.url }}" target="_blank" class="btn btn-sm btn-outline-info">View</a>
-                                                {% else %}
-                                                <span class="text-muted">No image</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                        {% empty %}
-                                        <tr><td colspan="5" class="text-center text-muted">No payment records submitted yet.</td></tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {% else %}
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    <strong>Graduand Record Not Found:</strong>
-                            Your graduand record could not be located. Please contact your institution or our support team for assistance.
-                </div>
-                {% endif %}
+                <a href="{{ nursing_forms_url }}" class="btn btn-primary mt-3"><i class="fas fa-file-signature mr-1"></i>Open Nursing Forms</a>
             </div>
         </div>
-    </div>
-</div>
-
-{% include 'dashboard/_registration_guidelines.html' %}
-
-<!-- Help Desk Section -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card card-warning card-outline">
-            <div class="card-header bg-warning">
-                <h3 class="card-title">
-                    <i class="fas fa-question-circle mr-2"></i>
-                    Need Help?
-                </h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-envelope mr-2"></i>Contact Help Desk</h6>
-                        <p class="text-muted mb-2">For technical issues, account problems, or general inquiries:</p>
-                        <a href="mailto:graduand.help@ndoh.gov.pg" class="btn btn-warning btn-sm">
-                            <i class="fas fa-envelope mr-1"></i>Email Help Desk
-                        </a>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-info-circle mr-2"></i>Quick Links</h6>
-                        <ul class="list-unstyled">
-                            <li><a href="#graduand-handbook" class="text-warning" data-toggle="collapse" data-target="#graduand-handbook"><i class="fas fa-book mr-1"></i>Graduand Handbook</a></li>
-                            <li><a href="#graduand-registration-guidelines" class="text-warning" data-toggle="collapse" data-target="#graduand-registration-guidelines"><i class="fas fa-list-check mr-1"></i>Registration Guidelines</a></li>
-                            <li><a href="#graduand-academic-calendar" class="text-warning" data-toggle="collapse" data-target="#graduand-academic-calendar"><i class="fas fa-calendar-alt mr-1"></i>Academic Calendar</a></li>
-                        </ul>
-                        <div class="collapse mt-3" id="graduand-handbook">
-                            <div class="alert alert-light border small">
-                                <strong>Graduand Handbook:</strong> Prepare your G3 Graduate Vitae, G4 competency evidence, academic award, ID/passport, character reference, and payment receipt before starting NC1 provisional licence submission.
-                            </div>
-                        </div>
-                        <div class="collapse mt-3" id="graduand-registration-guidelines">
-                            <div class="alert alert-light border small">
-                                <strong>Registration Guidelines:</strong> Use the pathway image and G1-G4/NC1 forms shown above. Submit only once your details, institution, qualifications, and receipt evidence are complete.
-                            </div>
-                        </div>
-                        <div class="collapse mt-3" id="graduand-academic-calendar">
-                            <div class="alert alert-light border small">
-                                <strong>Academic Calendar:</strong> The system currently tracks the 2026 registration cycle. Confirm your institution submission dates with your school before final licence processing.
-                            </div>
-                        </div>
-                    </div>
+        <div class="col-lg-5 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Learning / Competency Records</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped practitioner-table mb-0">
+                        <thead><tr><th>Activity</th><th>Provider</th><th>Date</th><th>Hours</th></tr></thead>
+                        <tbody>
+                            {% for cpd in nursing_recent_cpd %}
+                            <tr>
+                                <td>{{ cpd.training_type }}</td>
+                                <td>{{ cpd.provider|default:"-" }}</td>
+                                <td>{{ cpd.start_date|date:'d M Y' }}</td>
+                                <td>{{ cpd.hours_credits }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">No learning records are linked yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Important Notices -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card card-light card-outline">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-bullhorn mr-2"></i>
-                    Important Notices
-                </h3>
+    <div class="row">
+        <div class="col-lg-5 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Save Payment Record</h3>
+                <form method="post" action="{% url 'submit_receipt' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group"><label>Application</label>{{ receipt_form.application }}</div>
+                    <div class="form-group"><label>Official Receipt No</label>{{ receipt_form.official_receipt_no }}</div>
+                    <div class="form-group"><label>Amount (PGK)</label>{{ receipt_form.amount }}</div>
+                    <div class="form-group"><label>Payment Method</label>{{ receipt_form.payment_method }}</div>
+                    <div class="form-group"><label>Receipt Date</label>{{ receipt_form.receipt_date }}</div>
+                    <div class="form-group"><label>Receipt Image</label>{{ receipt_form.receipt_image }}</div>
+                    <div class="form-group"><label>Notes</label>{{ receipt_form.description }}</div>
+                    <button type="submit" class="btn btn-primary btn-block">Save Payment Record</button>
+                </form>
             </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <strong>Academic Year 2026:</strong> Registration for the next academic year opens on 1 March 2026.
-                </div>
-                <div class="alert alert-success">
-                    <strong>Graduation Ceremony:</strong> The next graduation ceremony is scheduled for 15 December 2026.
-                </div>
-                <div class="alert alert-warning">
-                    <strong>License Renewal:</strong> Professional license renewals are due annually. Graduates will receive renewal notifications.
+        </div>
+        <div class="col-lg-7 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Receipt Records</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped practitioner-table mb-0">
+                        <thead><tr><th>Receipt No</th><th>Official No</th><th>Amount</th><th>Application</th><th>Status</th><th>Image</th></tr></thead>
+                        <tbody>
+                            {% for receipt in receipts %}
+                            <tr>
+                                <td>{{ receipt.receipt_number }}</td>
+                                <td>{{ receipt.official_receipt_no|default:"-" }}</td>
+                                <td>PGK {{ receipt.amount }}</td>
+                                <td>{{ receipt.application.form_code|default:"-" }}</td>
+                                <td>{{ receipt.get_status_display|default:receipt.status|title }}</td>
+                                <td>{% if receipt.receipt_image %}<a href="{{ receipt.receipt_image.url }}" target="_blank">View</a>{% else %}<span class="text-muted">No image</span>{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">No payment records submitted yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-// Auto-refresh status every 30 seconds for pending applications
-{% if applications %}
-document.addEventListener('DOMContentLoaded', function() {
-    setInterval(function() {
-        // Could add AJAX call to refresh application status
-        console.log('Checking for status updates...');
-    }, 30000);
-});
-{% endif %}
-</script>
+    <div class="practitioner-action-grid mb-3">
+        {% for action in nursing_help_actions %}
+        <a class="practitioner-action" href="{{ action.href }}"><i class="{{ action.icon }}"></i><span><strong>{{ action.label }}</strong><span>{{ action.detail }}</span></span></a>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    {% include "dashboard/_profile_notifications.html" %}
+    {% include "dashboard/_record_link_prompt.html" %}
+    <div class="practitioner-hero mb-3">
+        <div class="practitioner-kicker">{{ nursing_unlinked_title|default:"Graduand Account Setup" }}</div>
+        <h2>Complete record linkage before graduand, provisional licence, application, and receipt services open</h2>
+        <div class="d-flex flex-wrap align-items-center mt-2">
+            <span class="practitioner-status-badge practitioner-status-warning mr-2">{{ nursing_unlinked_account.status|default:"Not linked" }}</span>
+            <span class="text-muted">Account: {{ nursing_unlinked_account.name|default:dashboard_account_display_name }}</span>
+        </div>
+    </div>
+    <div class="practitioner-summary-grid mb-3">
+        <div class="practitioner-tile"><strong>{{ nursing_unlinked_account.status|default:"Not linked" }}</strong><span>Record status</span><small>Registrar approval is required before the professional dashboard opens.</small></div>
+        <div class="practitioner-tile"><strong>{{ nursing_unlinked_account.identifier|default:"-" }}</strong><span>Graduand / registration number</span><small>Stored on this user account.</small></div>
+        <div class="practitioner-tile"><strong>{{ nursing_unlinked_account.candidate_count|default:0 }}</strong><span>Possible matches</span><small>Operational or read-only Nursing Council records that need review.</small></div>
+        <div class="practitioner-tile"><strong>{{ nursing_unlinked_account.email|default:"-" }}</strong><span>Account email</span><small>Used by staff when checking supporting evidence.</small></div>
+    </div>
+    <div class="practitioner-action-grid mb-3">
+        {% for action in nursing_unlinked_actions %}
+        <a class="practitioner-action" href="{{ action.href }}"><i class="{{ action.icon }}"></i><span><strong>{{ action.label }}</strong><span>{{ action.detail }}</span></span></a>
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="col-lg-5 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Linkage Checklist</h3>
+                <ul class="list-unstyled mb-0">
+                    {% for check in nursing_unlinked_checklist %}
+                    <li class="d-flex align-items-center justify-content-between border-bottom py-2">
+                        <span>{{ check.label }}</span>
+                        <span class="practitioner-check {% if check.complete %}practitioner-check-complete{% else %}practitioner-check-review{% endif %}">{% if check.complete %}Ready{% else %}Review{% endif %}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-7 mb-3">
+            <div class="practitioner-panel h-100">
+                <h3>Possible Existing Matches</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped practitioner-table mb-0">
+                        <thead><tr><th>Name</th><th>Registration</th><th>Source</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for match in nursing_candidate_matches %}
+                            <tr>
+                                <td><strong>{{ match.name }}</strong><span class="text-muted d-block">{{ match.category }}</span></td>
+                                <td>{{ match.registration }}{% if match.practitioner and match.practitioner != "-" %}<span class="text-muted d-block">Practitioner {{ match.practitioner }}</span>{% endif %}</td>
+                                <td>{{ match.source }}<span class="text-muted d-block">{{ match.confidence }}</span></td>
+                                <td>{{ match.status }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">No possible professional record match was found for this account.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% include 'dashboard/_registration_guidelines.html' %}
+</div>
 {% endblock %}

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}The National Department Of Health Regulatory Bodies Nursing Council &amp; The Medical Board Online Workforce System{% endblock %}</title>
+    <title>{% block title %}{{ dashboard_platform_title|default:"PNG Regulatory Bodies Online Platform Dashboard" }}{% endblock %}</title>
     <script>
         window.ndohAssets = {
             bootstrapCss: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
@@ -106,7 +106,115 @@
             line-height: 1.2;
         }
 
+        .content-header.ndoh-platform-header {
+            position: relative;
+            overflow: hidden;
+            min-height: 156px;
+            padding: 1.45rem 0 1.25rem;
+            transition: min-height .22s ease, padding .22s ease, box-shadow .22s ease;
+            border-bottom: 1px solid rgba(203, 213, 225, 0.84);
+            background: transparent;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        .content-header.ndoh-medical-board-header {
+            background:
+                linear-gradient(90deg, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.9) 58%, rgba(248, 250, 252, 0.72) 100%),
+                linear-gradient(135deg, rgba(24, 50, 74, 0.11) 0%, rgba(217, 154, 22, 0.1) 100%);
+        }
+
+        .content-header.ndoh-regulatory-bodies-header {
+            background:
+                linear-gradient(90deg, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.9) 58%, rgba(248, 250, 252, 0.72) 100%),
+                linear-gradient(135deg, rgba(47, 95, 83, 0.1) 0%, rgba(24, 50, 74, 0.1) 54%, rgba(217, 154, 22, 0.09) 100%);
+        }
+
+        .content-header.ndoh-platform-header::before {
+            display: none;
+        }
+
+        .content-header.ndoh-platform-header::after {
+            position: absolute;
+            top: 10px;
+            right: 22px;
+            width: 76px;
+            height: 76px;
+            content: "";
+            background-image: url("{% static 'img/National_emblem_of_Papua_New_Guinea_(variant).svg.png' %}");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.32;
+            pointer-events: none;
+            z-index: 2;
+            filter: drop-shadow(0 10px 18px rgba(15, 38, 56, 0.14));
+            transition: width .22s ease, height .22s ease, opacity .22s ease, top .22s ease;
+        }
+
+        .content-wrapper::before {
+            position: absolute;
+            top: 88px;
+            right: 28px;
+            width: min(520px, 42vw);
+            height: min(520px, 58vh);
+            content: "";
+            background-image: url("{% static 'img/National_emblem_of_Papua_New_Guinea_(variant).svg.png' %}");
+            background-repeat: no-repeat;
+            background-position: top right;
+            background-size: contain;
+            opacity: 0.055;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content-wrapper > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-header.ndoh-platform-header .container-fluid {
+            position: relative;
+            z-index: 1;
+            transition: opacity .18s ease, transform .18s ease;
+        }
+
+        .content-header.ndoh-platform-header h1 {
+            max-width: min(960px, calc(100vw - 390px));
+            color: #0f2638;
+            -webkit-text-fill-color: #0f2638;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
+        }
+
+        @media (max-width: 768px) {
+            .content-header.ndoh-platform-header {
+                min-height: 128px;
+                padding: 1.1rem 0 1rem;
+            }
+
+            .content-header.ndoh-platform-header::after {
+                top: 8px;
+                right: 12px;
+                width: 52px;
+                height: 52px;
+                opacity: 0.34;
+            }
+
+            .content-wrapper::before {
+                top: 96px;
+                right: 8px;
+                width: 220px;
+                height: 220px;
+                opacity: 0.04;
+            }
+
+            .content-header.ndoh-platform-header h1 {
+                max-width: 100%;
+                padding-right: 154px;
+            }
+        }
+
         .content-wrapper {
+            position: relative;
             min-height: calc(100vh - 57px);
             background:
                 radial-gradient(circle at top right, rgba(171, 123, 45, 0.08), transparent 26%),
@@ -289,6 +397,7 @@
         .btn-secondary,
         .btn-dark {
             color: #fff !important;
+            -webkit-text-fill-color: #fff !important;
             text-shadow: 0 1px 1px rgba(0,0,0,0.18);
         }
 
@@ -296,6 +405,7 @@
             background: #f59e0b !important;
             border-color: #f59e0b !important;
             color: #1f2937 !important;
+            -webkit-text-fill-color: #1f2937 !important;
             text-shadow: none;
         }
 
@@ -304,6 +414,9 @@
         .btn-outline-secondary,
         .btn-outline-dark {
             background: rgba(255,255,255,0.78);
+            color: var(--ndoh-text) !important;
+            -webkit-text-fill-color: var(--ndoh-text) !important;
+            text-shadow: none !important;
         }
 
         .table {
@@ -461,6 +574,48 @@
         .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
             background-color: var(--ndoh-green);
             border-radius: 8px;
+        }
+
+        .nav-sidebar .nav-header {
+            margin: 14px 16px 6px;
+            padding: 0;
+            color: rgba(255, 255, 255, 0.74) !important;
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-support-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 16px 12px 22px;
+            padding: 12px;
+            border-radius: 8px;
+            color: #ffffff;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .sidebar-support-card:hover {
+            color: #ffffff;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .sidebar-support-card .support-title {
+            display: block;
+            font-weight: 900;
+            line-height: 1.15;
+        }
+
+        .sidebar-support-card .support-subtitle {
+            display: block;
+            color: rgba(255, 255, 255, 0.76);
+            font-size: 0.78rem;
+            line-height: 1.15;
         }
 
         .main-header.navbar {
@@ -824,6 +979,37 @@
             color: #fff;
         }
 
+        .helpdesk-drag-handle {
+            flex: 0 0 auto;
+            width: 34px;
+            height: 34px;
+            border: 0;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .helpdesk-drag-handle:focus-visible,
+        .helpdesk-close:focus-visible,
+        .helpdesk-stop-voice:focus-visible {
+            outline: 3px solid rgba(255, 255, 255, 0.9);
+            outline-offset: 2px;
+        }
+
+        .helpdesk-header-copy {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .helpdesk-header-actions {
+            display: flex;
+            flex: 0 0 auto;
+            align-items: center;
+            gap: 6px;
+        }
+
         .helpdesk-header h5 {
             margin: 0;
             color: #fff;
@@ -839,11 +1025,55 @@
             height: 32px;
         }
 
+        .helpdesk-stop-voice {
+            min-height: 32px;
+            border: 0;
+            border-radius: 999px;
+            padding: 0 10px;
+            background: #fff;
+            color: #a61b1b;
+            font-size: 0.82rem;
+            font-weight: 900;
+        }
+
+        .helpdesk-stop-voice[hidden] {
+            display: none !important;
+        }
+
+        #helpdesk-widget-voice.is-listening,
+        #staff-ai-voice.is-listening {
+            color: #fff;
+            background: #a61b1b;
+            border-color: #a61b1b;
+        }
+
+        .helpdesk-widget.is-dragging,
+        .helpdesk-widget.is-dragging * {
+            user-select: none;
+        }
+
+        .helpdesk-widget.is-dragging .helpdesk-drag-handle {
+            cursor: grabbing;
+        }
+
         .helpdesk-chat-panel {
             max-height: 340px;
             overflow-y: auto;
             padding: 14px;
             background: #f8fafc;
+        }
+
+        .helpdesk-session-status {
+            padding: 8px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .helpdesk-session-status.is-busy {
+            color: #0f4c81;
         }
 
         .helpdesk-message {
@@ -1159,24 +1389,28 @@
             background: var(--ndoh-gov-navy-2) !important;
             border-color: var(--ndoh-gov-navy-2) !important;
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
 
         .btn-success {
             background: var(--ndoh-gov-green) !important;
             border-color: var(--ndoh-gov-green) !important;
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
 
         .btn-info {
             background: var(--ndoh-gov-blue) !important;
             border-color: var(--ndoh-gov-blue) !important;
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
 
         .btn-danger {
             background: var(--ndoh-gov-red) !important;
             border-color: var(--ndoh-gov-red) !important;
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
 
         .btn-secondary,
@@ -1184,12 +1418,14 @@
             background: var(--ndoh-gov-slate) !important;
             border-color: var(--ndoh-gov-slate) !important;
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
 
         .btn-warning {
             background: var(--ndoh-gov-gold) !important;
             border-color: var(--ndoh-gov-gold) !important;
             color: #111827 !important;
+            -webkit-text-fill-color: #111827 !important;
         }
 
         .btn-light,
@@ -1197,6 +1433,7 @@
             background: #ffffff !important;
             border-color: var(--ndoh-gov-border) !important;
             color: #111827 !important;
+            -webkit-text-fill-color: #111827 !important;
         }
 
         .btn-outline-primary,
@@ -1207,6 +1444,8 @@
         .btn-outline-danger {
             background: #ffffff !important;
             color: var(--ndoh-gov-ink) !important;
+            -webkit-text-fill-color: var(--ndoh-gov-ink) !important;
+            text-shadow: none !important;
         }
 
         .btn-outline-primary { border-color: var(--ndoh-gov-navy-2) !important; }
@@ -1223,6 +1462,7 @@
         .btn-outline-dark:hover,
         .btn-outline-danger:hover {
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
 
         .btn-outline-primary:hover { background: var(--ndoh-gov-navy-2) !important; }
@@ -1325,6 +1565,16 @@
             background: #fee2e2 !important;
             border-color: #fca5a5 !important;
             color: #7f1d1d !important;
+        }
+
+        .platform-resilience-banner {
+            border-left: 5px solid #0f172a !important;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+        }
+
+        .platform-resilience-banner strong,
+        .platform-resilience-banner span {
+            color: inherit !important;
         }
 
         .table {
@@ -1462,7 +1712,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}?v=20260514-nhwa-standards-1">
+    <link rel="stylesheet" href="{% static 'css/government-enterprise.css' %}?v=20260708-dashboard-links-1">
 </head>
 <body class="hold-transition layout-fixed sidebar-expand-lg {% if request.user.is_authenticated and '/accounts/login' not in request.path and '/accounts/register' not in request.path and request.path != '/' and request.path != '/home/' and '/register/' not in request.path %}app-shell{% else %}public-body{% endif %}">
 {% include 'includes/page_section_navigation.html' %}
@@ -1474,7 +1724,7 @@
                 <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
         </ul>
-        {% if not is_finance_reviewer %}
+        {% if not is_finance_reviewer and not is_board_portal_context %}
         <form class="navbar-search d-none d-md-flex" method="get" action="{% url 'dashboard_search' %}">
             <div class="input-group input-group-sm">
                 <input type="search" name="q" class="form-control" placeholder="{% if can_access_staff_dashboards %}Search records, staff, facilities...{% else %}Search registration help...{% endif %}" value="{{ request.GET.q|default:'' }}">
@@ -1486,16 +1736,52 @@
         {% endif %}
         <ul class="navbar-nav ml-auto">
             {% if request.user.is_authenticated %}
-                {% if request.user.role == 'admin' or request.user.role == 'registrar' %}
-                <li class="nav-item d-flex align-items-center pr-2">
-                    <a href="{% url 'staff_communications' %}" class="nav-link position-relative" title="Inbox, chat, and review notifications">
+                <li class="nav-item dropdown d-flex align-items-center pr-2">
+                    <a href="#" class="nav-link position-relative" id="notificationDropdown" role="button" data-bs-toggle="dropdown" data-toggle="dropdown" data-mark-read-url="{% url 'notification_mark_read' %}" aria-expanded="false" title="Notifications and mailbox notices">
                         <i class="fas fa-bell"></i>
-                        {% if staff_notification_count %}
-                        <span class="badge badge-warning navbar-badge">{{ staff_notification_count }}</span>
+                        {% if notification_unread_count %}
+                        <span class="badge badge-warning navbar-badge" data-notification-badge>{{ notification_unread_count }}</span>
                         {% endif %}
                     </a>
+                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-end ndoh-notification-menu" aria-labelledby="notificationDropdown">
+                        <div class="dropdown-header d-flex align-items-center justify-content-between">
+                            <span>Notifications</span>
+                            {% if notification_unread_count %}
+                            <span class="small" data-notification-unread-label>{{ notification_unread_count }} unread</span>
+                            {% endif %}
+                        </div>
+                        {% if notification_current_items %}
+                            {% for item in notification_current_items %}
+                            <a href="{{ item.url }}" class="dropdown-item ndoh-notification-item">
+                                <strong>{{ item.title }}</strong>
+                                <span>{{ item.message|truncatechars:110 }}</span>
+                                <em>{{ item.action }}</em>
+                            </a>
+                            {% endfor %}
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-header ndoh-notification-subheader">History</div>
+                        {% endif %}
+                        {% if notification_history_items %}
+                            {% for item in notification_history_items %}
+                            <a href="{{ item.url }}" class="dropdown-item ndoh-notification-item {% if item.unread %}is-unread{% endif %}" data-notification-item>
+                                <strong>{{ item.title }}</strong>
+                                <span>{{ item.message|truncatechars:110 }}</span>
+                                {% if item.created_at %}<span class="small">{{ item.created_at|date:"d M Y H:i" }}</span>{% endif %}
+                                <em>{{ item.action }}</em>
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="dropdown-item-text text-muted small px-3 py-2">No notification history yet.</div>
+                        {% endif %}
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'notification_history' %}" class="dropdown-item text-center">View Notification History</a>
+                        {% if request.user.role == 'admin' or request.user.role == 'registrar' %}
+                        <a href="{% url 'staff_communications' %}" class="dropdown-item text-center">Open Communications Hub</a>
+                        {% else %}
+                        <a href="{% url 'enquiry_inbox' %}" class="dropdown-item text-center">Open Messages</a>
+                        {% endif %}
+                    </div>
                 </li>
-                {% endif %}
                 <li class="nav-item d-flex align-items-center pr-3">
                     <a href="{% url 'user_profile' %}" class="navbar-user-chip text-decoration-none">
                         {% if request.user.profile_image %}
@@ -1505,12 +1791,15 @@
                         {% endif %}
                         <span>
                             <span class="label">Signed in as</span>
-                            <span class="value">{{ request.user.get_full_name|default:request.user.username }}</span>
+                            <span class="value">{{ dashboard_account_display_name|default:request.user.account_display_name }}</span>
                         </span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user_profile' %}?settings=1" title="Open profile settings">
+                    <a class="nav-link"
+                       href="{% url 'user_profile' %}?settings=1"
+                       title="Open profile settings"
+                       {% if request.resolver_match.url_name == 'user_profile' %}data-bs-toggle="modal" data-bs-target="#profileSettingsModal"{% endif %}>
                         <i class="fas fa-cog"></i> <span class="nav-label">Profile Settings</span>
                     </a>
                 </li>
@@ -1531,242 +1820,483 @@
     <aside class="app-sidebar main-sidebar sidebar-dark-primary elevation-4">
         <a href="{% url 'main_dashboard' %}" class="brand-link">
             <img src="{% static 'img/NDOH_LOGO.png' %}" alt="NDOH Crest" class="brand-image">
-            <span class="brand-text">NDOH Regulatory Bodies System</span>
+            <span class="brand-text">PNG Regulatory Bodies<br>Online Platform</span>
         </a>
         <div class="sidebar">
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
                     <li class="nav-item">
-                        <a href="{% url 'main_dashboard' %}" class="nav-link">
+                        <a href="{% url 'main_dashboard' %}" class="nav-link {% if request.path == '/dashboard/main/' %}active{% endif %}">
                             <i class="nav-icon fas fa-house"></i>
                             <p>Home</p>
                         </a>
                     </li>
-                    {% if can_access_staff_dashboards %}
-                    {% if is_finance_reviewer %}
-                    <li class="nav-item">
-                        <a href="{% url 'workforce_flow' %}"
-                           class="nav-link {% if '/flow/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-chart-line"></i>
-                            <p>Workforce Flow</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'financial_forecast_dashboard' %}?office=nursing"
-                           class="nav-link {% if '/dashboard/reports/financial/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-coins"></i>
-                            <p>Financial Forecast</p>
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a href="{% url 'advanced_dashboard' %}"
-                           class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
-                            <i class="nav-icon fas fa-gauge-high"></i>
-                            <p>Overall Dashboard</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'dashboard_search' %}"
-                           class="nav-link {% if '/dashboard/search/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-search"></i>
-                            <p>Registry Search</p>
-                        </a>
-                    </li>
-                    {% if can_access_nursing_council_portal %}
-                    <li class="nav-item">
-                        <a href="{% url 'nursing_council_portal' %}"
-                           class="nav-link {% if '/dashboard/nursing-council/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-user-nurse"></i>
-                            <p>Nursing Council Portal</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if can_access_medical_board_portal %}
-                    <li class="nav-item">
-                        <a href="{% url 'medical_board_portal' %}"
-                           class="nav-link {% if '/dashboard/medical-board/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-clinic-medical"></i>
-                            <p>Medical Board Portal</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a href="{% url 'fee_structure' %}" class="nav-link">
-                        <i class="nav-icon fas fa-money-bill"></i>
-                        <p>Fee Structure & Guidelines</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'workforce_flow' %}"
-                           class="nav-link {% if '/flow/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-chart-line"></i>
-                            <p>Workforce Flow</p>
-                        </a>
-                    </li>
-                    {% if can_manage_regulatory_operations %}
-                    <li class="nav-item">
-                        <a href="{% url 'registrar_individual_records' %}"
-                           class="nav-link {% if '/dashboard/registrar/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-address-book"></i>
-                            <p>Individual Records</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if can_access_nursing_council %}
-                    <li class="nav-item">
-                        <a href="{% url 'nursing_forms_portal' %}" class="nav-link">
-                            <i class="nav-icon fas fa-user-plus"></i>
-                            <p>Nursing Forms</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if can_access_medical_board %}
-                    <li class="nav-item">
-                        <a href="{% url 'medical_board_register' %}" class="nav-link">
-                            <i class="nav-icon fas fa-notes-medical"></i>
-                            <p>Medical Board Forms</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a href="{% url 'staff_communications' %}"
-                           class="nav-link {% if '/notifications/communications/' in request.path %}active{% elif '/notifications/enquiries/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-envelope-open-text"></i>
-                            <p>Staff Inbox & Chat</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'staff_ai_assistant' %}"
-                           class="nav-link {% if '/dashboard/staff-ai/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-brain"></i>
-                            <p>AI Staff Assistant</p>
-                        </a>
-                    </li>
-                    {% if can_manage_regulatory_operations or is_data_quality_reviewer %}
-                    <li class="nav-item">
-                        <a href="{% url 'platform_standards_alignment' %}"
-                           class="nav-link {% if '/dashboard/standards-alignment/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-landmark"></i>
-                            <p>Standards &amp; Compliance</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'duplicate_review_workflow' %}"
-                           class="nav-link {% if '/dashboard/duplicate-reviews/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-clone"></i>
-                            <p>Duplicate Reviews</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'production_readiness_dashboard' %}"
-                           class="nav-link {% if '/dashboard/production-readiness/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-shield-halved"></i>
-                            <p>Production Readiness</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if can_manage_regulatory_operations or is_finance_reviewer %}
-                    <li class="nav-item">
-                        <a href="{% url 'financial_forecast_dashboard' %}"
-                           class="nav-link {% if '/dashboard/reports/financial/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-coins"></i>
-                            <p>Financial Forecast</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a href="{% url 'enquiry_inbox' %}"
-                           class="nav-link {% if '/notifications/enquiries/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-comments"></i>
-                            <p>Messages & Enquiries</p>
-                        </a>
-                    </li>
-                    {% if can_manage_regulatory_operations %}
-                    <li class="nav-item">
-                        <a href="{% url 'import_data' %}"
-                           class="nav-link {% if '/workforce/import/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-file-import"></i>
-                            <p>Bulk Import</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if can_manage_regulatory_operations or is_data_quality_reviewer %}
-                    <li class="nav-item">
-                        <a href="{% url 'records_home' %}"
-                           class="nav-link {% if '/records/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-table-list"></i>
-                            <p>Workforce Records</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if can_access_document_repository %}
-                    <li class="nav-item">
-                        <a href="{% url 'repository_search' %}"
-                           class="nav-link {% if '/documents/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-folder-open"></i>
-                            <p>Document Repository</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if request.user.role == 'admin' and request.user.is_superuser %}
-                    <li class="nav-item">
-                        <a href="{% url 'population_guide' %}"
-                           class="nav-link {% if '/records/population-guide/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-book"></i>
-                            <p>Population Guide</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if can_access_document_repository %}
-                    <li class="nav-item">
-                        <a href="{% url 'ocr_import' %}"
-                           class="nav-link {% if '/ocr/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-file-pdf"></i>
-                            <p>PDF Document Import</p>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% endif %}
-                    {% else %}
-                    <li class="nav-item">
-                        <a href="{% url 'fee_structure' %}" class="nav-link">
-                            <i class="nav-icon fas fa-money-bill"></i>
-                            <p>Fee Structure & Guidelines</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'dashboard_search' %}"
-                           class="nav-link {% if '/dashboard/search/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-search"></i>
-                            <p>Search Registration Help</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        {% if can_access_medical_board and not can_access_nursing_council %}
-                        <a href="{% url 'medical_board_register' %}" class="nav-link">
-                            <i class="nav-icon fas fa-notes-medical"></i>
-                            <p>Online Registration</p>
-                        </a>
+                    {% if is_board_portal_context and can_access_nursing_board_portal %}
+                        <li class="nav-header">Board Governance</li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_dashboard' %}"
+                               class="nav-link {% if request.resolver_match.url_name == 'board_nursing_dashboard' %}active{% endif %}">
+                                <i class="nav-icon fas fa-gauge-high"></i>
+                                <p>Board Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_meetings' %}"
+                               class="nav-link {% if request.resolver_match.url_name == 'board_nursing_meetings' or request.resolver_match.url_name == 'board_nursing_meeting_detail' %}active{% endif %}">
+                                <i class="nav-icon fas fa-calendar-check"></i>
+                                <p>Meetings</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_papers' %}"
+                               class="nav-link {% if request.resolver_match.url_name == 'board_nursing_papers' or request.resolver_match.url_name == 'board_nursing_board_pack' %}active{% endif %}">
+                                <i class="nav-icon fas fa-folder-open"></i>
+                                <p>Board Papers</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_decision_queue' %}"
+                               class="nav-link {% if request.resolver_match.url_name == 'board_nursing_decision_queue' %}active{% endif %}">
+                                <i class="nav-icon fas fa-list-check"></i>
+                                <p>Decision Queue</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_committees' %}"
+                               class="nav-link {% if 'board_nursing_committee' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="nav-icon fas fa-sitemap"></i>
+                                <p>Committees</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_actions' %}"
+                               class="nav-link {% if request.resolver_match.url_name == 'board_nursing_actions' or request.resolver_match.url_name == 'board_nursing_minutes' %}active{% endif %}">
+                                <i class="nav-icon fas fa-clipboard-check"></i>
+                                <p>Actions &amp; Minutes</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_risk' %}"
+                               class="nav-link {% if request.resolver_match.url_name == 'board_nursing_risk' %}active{% endif %}">
+                                <i class="nav-icon fas fa-triangle-exclamation"></i>
+                                <p>Risk &amp; Compliance</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_library' %}"
+                               class="nav-link {% if request.resolver_match.url_name == 'board_nursing_library' %}active{% endif %}">
+                                <i class="nav-icon fas fa-landmark"></i>
+                                <p>Governance Library</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_profile' %}"
+                               class="nav-link {% if request.resolver_match.url_name == 'board_nursing_profile' %}active{% endif %}">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <p>Board Member Profile</p>
+                            </a>
+                        </li>
+                    {% elif can_access_staff_dashboards %}
+                        {% if is_finance_reviewer %}
+                        <li class="nav-header">Data &amp; Reports</li>
+                        <li class="nav-item">
+                            <a href="{% url 'financial_forecast_dashboard' %}?office=nursing"
+                               class="nav-link {% if '/dashboard/reports/financial/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-coins"></i>
+                                <p>Reports</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'workforce_flow' %}"
+                               class="nav-link {% if '/flow/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>Analytics</p>
+                            </a>
+                        </li>
                         {% else %}
-                        <a href="{% url 'nursing_forms_portal' %}" class="nav-link">
-                            <i class="nav-icon fas fa-user-plus"></i>
-                            <p>Online Registration</p>
-                        </a>
+                        <li class="nav-header">Dashboard</li>
+                        <li class="nav-item">
+                            <a href="{% url 'advanced_dashboard' %}"
+                               class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                                <i class="nav-icon fas fa-gauge-high"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-header">Registries</li>
+                        <li class="nav-item">
+                            <a href="{% url 'dashboard_search' %}"
+                               class="nav-link {% if '/dashboard/search/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-search"></i>
+                                <p>Registry Search</p>
+                            </a>
+                        </li>
+                        {% if can_manage_regulatory_operations or is_data_quality_reviewer %}
+                        <li class="nav-item">
+                            <a href="{% url 'records_home' %}"
+                               class="nav-link {% if '/records/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-database"></i>
+                                <p>Records Hub</p>
+                            </a>
+                        </li>
                         {% endif %}
-                    </li>
+                        <li class="nav-item">
+                            <a href="{% url 'workforce_flow' %}"
+                               class="nav-link {% if '/flow/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-clipboard-list"></i>
+                                <p>Workflow &amp; Tasks</p>
+                            </a>
+                        </li>
+                        {% if can_manage_regulatory_operations %}
+                        <li class="nav-item">
+                            <a href="{% url 'registrar_individual_records' %}"
+                               class="nav-link {% if '/dashboard/individual-records/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-address-book"></i>
+                                <p>Individual Records</p>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li class="nav-header">Entities</li>
+                        {% if can_access_nursing_council_portal %}
+                        <li class="nav-item">
+                            <a href="{% url 'nursing_council_portal' %}"
+                               class="nav-link {% if '/dashboard/nursing-council/' in request.path and '/dashboard/nursing-council/board/' not in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-user-nurse"></i>
+                                <p>Nursing Council</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'facilities_directory' %}?scope=nursing"
+                               class="nav-link {% if request.resolver_match.url_name == 'facilities_directory' and request.GET.scope == 'nursing' %}active{% endif %}">
+                                <i class="nav-icon fas fa-hospital"></i>
+                                <p>NC Facilities</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can_access_nursing_board_portal %}
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_dashboard' %}"
+                               class="nav-link {% if '/board/nursing/' in request.path or '/dashboard/nursing-council/board/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-landmark"></i>
+                                <p>NC Board Portal</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can_access_medical_board_portal %}
+                        <li class="nav-item">
+                            <a href="{% url 'medical_board_portal' %}"
+                               class="nav-link {% if '/dashboard/medical-board/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-stethoscope"></i>
+                                <p>Medical Board</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'facilities_directory' %}?scope=medical"
+                               class="nav-link {% if request.resolver_match.url_name == 'facilities_directory' and request.GET.scope == 'medical' %}active{% endif %}">
+                                <i class="nav-icon fas fa-hospital-user"></i>
+                                <p>MB Facilities</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a href="{% url 'platform_standards_alignment' %}"
+                               class="nav-link {% if '/dashboard/standards-alignment/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-landmark"></i>
+                                <p>Standards &amp; Compliance</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'fee_structure' %}" class="nav-link {% if '/dashboard/fee-structure/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-money-bill"></i>
+                                <p>Fee Structure</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-header">Data &amp; Reports</li>
+                        {% if can_manage_regulatory_operations or is_finance_reviewer %}
+                        <li class="nav-item">
+                            <a href="{% url 'financial_forecast_dashboard' %}"
+                               class="nav-link {% if '/dashboard/reports/financial/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-chart-pie"></i>
+                                <p>Reports</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can_manage_regulatory_operations %}
+                        <li class="nav-item">
+                            <a href="{% url 'import_data' %}"
+                               class="nav-link {% if '/workforce/import/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-file-import"></i>
+                                <p>Workbooks</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if is_system_admin %}
+                        <li class="nav-item">
+                            <a href="{% url 'nhwa_toolkit' %}"
+                               class="nav-link {% if '/dashboard/nhwa-toolkit/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-table-list"></i>
+                                <p>NHWA Toolkit</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if is_system_admin %}
+                        <li class="nav-item">
+                            <a href="{% url 'nhwa_workbook_index' %}"
+                               class="nav-link {% if '/dashboard/nhwa-workbooks/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-pen-to-square"></i>
+                                <p>NHWA Web Workbooks</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can_access_nursing_regulatory_alignment %}
+                        <li class="nav-item">
+                            <a href="{% url 'nursing_regulatory_alignment' %}"
+                               class="nav-link {% if '/accounts/profile/nursing-alignment/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-chart-column"></i>
+                                <p>Regulatory Intelligence</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can_manage_regulatory_operations or is_data_quality_reviewer %}
+                        <li class="nav-item">
+                            <a href="{% url 'review_centre' %}"
+                               class="nav-link {% if '/dashboard/reviews/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-clipboard-check"></i>
+                                <p>Data Quality</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'complaint_case_list' %}"
+                               class="nav-link {% if '/dashboard/complaints/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-scale-balanced"></i>
+                                <p>Complaints &amp; ICMS</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'disciplinary_case_list' %}"
+                               class="nav-link {% if '/dashboard/complaints/discipline/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-gavel"></i>
+                                <p>Discipline Cases</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'regulatory_decision_list' %}"
+                               class="nav-link {% if '/dashboard/complaints/decisions/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-file-signature"></i>
+                                <p>Decision Register</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'duplicate_review_workflow' %}"
+                               class="nav-link {% if '/dashboard/duplicate-reviews/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-clone"></i>
+                                <p>Duplicate Reviews</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'mobile_intake_queue' %}"
+                               class="nav-link {% if '/dashboard/mobile-intake/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-mobile-screen-button"></i>
+                                <p>Mobile Intake</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'production_readiness_dashboard' %}"
+                               class="nav-link {% if '/dashboard/production-readiness/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-shield-halved"></i>
+                                <p>Readiness</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a href="{% url 'workforce_flow' %}"
+                               class="nav-link {% if '/flow/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>Analytics</p>
+                            </a>
+                        </li>
+
+                        {% if can_access_nursing_council or can_access_medical_board or can_access_document_repository %}
+                        <li class="nav-header">Workspaces</li>
+                        {% if can_access_nursing_council %}
+                        <li class="nav-item">
+                            <a href="{% url 'nursing_forms_portal' %}" class="nav-link {% if '/nursing/forms/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-user-plus"></i>
+                                <p>Nursing Forms</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can_access_medical_board %}
+                        <li class="nav-item">
+                            <a href="{% url 'medical_board_register' %}" class="nav-link {% if '/workforce/medical-board/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-notes-medical"></i>
+                                <p>Medical Board Forms</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can_access_document_repository %}
+                        <li class="nav-item">
+                            <a href="{% url 'repository_search' %}"
+                               class="nav-link {% if '/documents/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-folder-open"></i>
+                                <p>Document Repository</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'ocr_import' %}"
+                               class="nav-link {% if '/ocr/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-file-pdf"></i>
+                                <p>PDF Import</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% endif %}
+
+                        {% if request.user.role == 'admin' and request.user.is_superuser %}
+                        <li class="nav-header">Administration</li>
+                        <li class="nav-item">
+                            <a href="/admin/accounts/user/" target="_blank" class="nav-link">
+                                <i class="nav-icon fas fa-users-cog"></i>
+                                <p>Users &amp; Roles</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/" target="_blank" class="nav-link">
+                                <i class="nav-icon fas fa-gear"></i>
+                                <p>Settings</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/accounts/securityauditevent/" target="_blank" class="nav-link">
+                                <i class="nav-icon fas fa-clipboard-list"></i>
+                                <p>Audit Logs</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'population_guide' %}"
+                               class="nav-link {% if '/records/population-guide/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>Population Guide</p>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li class="nav-header">Support</li>
+                        {% if can_access_staff_dashboards and not can_manage_regulatory_operations and not is_data_quality_reviewer %}
+                        <li class="nav-item">
+                            <a href="{% url 'complaint_case_list' %}"
+                               class="nav-link {% if '/dashboard/complaints/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-scale-balanced"></i>
+                                <p>Complaints &amp; ICMS</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'disciplinary_case_list' %}"
+                               class="nav-link {% if '/dashboard/complaints/discipline/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-gavel"></i>
+                                <p>Discipline Cases</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a href="{% url 'staff_communications' %}"
+                               class="nav-link {% if '/notifications/communications/' in request.path %}active{% elif '/notifications/enquiries/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-envelope-open-text"></i>
+                                <p>Staff Inbox &amp; Chat</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'staff_ai_assistant' %}"
+                               class="nav-link {% if '/dashboard/staff-ai/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-brain"></i>
+                                <p>AI Staff Assistant</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'enquiry_inbox' %}"
+                               class="nav-link {% if '/notifications/enquiries/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-comments"></i>
+                                <p>Messages &amp; Enquiries</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        {% if can_access_nursing_board_portal %}
+                        <li class="nav-header">Board Governance</li>
+                        <li class="nav-item">
+                            <a href="{% url 'board_nursing_dashboard' %}"
+                               class="nav-link {% if '/board/nursing/' in request.path or '/dashboard/nursing-council/board/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-landmark"></i>
+                                <p>Nursing Council Board</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if not is_nursing_board_member %}
+                        <li class="nav-header">Registration</li>
+                        <li class="nav-item">
+                            <a href="{% url 'fee_structure' %}" class="nav-link {% if '/dashboard/fee-structure/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-money-bill"></i>
+                                <p>Fee Structure</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'dashboard_search' %}"
+                               class="nav-link {% if '/dashboard/search/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-search"></i>
+                                <p>Search Registration Help</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            {% if can_access_medical_board and not can_access_nursing_council %}
+                            <a href="{% url 'medical_board_register' %}" class="nav-link">
+                                <i class="nav-icon fas fa-notes-medical"></i>
+                                <p>Online Registration</p>
+                            </a>
+                            {% else %}
+                            <a href="{% url 'nursing_forms_portal' %}" class="nav-link">
+                                <i class="nav-icon fas fa-user-plus"></i>
+                                <p>Online Registration</p>
+                            </a>
+                            {% endif %}
+                        </li>
+                        {% endif %}
+                        <li class="nav-header">Support</li>
+                        <li class="nav-item">
+                            <a href="{% url 'enquiry_inbox' %}"
+                               class="nav-link {% if '/notifications/enquiries/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-comments"></i>
+                                <p>Messages &amp; Enquiries</p>
+                            </a>
+                        </li>
+                        {% if not is_nursing_board_member %}
+                        <li class="nav-item">
+                            <a href="{% url 'complaint_public_submit' %}"
+                               class="nav-link {% if '/dashboard/complaints/submit/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-triangle-exclamation"></i>
+                                <p>Submit Complaint</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if not is_nursing_board_member %}
+                        <li class="nav-item">
+                            <a href="{% url 'helpdesk' %}"
+                               class="nav-link {% if '/notifications/helpdesk/' in request.path %}active{% endif %}">
+                                <i class="nav-icon fas fa-robot"></i>
+                                <p>AI Helpdesk</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                    {% if not is_board_portal_context and not is_nursing_board_member %}
                     <li class="nav-item">
-                        <a href="{% url 'enquiry_inbox' %}"
-                           class="nav-link {% if '/notifications/enquiries/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-comments"></i>
-                            <p>Messages & Enquiries</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'helpdesk' %}"
-                           class="nav-link {% if '/notifications/helpdesk/' in request.path %}active{% endif %}">
-                            <i class="nav-icon fas fa-robot"></i>
-                            <p>AI Helpdesk</p>
+                        <a href="{% url 'helpdesk' %}" class="sidebar-support-card">
+                            <i class="fas fa-headset"></i>
+                            <span>
+                                <span class="support-title">Need Help?</span>
+                                <span class="support-subtitle">Contact Support</span>
+                            </span>
                         </a>
                     </li>
                     {% endif %}
@@ -1777,12 +2307,11 @@
     {% endif %}
 
     <div class="app-main content-wrapper">
-        <section class="content-header">
+        <section class="content-header ndoh-platform-header{% if dashboard_platform_header_variant == 'nursing' %} ndoh-nursing-council-header{% elif dashboard_platform_header_variant == 'medical' %} ndoh-medical-board-header{% else %} ndoh-regulatory-bodies-header{% endif %}" id="platformWelcomeHeader">
             <div class="container-fluid">
                 <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1 class="m-0">{% block page_title %}{% block title_label %}The National Department Of Health Regulatory Bodies Nursing Council &amp; The Medical Board Online Workforce System
-{% endblock %}{% endblock %}</h1>
+                    <div class="col-sm-9">
+                        <h1 class="m-0">{% block page_title %}{% block title_label %}{{ dashboard_platform_title|default:"Welcome To Your PNG Regulatory Bodies Online Platform Dashboard" }}{% endblock %}{% endblock %}</h1>
                     </div>
                 </div>
             </div>
@@ -1803,8 +2332,34 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                {% if can_access_staff_dashboards %}
+                {% if can_access_staff_dashboards and not is_board_portal_context and request.resolver_match.url_name != 'platform_standards_alignment' %}
                     {% include 'dashboard/_platform_standards_bar.html' %}
+                {% endif %}
+                {% if platform_resilience_status %}
+                    {% if not platform_resilience_status.is_online %}
+                        <div class="alert alert-warning platform-resilience-banner d-flex flex-wrap justify-content-between align-items-center" role="status">
+                            <div class="mb-2 mb-md-0">
+                                <strong><i class="fas fa-network-wired mr-1"></i>{{ platform_resilience_status.mode_label }}</strong>
+                                <span class="ml-2">LAN services remain available. Internet-dependent sync is queued until connectivity returns.</span>
+                            </div>
+                            <div>
+                                <span class="badge badge-dark mr-1">{{ platform_resilience_status.pending_sync_count }} pending</span>
+                                <span class="badge badge-danger mr-1">{{ platform_resilience_status.failed_sync_count }} failed</span>
+                                <span class="badge badge-secondary">{{ platform_resilience_status.blocked_sync_count }} blocked</span>
+                            </div>
+                        </div>
+                    {% elif platform_resilience_status.failed_sync_count or platform_resilience_status.blocked_sync_count %}
+                        <div class="alert alert-info platform-resilience-banner d-flex flex-wrap justify-content-between align-items-center" role="status">
+                            <div class="mb-2 mb-md-0">
+                                <strong><i class="fas fa-arrows-rotate mr-1"></i>Sync review needed</strong>
+                                <span class="ml-2">The platform is online, but some queued sync items need retry or review.</span>
+                            </div>
+                            <div>
+                                <span class="badge badge-danger mr-1">{{ platform_resilience_status.failed_sync_count }} failed</span>
+                                <span class="badge badge-secondary">{{ platform_resilience_status.blocked_sync_count }} blocked</span>
+                            </div>
+                        </div>
+                    {% endif %}
                 {% endif %}
                 {% if messages %}
                     {% for message in messages %}
@@ -1835,16 +2390,59 @@
         </div>
     </footer>
 </div>
-{% if can_access_staff_dashboards %}
-<div class="helpdesk-widget staff-ai-widget" id="helpdesk-widget" aria-hidden="true" data-assistant-mode="staff" data-assistant-endpoint="{% url 'staff_ai_chat' %}">
+{% block body_overlays %}{% endblock %}
+{% if show_board_ai_assistant %}
+<div class="helpdesk-widget staff-ai-widget board-ai-widget" id="helpdesk-widget" aria-hidden="true" data-assistant-mode="board" data-assistant-endpoint="{% url 'board_nursing_ai_chat' %}">
     <div class="helpdesk-header">
-        <div>
+        <button type="button" class="helpdesk-drag-handle" id="helpdesk-widget-drag-handle" data-helpdesk-drag-handle aria-label="Move assistant. Drag or use arrow keys." title="Drag or use arrow keys to move assistant"><i class="fas fa-grip-vertical" aria-hidden="true"></i></button>
+        <div class="helpdesk-header-copy">
+            <h5><i class="fas fa-landmark mr-1"></i> Board Governance Assistant</h5>
+            <small>Nursing Council Board matters only</small>
+        </div>
+        <div class="helpdesk-header-actions">
+            <button type="button" class="helpdesk-stop-voice" id="helpdesk-stop-voice" aria-label="Stop assistant voice" title="Stop assistant voice" hidden disabled><i class="fas fa-stop mr-1" aria-hidden="true"></i>Stop</button>
+            <button type="button" class="helpdesk-close" id="helpdesk-close" aria-label="Close board governance assistant">&times;</button>
+        </div>
+    </div>
+    <div class="helpdesk-chat-panel" id="helpdesk-widget-messages" aria-live="polite" aria-relevant="additions text">
+        <div class="helpdesk-message assistant">
+            <strong>Board scope only</strong>
+            <p>Ask about board meetings, packs, agenda readiness, conflicts, minutes, decisions, committees, governance library, risks, and actions. Nursing Council forms, Medical Board forms, sign-up, registration, payments, and operational records are outside this assistant.</p>
+        </div>
+    </div>
+    <form class="helpdesk-form" id="helpdesk-widget-form">
+        <div class="input-group">
+            <input type="text" class="form-control" id="helpdesk-widget-question" placeholder="Ask a board governance question..." autocomplete="off">
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-voice" title="Voice input"><i class="fas fa-microphone"></i></button>
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-read" title="Read last answer"><i class="fas fa-volume-up"></i></button>
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-voice-reply" title="Toggle voice reply" aria-pressed="false"><i class="fas fa-comment-dots"></i></button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </form>
+    <div class="helpdesk-suggestions">
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="What should the board review before the next meeting?">Board review priorities</button>
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="What is the board pack readiness status?">Pack readiness</button>
+        <button type="button" class="helpdesk-suggestion" data-helpdesk-question="Which board actions or risks need attention?">Actions and risks</button>
+    </div>
+</div>
+<button type="button" class="helpdesk-launcher" id="helpdesk-launcher" data-draggable-assistant="1">
+    <i class="fas fa-landmark mr-1"></i> Board Governance Assistant
+</button>
+{% elif can_access_staff_dashboards %}
+<div class="helpdesk-widget staff-ai-widget" id="helpdesk-widget" aria-hidden="true" data-assistant-mode="staff" data-assistant-endpoint="{% url 'staff_ai_chat' %}" data-assistant-stream-endpoint="{% url 'staff_ai_chat_stream' %}">
+    <div class="helpdesk-header">
+        <button type="button" class="helpdesk-drag-handle" id="helpdesk-widget-drag-handle" data-helpdesk-drag-handle aria-label="Move assistant. Drag or use arrow keys." title="Drag or use arrow keys to move assistant"><i class="fas fa-grip-vertical" aria-hidden="true"></i></button>
+        <div class="helpdesk-header-copy">
             <h5><i class="fas fa-brain mr-1"></i> AI Staff Assistant</h5>
             <small>Role-aware operational support</small>
         </div>
-        <button type="button" class="helpdesk-close" id="helpdesk-close" aria-label="Close staff assistant">&times;</button>
+        <div class="helpdesk-header-actions">
+            <button type="button" class="helpdesk-stop-voice" id="helpdesk-stop-voice" aria-label="Stop assistant voice" title="Stop assistant voice" hidden disabled><i class="fas fa-stop mr-1" aria-hidden="true"></i>Stop</button>
+            <button type="button" class="helpdesk-close" id="helpdesk-close" aria-label="Close staff assistant">&times;</button>
+        </div>
     </div>
-    <div class="helpdesk-chat-panel" id="helpdesk-widget-messages">
+    <div class="helpdesk-session-status" id="helpdesk-session-status">Secure platform AI session ready</div>
+    <div class="helpdesk-chat-panel" id="helpdesk-widget-messages" aria-live="polite" aria-relevant="additions text">
         <div class="helpdesk-message assistant">
             <strong>How can I help?</strong>
             <p>Ask about applications, pending reviews, missing data, imports, duplicate records, reports, financial scope, or what action to take next.</p>
@@ -1853,6 +2451,9 @@
     <form class="helpdesk-form" id="helpdesk-widget-form">
         <div class="input-group">
             <input type="text" class="form-control" id="helpdesk-widget-question" placeholder="Ask a staff operations question..." autocomplete="off">
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-voice" title="Voice input"><i class="fas fa-microphone"></i></button>
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-read" title="Read last answer"><i class="fas fa-volume-up"></i></button>
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-voice-reply" title="Toggle voice reply" aria-pressed="false"><i class="fas fa-comment-dots"></i></button>
             <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
         </div>
     </form>
@@ -1869,13 +2470,17 @@
 {% else %}
 <div class="helpdesk-widget" id="helpdesk-widget" aria-hidden="true" data-assistant-mode="public" data-assistant-endpoint="{% url 'helpdesk_api' %}">
     <div class="helpdesk-header">
-        <div>
+        <button type="button" class="helpdesk-drag-handle" id="helpdesk-widget-drag-handle" data-helpdesk-drag-handle aria-label="Move assistant. Drag or use arrow keys." title="Drag or use arrow keys to move assistant"><i class="fas fa-grip-vertical" aria-hidden="true"></i></button>
+        <div class="helpdesk-header-copy">
             <h5><i class="fas fa-robot mr-1"></i> AI Helpdesk</h5>
             <small>Registration and FAQ support</small>
         </div>
-        <button type="button" class="helpdesk-close" id="helpdesk-close" aria-label="Close helpdesk">&times;</button>
+        <div class="helpdesk-header-actions">
+            <button type="button" class="helpdesk-stop-voice" id="helpdesk-stop-voice" aria-label="Stop assistant voice" title="Stop assistant voice" hidden disabled><i class="fas fa-stop mr-1" aria-hidden="true"></i>Stop</button>
+            <button type="button" class="helpdesk-close" id="helpdesk-close" aria-label="Close helpdesk">&times;</button>
+        </div>
     </div>
-    <div class="helpdesk-chat-panel" id="helpdesk-widget-messages">
+    <div class="helpdesk-chat-panel" id="helpdesk-widget-messages" aria-live="polite" aria-relevant="additions text">
         <div class="helpdesk-message assistant">
             <strong>How can I help?</strong>
             <p>Ask about registration forms, required documents, payments, renewals, missing data alerts, or application status.</p>
@@ -1884,6 +2489,9 @@
     <form class="helpdesk-form" id="helpdesk-widget-form">
         <div class="input-group">
             <input type="text" class="form-control" id="helpdesk-widget-question" placeholder="Ask a registration question..." autocomplete="off">
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-voice" title="Voice input"><i class="fas fa-microphone"></i></button>
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-read" title="Read last answer"><i class="fas fa-volume-up"></i></button>
+            <button type="button" class="btn btn-outline-secondary" id="helpdesk-widget-voice-reply" title="Toggle voice reply" aria-pressed="false"><i class="fas fa-comment-dots"></i></button>
             <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
         </div>
     </form>
@@ -1916,10 +2524,16 @@
     </div>
 </div>
 
-{% if request.user.is_authenticated and staff_notification_items %}
+{% if request.user.is_authenticated and notification_unread_items %}
 <div aria-live="polite" aria-atomic="true" style="position: fixed; top: 90px; right: 18px; z-index: 1155;">
-    {% for item in staff_notification_items %}
-    <div class="toast staff-alert-toast" data-staff-toast data-delay="8000" role="alert" aria-live="assertive" aria-atomic="true">
+    {% for item in notification_unread_items %}
+    <div class="toast staff-alert-toast"
+         data-staff-toast
+         data-toast-key="{{ request.user.pk }}-{{ item.title|slugify }}-{{ item.message|truncatechars:90|slugify }}"
+         data-delay="8000"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true">
         <div class="toast-header">
             <strong class="mr-auto">{{ item.title }}</strong>
             <small>{{ item.level|title }}</small>
@@ -2041,21 +2655,209 @@ window.ndohGetCsrfToken = function () {
     return templateToken && templateToken !== 'NOTPROVIDED' ? templateToken : '';
 };
 
-window.ndohAskHelpdesk = function (question, endpoint) {
-    return fetch(endpoint || "{% url 'helpdesk_api' %}", {
+window.ndohReadSseResponse = function (response, handlers) {
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok) {
+        throw new Error('Assistant request failed.');
+    }
+    if (!response.body || contentType.indexOf('text/event-stream') === -1) {
+        return response.json();
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finalData = null;
+
+    function dispatchEvent(block) {
+        const lines = block.split(/\r?\n/);
+        let eventName = 'message';
+        const dataLines = [];
+        lines.forEach(function (line) {
+            if (line.indexOf('event:') === 0) {
+                eventName = line.slice(6).trim();
+            } else if (line.indexOf('data:') === 0) {
+                dataLines.push(line.slice(5).trim());
+            }
+        });
+        if (!dataLines.length) {
+            return;
+        }
+        let payload = {};
+        try {
+            payload = JSON.parse(dataLines.join('\n'));
+        } catch (error) {
+            payload = { message: dataLines.join('\n') };
+        }
+        if (eventName === 'status' && handlers && handlers.onStatus) {
+            handlers.onStatus(payload);
+        }
+        if (eventName === 'answer') {
+            finalData = payload;
+            if (handlers && handlers.onAnswer) {
+                handlers.onAnswer(payload);
+            }
+        }
+    }
+
+    function readNext() {
+        return reader.read().then(function (result) {
+            if (result.done) {
+                if (buffer.trim()) {
+                    dispatchEvent(buffer);
+                }
+                return finalData || {};
+            }
+            buffer += decoder.decode(result.value, { stream: true });
+            const blocks = buffer.split('\n\n');
+            buffer = blocks.pop() || '';
+            blocks.forEach(dispatchEvent);
+            return readNext();
+        });
+    }
+
+    return readNext();
+};
+
+window.ndohAskHelpdesk = function (question, endpoint, options) {
+    const assistantWidget = document.getElementById('helpdesk-widget');
+    const widgetMode = assistantWidget ? assistantWidget.getAttribute('data-assistant-mode') : '';
+    const assistantMode = widgetMode || (endpoint && endpoint.indexOf('staff-ai') !== -1 ? 'staff' : 'public');
+    const storageKey = assistantMode === 'staff'
+        ? 'ndohStaffAiSessionId'
+        : (assistantMode === 'board' ? 'ndohBoardAiSessionId' : 'ndohPublicAiSessionId');
+    let assistantSessionId = localStorage.getItem(storageKey);
+    if (!assistantSessionId) {
+        assistantSessionId = assistantMode + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem(storageKey, assistantSessionId);
+    }
+    const requestEndpoint = (options && options.streamEndpoint) || endpoint || "{% url 'helpdesk_api' %}";
+    return fetch(requestEndpoint, {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': window.ndohGetCsrfToken()
         },
-        body: JSON.stringify({ question: question })
+        body: JSON.stringify({ question: question, session_id: assistantSessionId })
     }).then(function (response) {
-        if (!response.ok) {
-            throw new Error('Helpdesk request failed.');
+        return window.ndohReadSseResponse(response, options || {});
+    }).then(function (data) {
+        if (data.session_id) {
+            localStorage.setItem(storageKey, data.session_id);
         }
-        return response.json();
+        return data;
     });
+};
+
+window.ndohVoiceRecognitionErrorMessage = function (errorCode) {
+    const messages = {
+        'not-allowed': 'Microphone access is blocked. Use the microphone control in the browser address bar to allow access, then try again.',
+        'service-not-allowed': 'Voice recognition is not available for this site in this browser. Type the question instead.',
+        'audio-capture': 'No microphone was detected. Check that a microphone is connected and available to the browser.',
+        'network': 'Voice recognition could not reach the browser speech service. Check the internet connection, or type the question instead.',
+        'no-speech': 'No speech was detected. Press the microphone, wait for Listening, then speak your question.',
+        'aborted': 'Voice input was stopped.',
+        'language-not-supported': 'The selected voice language is not supported by this browser. Type the question instead.',
+        'start-failed': 'Voice input could not start. Check browser microphone permission and try again.',
+    };
+    return messages[errorCode] || 'Voice input could not be completed. Type the question instead, then send it.';
+};
+
+window.ndohVoiceRecognitionAvailability = function () {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        return {
+            supported: false,
+            message: 'Voice input is not supported by this browser. Type the question instead.',
+        };
+    }
+    const hostname = String(window.location && window.location.hostname || '').toLowerCase();
+    const isLoopback = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
+    if (window.isSecureContext === false && !isLoopback) {
+        return {
+            supported: false,
+            message: 'Voice input needs HTTPS when the platform is opened through a Wi-Fi or hotspot address. Type the question here, or use an HTTPS platform address for voice input.',
+        };
+    }
+    return { supported: true, SpeechRecognition: SpeechRecognition };
+};
+
+window.ndohStartVoiceRecognition = function (options) {
+    const config = options || {};
+    const availability = window.ndohVoiceRecognitionAvailability();
+    if (!availability.supported) {
+        if (typeof config.onError === 'function') {
+            config.onError({ error: 'unsupported', message: availability.message });
+        }
+        return null;
+    }
+
+    let recognition;
+    let hasTranscript = false;
+    let errorCode = '';
+    let ended = false;
+    const finish = function () {
+        if (ended) {
+            return;
+        }
+        ended = true;
+        if (typeof config.onEnd === 'function') {
+            config.onEnd({ hasTranscript: hasTranscript, errorCode: errorCode });
+        }
+    };
+    try {
+        recognition = new availability.SpeechRecognition();
+    } catch (error) {
+        errorCode = 'start-failed';
+        if (typeof config.onError === 'function') {
+            config.onError({ error: errorCode, message: window.ndohVoiceRecognitionErrorMessage(errorCode), cause: error });
+        }
+        finish();
+        return null;
+    }
+
+    recognition.lang = config.language || 'en';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = function () {
+        if (typeof config.onStart === 'function') {
+            config.onStart();
+        }
+    };
+    recognition.onresult = function (event) {
+        const resultIndex = typeof event.resultIndex === 'number' ? event.resultIndex : 0;
+        const result = event.results && event.results[resultIndex];
+        const transcript = result && result[0] ? String(result[0].transcript || '').trim() : '';
+        if (!transcript) {
+            return;
+        }
+        hasTranscript = true;
+        if (typeof config.onResult === 'function') {
+            config.onResult(transcript);
+        }
+    };
+    recognition.onerror = function (event) {
+        errorCode = (event && event.error) || 'unknown';
+        if (typeof config.onError === 'function') {
+            config.onError({
+                error: errorCode,
+                message: window.ndohVoiceRecognitionErrorMessage(errorCode),
+                event: event,
+            });
+        }
+    };
+    recognition.onend = finish;
+    try {
+        recognition.start();
+    } catch (error) {
+        errorCode = 'start-failed';
+        if (typeof config.onError === 'function') {
+            config.onError({ error: errorCode, message: window.ndohVoiceRecognitionErrorMessage(errorCode), cause: error });
+        }
+        finish();
+        return null;
+    }
+    return recognition;
 };
 
 window.ndohAppendHelpdeskMessage = function (container, message, type) {
@@ -2076,12 +2878,25 @@ window.ndohAppendHelpdeskAnswer = function (container, data) {
     const suggestions = (data.suggestions || []).length
         ? '<div class="small text-muted mt-2">Related: ' + data.suggestions.map(window.ndohEscapeHtml).join(', ') + '</div>'
         : '';
+    const sources = (data.sources || []).length
+        ? '<div class="small text-muted mt-2"><strong>Sources:</strong> ' + data.sources.map(function (source) {
+            const label = window.ndohEscapeHtml(source.label || 'Source');
+            const detail = source.detail ? ' - ' + window.ndohEscapeHtml(source.detail) : '';
+            return source.url ? '<a href="' + window.ndohEscapeHtml(source.url) + '">' + label + '</a>' + detail : label + detail;
+        }).join('; ') + '</div>'
+        : '';
+    window.ndohLastAssistantText = [
+        data.title || 'Helpdesk',
+        data.answer || '',
+        (data.bullets || []).join('. ')
+    ].join('. ');
     const node = document.createElement('div');
     node.className = 'helpdesk-message assistant';
     node.innerHTML = '<strong>' + window.ndohEscapeHtml(data.title || 'Helpdesk') + '</strong>'
         + '<p>' + window.ndohEscapeHtml(data.answer || 'Please create an enquiry for more help.') + '</p>'
         + (bullets ? '<ul class="mb-2">' + bullets + '</ul>' : '')
         + (links ? '<div class="helpdesk-links">' + links + '</div>' : '')
+        + sources
         + suggestions;
     container.appendChild(node);
     container.scrollTop = container.scrollHeight;
@@ -2094,10 +2909,131 @@ document.addEventListener('DOMContentLoaded', function () {
     const helpdeskForm = document.getElementById('helpdesk-widget-form');
     const helpdeskInput = document.getElementById('helpdesk-widget-question');
     const helpdeskMessages = document.getElementById('helpdesk-widget-messages');
+    const helpdeskVoice = document.getElementById('helpdesk-widget-voice');
+    const helpdeskRead = document.getElementById('helpdesk-widget-read');
+    const helpdeskVoiceReply = document.getElementById('helpdesk-widget-voice-reply');
+    const helpdeskStopVoice = document.getElementById('helpdesk-stop-voice');
+    const helpdeskDragHandle = document.getElementById('helpdesk-widget-drag-handle');
+    const helpdeskSessionStatus = document.getElementById('helpdesk-session-status');
     const loadingClose = document.getElementById('app-loading-close');
     const loadingBack = document.getElementById('app-loading-back');
     const sidebarToggle = document.querySelector('[data-lte-toggle="sidebar"]');
     const appSidebar = document.querySelector('.app-sidebar, .main-sidebar');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationMenu = notificationDropdown ? document.querySelector('[aria-labelledby="notificationDropdown"]') : null;
+    let notificationReadRequestSent = false;
+    const assistantMode = helpdeskWidget ? helpdeskWidget.getAttribute('data-assistant-mode') : 'public';
+    const voiceReplyStorageKey = assistantMode === 'staff'
+        ? 'ndohStaffAiVoiceReply'
+        : (assistantMode === 'board' ? 'ndohBoardAiVoiceReply' : 'ndohPublicAiVoiceReply');
+    let voiceReplyEnabled = localStorage.getItem(voiceReplyStorageKey) === '1';
+    let activeAssistantUtterance = null;
+    let activeHelpdeskRecognition = null;
+    let helpdeskVoiceStopRequested = false;
+    let helpdeskRequestSequence = 0;
+    const assistantWidgetPositionStorageKey = 'ndohAssistantWidgetPosition';
+    let savedAssistantWidgetPosition = null;
+
+    try {
+        const savedPosition = localStorage.getItem(assistantWidgetPositionStorageKey);
+        if (savedPosition) {
+            const position = JSON.parse(savedPosition);
+            if (Number.isFinite(position.left) && Number.isFinite(position.top)) {
+                savedAssistantWidgetPosition = position;
+            } else {
+                localStorage.removeItem(assistantWidgetPositionStorageKey);
+            }
+        }
+        // The prior launcher-only position can put the panel outside the viewport.
+        localStorage.removeItem('ndohAssistantPosition');
+    } catch (error) {
+        savedAssistantWidgetPosition = null;
+    }
+
+    function updateNotificationBadge(count) {
+        const unreadCount = Number(count) || 0;
+        let badge = document.querySelector('[data-notification-badge]');
+        if (unreadCount > 0) {
+            if (!badge && notificationDropdown) {
+                badge = document.createElement('span');
+                badge.className = 'badge badge-warning navbar-badge';
+                badge.setAttribute('data-notification-badge', '');
+                notificationDropdown.appendChild(badge);
+            }
+            if (badge) {
+                badge.textContent = unreadCount;
+            }
+            document.querySelectorAll('[data-notification-unread-label]').forEach(function (label) {
+                label.textContent = unreadCount + ' unread';
+            });
+        } else {
+            document.querySelectorAll('[data-notification-badge]').forEach(function (existingBadge) {
+                existingBadge.remove();
+            });
+            document.querySelectorAll('[data-notification-unread-label]').forEach(function (label) {
+                label.remove();
+            });
+        }
+        document.querySelectorAll('[data-notification-item].is-unread').forEach(function (item) {
+            item.classList.remove('is-unread');
+        });
+    }
+
+    function markNotificationsRead() {
+        if (!notificationDropdown || notificationReadRequestSent) {
+            return;
+        }
+        const markReadUrl = notificationDropdown.getAttribute('data-mark-read-url');
+        if (!markReadUrl) {
+            return;
+        }
+        notificationReadRequestSent = true;
+        fetch(markReadUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': window.ndohGetCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            updateNotificationBadge(data.count);
+        }).catch(function () {
+            notificationReadRequestSent = false;
+        });
+    }
+
+    if (notificationDropdown) {
+        notificationDropdown.addEventListener('click', function () {
+            const wasOpen = notificationMenu && notificationMenu.classList.contains('show');
+            window.setTimeout(function () {
+                if (!wasOpen && notificationMenu && !notificationMenu.classList.contains('show')) {
+                    notificationMenu.classList.add('show');
+                    notificationDropdown.setAttribute('aria-expanded', 'true');
+                }
+            }, 0);
+            markNotificationsRead();
+        });
+        notificationDropdown.addEventListener('shown.bs.dropdown', markNotificationsRead);
+        document.addEventListener('click', function (event) {
+            if (!notificationMenu || !notificationMenu.classList.contains('show')) {
+                return;
+            }
+            if (notificationDropdown.contains(event.target) || notificationMenu.contains(event.target)) {
+                return;
+            }
+            notificationMenu.classList.remove('show');
+            notificationDropdown.setAttribute('aria-expanded', 'false');
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && notificationMenu && notificationMenu.classList.contains('show')) {
+                notificationMenu.classList.remove('show');
+                notificationDropdown.setAttribute('aria-expanded', 'false');
+                notificationDropdown.focus();
+            }
+        });
+    }
 
     function syncSidebarLayoutState() {
         if (!document.body.classList.contains('app-shell')) {
@@ -2142,9 +3078,82 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function submitHelpdeskQuestion(question) {
+    function updateHelpdeskVoiceReplyButton() {
+        if (!helpdeskVoiceReply) {
+            return;
+        }
+        helpdeskVoiceReply.setAttribute('aria-pressed', voiceReplyEnabled ? 'true' : 'false');
+        helpdeskVoiceReply.classList.toggle('btn-secondary', voiceReplyEnabled);
+        helpdeskVoiceReply.classList.toggle('btn-outline-secondary', !voiceReplyEnabled);
+        helpdeskVoiceReply.title = voiceReplyEnabled ? 'Voice reply is on' : 'Voice reply is off';
+    }
+
+    function updateHelpdeskSpeechControls() {
+        if (!helpdeskStopVoice) {
+            return;
+        }
+        const speechIsActive = Boolean(activeAssistantUtterance);
+        helpdeskStopVoice.hidden = !speechIsActive;
+        helpdeskStopVoice.disabled = !speechIsActive;
+    }
+
+    function stopHelpdeskSpeech() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+        activeAssistantUtterance = null;
+        updateHelpdeskSpeechControls();
+    }
+
+    function setHelpdeskVoiceInputState(isListening) {
+        if (!helpdeskVoice) {
+            return;
+        }
+        helpdeskVoice.classList.toggle('is-listening', Boolean(isListening));
+        helpdeskVoice.setAttribute('aria-pressed', isListening ? 'true' : 'false');
+        helpdeskVoice.title = isListening ? 'Listening - click to stop voice input' : 'Voice input';
+    }
+
+    function setHelpdeskVoiceInputStatus(message, isError) {
+        if (helpdeskSessionStatus) {
+            helpdeskSessionStatus.textContent = message;
+            helpdeskSessionStatus.classList.toggle('is-busy', !isError && message.indexOf('Listening') === 0);
+        }
+        if (helpdeskVoice) {
+            helpdeskVoice.title = message;
+        }
+    }
+
+    function ndohSpeakAssistantText(text) {
+        stopHelpdeskSpeech();
+        if (!text || !('speechSynthesis' in window)) {
+            return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en';
+        utterance.rate = 0.95;
+        activeAssistantUtterance = utterance;
+        utterance.onend = function () {
+            if (activeAssistantUtterance === utterance) {
+                activeAssistantUtterance = null;
+                updateHelpdeskSpeechControls();
+            }
+        };
+        utterance.onerror = utterance.onend;
+        updateHelpdeskSpeechControls();
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function submitHelpdeskQuestion(question, options) {
         if (!question || !helpdeskMessages) {
             return;
+        }
+        stopHelpdeskSpeech();
+        const requestSequence = ++helpdeskRequestSequence;
+        const speakReply = Boolean(options && options.speakReply) || voiceReplyEnabled;
+        if (helpdeskSessionStatus) {
+            helpdeskSessionStatus.textContent = 'Sending secure platform AI request...';
+            helpdeskSessionStatus.classList.add('is-busy');
         }
         window.ndohAppendHelpdeskMessage(helpdeskMessages, question, 'user');
         const waitingNode = document.createElement('div');
@@ -2153,30 +3162,133 @@ document.addEventListener('DOMContentLoaded', function () {
         helpdeskMessages.appendChild(waitingNode);
         helpdeskMessages.scrollTop = helpdeskMessages.scrollHeight;
         const assistantEndpoint = helpdeskWidget ? helpdeskWidget.getAttribute('data-assistant-endpoint') : '';
-        window.ndohAskHelpdesk(question, assistantEndpoint).then(function (data) {
+        const assistantStreamEndpoint = helpdeskWidget ? helpdeskWidget.getAttribute('data-assistant-stream-endpoint') : '';
+        window.ndohAskHelpdesk(question, assistantEndpoint, {
+            streamEndpoint: assistantStreamEndpoint,
+            onStatus: function (payload) {
+                if (requestSequence !== helpdeskRequestSequence) {
+                    waitingNode.remove();
+                    return;
+                }
+                const statusMessage = payload.message || 'Preparing an answer...';
+                waitingNode.innerHTML = '<p>' + window.ndohEscapeHtml(statusMessage) + '</p>';
+                if (helpdeskSessionStatus) {
+                    helpdeskSessionStatus.textContent = statusMessage;
+                }
+            }
+        }).then(function (data) {
+            if (requestSequence !== helpdeskRequestSequence) {
+                waitingNode.remove();
+                return;
+            }
             waitingNode.remove();
+            if (helpdeskSessionStatus) {
+                helpdeskSessionStatus.textContent = data.session_id ? 'Secure platform AI session active' : 'Secure platform AI session ready';
+                helpdeskSessionStatus.classList.remove('is-busy');
+            }
             window.ndohAppendHelpdeskAnswer(helpdeskMessages, data);
+            if (speakReply) {
+                ndohSpeakAssistantText(window.ndohLastAssistantText || data.answer || '');
+            }
         }).catch(function () {
+            if (requestSequence !== helpdeskRequestSequence) {
+                waitingNode.remove();
+                return;
+            }
             waitingNode.remove();
+            if (helpdeskSessionStatus) {
+                helpdeskSessionStatus.textContent = 'Assistant request failed. Try again or open the full assistant page.';
+                helpdeskSessionStatus.classList.remove('is-busy');
+            }
             window.ndohAppendHelpdeskMessage(helpdeskMessages, 'Sorry, I could not answer that right now. Please create an enquiry for the registrar.', 'assistant');
         });
+    }
+
+    function clampHelpdeskPosition(value, minimum, maximum) {
+        return Math.max(minimum, Math.min(maximum, value));
+    }
+
+    function applyHelpdeskWidgetPosition(left, top) {
+        if (!helpdeskWidget) {
+            return;
+        }
+        const rect = helpdeskWidget.getBoundingClientRect();
+        const width = rect.width || helpdeskWidget.offsetWidth || Math.min(390, Math.max(1, window.innerWidth - 16));
+        const height = rect.height || helpdeskWidget.offsetHeight || Math.min(520, Math.max(1, window.innerHeight - 16));
+        const viewportPadding = 8;
+        const maxLeft = Math.max(viewportPadding, window.innerWidth - width - viewportPadding);
+        const maxTop = Math.max(viewportPadding, window.innerHeight - height - viewportPadding);
+        helpdeskWidget.style.left = clampHelpdeskPosition(left, viewportPadding, maxLeft) + 'px';
+        helpdeskWidget.style.top = clampHelpdeskPosition(top, viewportPadding, maxTop) + 'px';
+        helpdeskWidget.style.right = 'auto';
+        helpdeskWidget.style.bottom = 'auto';
+    }
+
+    function ensureHelpdeskWidgetInViewport() {
+        if (!helpdeskWidget || !helpdeskWidget.classList.contains('is-open')) {
+            return;
+        }
+        const rect = helpdeskWidget.getBoundingClientRect();
+        if (!rect.width || !rect.height) {
+            return;
+        }
+        applyHelpdeskWidgetPosition(rect.left, rect.top);
+    }
+
+    function saveHelpdeskWidgetPosition() {
+        if (!helpdeskWidget) {
+            return;
+        }
+        const rect = helpdeskWidget.getBoundingClientRect();
+        savedAssistantWidgetPosition = { left: rect.left, top: rect.top };
+        try {
+            localStorage.setItem(assistantWidgetPositionStorageKey, JSON.stringify(savedAssistantWidgetPosition));
+        } catch (error) {
+            // The panel remains usable even when browser storage is unavailable.
+        }
+    }
+
+    function openHelpdeskWidget() {
+        if (!helpdeskWidget) {
+            return;
+        }
+        helpdeskWidget.classList.add('is-open');
+        helpdeskWidget.setAttribute('aria-hidden', 'false');
+        window.requestAnimationFrame(function () {
+            if (savedAssistantWidgetPosition) {
+                applyHelpdeskWidgetPosition(savedAssistantWidgetPosition.left, savedAssistantWidgetPosition.top);
+            } else {
+                ensureHelpdeskWidgetInViewport();
+            }
+        });
+        if (helpdeskInput) {
+            helpdeskInput.focus();
+        }
+    }
+
+    function closeHelpdeskWidget() {
+        stopHelpdeskSpeech();
+        helpdeskRequestSequence += 1;
+        if (helpdeskWidget) {
+            helpdeskWidget.classList.remove('is-open');
+            helpdeskWidget.setAttribute('aria-hidden', 'true');
+        }
     }
 
     if (helpdeskWidget && helpdeskLauncher) {
         helpdeskLauncher.addEventListener('click', function (event) {
             event.preventDefault();
-            helpdeskWidget.classList.toggle('is-open');
-            helpdeskWidget.setAttribute('aria-hidden', helpdeskWidget.classList.contains('is-open') ? 'false' : 'true');
-            if (helpdeskWidget.classList.contains('is-open') && helpdeskInput) {
-                helpdeskInput.focus();
+            if (helpdeskWidget.classList.contains('is-open')) {
+                closeHelpdeskWidget();
+            } else {
+                openHelpdeskWidget();
             }
         });
     }
 
     if (helpdeskClose && helpdeskWidget) {
         helpdeskClose.addEventListener('click', function () {
-            helpdeskWidget.classList.remove('is-open');
-            helpdeskWidget.setAttribute('aria-hidden', 'true');
+            closeHelpdeskWidget();
         });
     }
 
@@ -2194,104 +3306,183 @@ document.addEventListener('DOMContentLoaded', function () {
         button.addEventListener('click', function () {
             const question = button.getAttribute('data-helpdesk-question');
             if (helpdeskWidget) {
-                helpdeskWidget.classList.add('is-open');
-                helpdeskWidget.setAttribute('aria-hidden', 'false');
+                openHelpdeskWidget();
             }
             submitHelpdeskQuestion(question);
         });
     });
 
-    if (helpdeskLauncher && helpdeskLauncher.getAttribute('data-draggable-assistant') === '1') {
-        const savedPosition = localStorage.getItem('ndohAssistantPosition');
-        let dragged = false;
-        let pointerActive = false;
-        let offsetX = 0;
-        let offsetY = 0;
-        let startX = 0;
-        let startY = 0;
-        const dragThreshold = 8;
-
-        function clamp(value, min, max) {
-            return Math.max(min, Math.min(max, value));
-        }
-
-        function applyAssistantPosition(left, top) {
-            const rect = helpdeskLauncher.getBoundingClientRect();
-            const maxLeft = window.innerWidth - rect.width - 8;
-            const maxTop = window.innerHeight - rect.height - 8;
-            const nextLeft = clamp(left, 8, Math.max(8, maxLeft));
-            const nextTop = clamp(top, 8, Math.max(8, maxTop));
-            helpdeskLauncher.style.left = nextLeft + 'px';
-            helpdeskLauncher.style.top = nextTop + 'px';
-            helpdeskLauncher.style.right = 'auto';
-            helpdeskLauncher.style.bottom = 'auto';
-            if (helpdeskWidget) {
-                helpdeskWidget.style.right = 'auto';
-                helpdeskWidget.style.left = clamp(nextLeft, 8, Math.max(8, window.innerWidth - helpdeskWidget.offsetWidth - 8)) + 'px';
-                helpdeskWidget.style.bottom = 'auto';
-                helpdeskWidget.style.top = clamp(nextTop - helpdeskWidget.offsetHeight - 12, 8, Math.max(8, window.innerHeight - helpdeskWidget.offsetHeight - 8)) + 'px';
-            }
-        }
-
-        if (savedPosition) {
-            try {
-                const position = JSON.parse(savedPosition);
-                if (Number.isFinite(position.left) && Number.isFinite(position.top)) {
-                    applyAssistantPosition(position.left, position.top);
-                }
-            } catch (error) {
-                localStorage.removeItem('ndohAssistantPosition');
-            }
-        }
-
-        helpdeskLauncher.addEventListener('pointerdown', function (event) {
-            pointerActive = true;
-            dragged = false;
-            startX = event.clientX;
-            startY = event.clientY;
-            const rect = helpdeskLauncher.getBoundingClientRect();
-            offsetX = event.clientX - rect.left;
-            offsetY = event.clientY - rect.top;
-            helpdeskLauncher.setPointerCapture(event.pointerId);
-        });
-
-        helpdeskLauncher.addEventListener('pointermove', function (event) {
-            if (!pointerActive) {
-                return;
-            }
-            const movedX = Math.abs(event.clientX - startX);
-            const movedY = Math.abs(event.clientY - startY);
-            if (!dragged && movedX < dragThreshold && movedY < dragThreshold) {
-                return;
-            }
-            dragged = true;
-            applyAssistantPosition(event.clientX - offsetX, event.clientY - offsetY);
-        });
-
-        helpdeskLauncher.addEventListener('pointerup', function (event) {
-            if (!pointerActive) {
-                return;
-            }
-            pointerActive = false;
-            const rect = helpdeskLauncher.getBoundingClientRect();
-            localStorage.setItem('ndohAssistantPosition', JSON.stringify({ left: rect.left, top: rect.top }));
-            window.setTimeout(function () {
-                dragged = false;
-            }, 0);
-        });
-
-        helpdeskLauncher.addEventListener('click', function (event) {
-            if (dragged) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-        }, true);
-
-        window.addEventListener('resize', function () {
-            const rect = helpdeskLauncher.getBoundingClientRect();
-            applyAssistantPosition(rect.left, rect.top);
+    if (helpdeskRead) {
+        helpdeskRead.addEventListener('click', function () {
+            ndohSpeakAssistantText(window.ndohLastAssistantText || 'No assistant answer is available yet.');
         });
     }
+
+    if (helpdeskStopVoice) {
+        if (!('speechSynthesis' in window)) {
+            helpdeskStopVoice.title = 'Voice output is not supported by this browser';
+        }
+        updateHelpdeskSpeechControls();
+        helpdeskStopVoice.addEventListener('click', function () {
+            stopHelpdeskSpeech();
+            if (helpdeskInput) {
+                helpdeskInput.focus();
+            }
+        });
+    }
+
+    if (helpdeskVoiceReply) {
+        if (!('speechSynthesis' in window)) {
+            helpdeskVoiceReply.disabled = true;
+            helpdeskVoiceReply.title = 'Voice replies are not supported by this browser';
+        } else {
+            updateHelpdeskVoiceReplyButton();
+            helpdeskVoiceReply.addEventListener('click', function () {
+                voiceReplyEnabled = !voiceReplyEnabled;
+                localStorage.setItem(voiceReplyStorageKey, voiceReplyEnabled ? '1' : '0');
+                updateHelpdeskVoiceReplyButton();
+            });
+        }
+    }
+
+    if (helpdeskVoice) {
+        const voiceAvailability = window.ndohVoiceRecognitionAvailability();
+        if (!voiceAvailability.supported) {
+            helpdeskVoice.disabled = true;
+            helpdeskVoice.setAttribute('aria-disabled', 'true');
+            setHelpdeskVoiceInputStatus(voiceAvailability.message, true);
+        } else {
+            helpdeskVoice.addEventListener('click', function () {
+                if (activeHelpdeskRecognition) {
+                    helpdeskVoiceStopRequested = true;
+                    try {
+                        activeHelpdeskRecognition.stop();
+                    } catch (error) {
+                        activeHelpdeskRecognition = null;
+                        setHelpdeskVoiceInputState(false);
+                        setHelpdeskVoiceInputStatus('Voice input stopped.', false);
+                    }
+                    return;
+                }
+                stopHelpdeskSpeech();
+                helpdeskVoiceStopRequested = false;
+                const recognition = window.ndohStartVoiceRecognition({
+                    language: 'en',
+                    onStart: function () {
+                        setHelpdeskVoiceInputState(true);
+                        setHelpdeskVoiceInputStatus('Listening - speak your staff question now.', false);
+                    },
+                    onResult: function (transcript) {
+                        setHelpdeskVoiceInputStatus('Voice question captured. Sending secure platform AI request...', false);
+                        if (helpdeskInput) {
+                            helpdeskInput.value = transcript;
+                        }
+                        submitHelpdeskQuestion(transcript, { speakReply: true });
+                    },
+                    onError: function (detail) {
+                        activeHelpdeskRecognition = null;
+                        setHelpdeskVoiceInputState(false);
+                        if (detail.error === 'aborted' && helpdeskVoiceStopRequested) {
+                            setHelpdeskVoiceInputStatus('Voice input stopped.', false);
+                            return;
+                        }
+                        setHelpdeskVoiceInputStatus(detail.message, true);
+                    },
+                    onEnd: function (detail) {
+                        activeHelpdeskRecognition = null;
+                        setHelpdeskVoiceInputState(false);
+                        if (!detail.hasTranscript && !detail.errorCode && !helpdeskVoiceStopRequested) {
+                            setHelpdeskVoiceInputStatus('No speech was detected. Press the microphone and speak after Listening appears.', true);
+                        }
+                        helpdeskVoiceStopRequested = false;
+                    },
+                });
+                activeHelpdeskRecognition = recognition;
+                if (!recognition) {
+                    setHelpdeskVoiceInputState(false);
+                }
+            });
+        }
+    }
+
+    if (helpdeskWidget && helpdeskDragHandle) {
+        let dragState = null;
+        const dragThreshold = 4;
+
+        helpdeskDragHandle.addEventListener('pointerdown', function (event) {
+            if (event.button !== undefined && event.button !== 0) {
+                return;
+            }
+            const rect = helpdeskWidget.getBoundingClientRect();
+            dragState = {
+                pointerId: event.pointerId,
+                offsetX: event.clientX - rect.left,
+                offsetY: event.clientY - rect.top,
+                startX: event.clientX,
+                startY: event.clientY,
+                moved: false
+            };
+            helpdeskWidget.classList.add('is-dragging');
+            helpdeskDragHandle.setPointerCapture(event.pointerId);
+            event.preventDefault();
+        });
+
+        helpdeskDragHandle.addEventListener('pointermove', function (event) {
+            if (!dragState || dragState.pointerId !== event.pointerId) {
+                return;
+            }
+            const movedX = Math.abs(event.clientX - dragState.startX);
+            const movedY = Math.abs(event.clientY - dragState.startY);
+            if (!dragState.moved && movedX < dragThreshold && movedY < dragThreshold) {
+                return;
+            }
+            dragState.moved = true;
+            applyHelpdeskWidgetPosition(event.clientX - dragState.offsetX, event.clientY - dragState.offsetY);
+            event.preventDefault();
+        });
+
+        function finishHelpdeskDrag(event) {
+            if (!dragState || dragState.pointerId !== event.pointerId) {
+                return;
+            }
+            if (helpdeskDragHandle.hasPointerCapture(event.pointerId)) {
+                helpdeskDragHandle.releasePointerCapture(event.pointerId);
+            }
+            helpdeskWidget.classList.remove('is-dragging');
+            if (dragState.moved) {
+                saveHelpdeskWidgetPosition();
+            }
+            dragState = null;
+        }
+
+        helpdeskDragHandle.addEventListener('pointerup', finishHelpdeskDrag);
+        helpdeskDragHandle.addEventListener('pointercancel', finishHelpdeskDrag);
+        helpdeskDragHandle.addEventListener('keydown', function (event) {
+            if (!helpdeskWidget.classList.contains('is-open')) {
+                return;
+            }
+            const step = event.shiftKey ? 48 : 24;
+            const rect = helpdeskWidget.getBoundingClientRect();
+            let nextLeft = rect.left;
+            let nextTop = rect.top;
+            if (event.key === 'ArrowLeft') {
+                nextLeft -= step;
+            } else if (event.key === 'ArrowRight') {
+                nextLeft += step;
+            } else if (event.key === 'ArrowUp') {
+                nextTop -= step;
+            } else if (event.key === 'ArrowDown') {
+                nextTop += step;
+            } else {
+                return;
+            }
+            applyHelpdeskWidgetPosition(nextLeft, nextTop);
+            saveHelpdeskWidgetPosition();
+            event.preventDefault();
+        });
+    }
+
+    window.addEventListener('resize', ensureHelpdeskWidgetInViewport);
 
     document.querySelectorAll('[data-toggle]').forEach(function (element) {
         if (!element.hasAttribute('data-bs-toggle')) {
@@ -2460,15 +3651,45 @@ document.addEventListener('DOMContentLoaded', function () {
         resetTimer();
     }
 
-    document.querySelectorAll('[data-staff-toast]').forEach(function (element) {
-        if (window.bootstrap && window.bootstrap.Toast) {
-            const toast = new window.bootstrap.Toast(element, { delay: 8000 });
-            toast.show();
+    (function initializeNotificationToasts() {
+        const storageKey = 'ndohSeenNotificationToasts';
+        let seenKeys = [];
+        try {
+            seenKeys = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        } catch (error) {
+            seenKeys = [];
         }
-    });
+        const seen = new Set(Array.isArray(seenKeys) ? seenKeys : []);
+
+        function persistSeenKeys() {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(Array.from(seen).slice(-250)));
+            } catch (error) {
+                return;
+            }
+        }
+
+        document.querySelectorAll('[data-staff-toast]').forEach(function (element) {
+            if (!window.bootstrap || !window.bootstrap.Toast) {
+                return;
+            }
+            const toastKey = element.getAttribute('data-toast-key') || element.textContent.trim().slice(0, 180);
+            if (seen.has(toastKey)) {
+                element.remove();
+                return;
+            }
+            seen.add(toastKey);
+            persistSeenKeys();
+            const toast = new window.bootstrap.Toast(element, { delay: 8000 });
+            element.addEventListener('hidden.bs.toast', function () {
+                element.remove();
+            }, { once: true });
+            toast.show();
+        });
+    })();
 });
 </script>
-<script src="{% static 'js/page-section-navigation.js' %}?v=20260515-section-nav-1"></script>
+<script src="{% static 'js/page-section-navigation.js' %}?v=20260708-dashboard-links-1"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

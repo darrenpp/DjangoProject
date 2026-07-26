@@ -1,12 +1,12 @@
 # Government Launch Package
 
-Project: The National Department Of Health Regulatory Bodies Nursing Council & The Medical Board Online Workforce System
+Project: PNG Nursing Council and Medical Board Online Regulatory Workforce Platform
 
-Date: 07 May 2026
+Date: Updated 1 June 2026
 
 ## Purpose
 
-This folder turns the platform into a formal government-grade regulatory operations package. It explains the system architecture, data governance, security controls, workflow engine, document repository, testing evidence, deployment plan, support model, and change-control process expected from an enterprise software delivery.
+This folder turns the platform into a formal government-grade regulatory operations package. It explains the system architecture, data governance, security controls, workflow engine, ICMS complaints and discipline module, document repository, NHWA reporting layer, mapping/reference layer, testing evidence, deployment plan, support model, and change-control process expected from an enterprise software delivery.
 
 ## Package Modules
 
@@ -53,8 +53,18 @@ Implemented foundations:
 - Application status history and regulatory audit logs.
 - OpenKM-style document repository with metadata, versions, OCR/search support, office scope, and audit events.
 - Financial forecast separation by office scope.
-- Data-quality audits and duplicate-review workflows.
-- Staff inbox, notifications, chat, and operational access request workflow.
+- Data-quality audits and duplicate-review queue with search, sort, full pagination, grouped source rows, and review actions.
+- Staff inbox, notifications, notification history, read/opened message status, chat, and operational access request workflow.
+- Board-specific authenticated dashboard headers with PNG national emblem background.
+- Public registration role/cadre dropdowns, including distinct CHW provisional and CHW full-license pathways.
+- Records Hub table functions and authorised registrar CRUD actions for Nursing Professionals.
+- Nursing Council analytics snapshot import from the cleansed dashboard workbook, with 34,851 lifecycle records and active-snapshot dashboard drilldown.
+- Catherine provisional/full-licence workbook and cadre workbook import-alignment layer.
+- Formal ICMS complaint/incident case register, disciplinary case workflow, and regulatory decision register.
+- Document approval/rejection sign-off for controlled repository versions.
+- NHWA workbook centre as a standards/reporting layer populated from verified platform data.
+- Public FAQ, moderated forum, and mapped schools/institutions/facilities from stored coordinates.
+- Receipt-owner linking and high-value review routing for unmatched or suspicious payments.
 
 Launch gates still required:
 
@@ -65,3 +75,5 @@ Launch gates still required:
 - Vulnerability scan.
 - Independent penetration test.
 - Registrar, finance, data-quality, and System Admin UAT sign-off.
+- Verified coordinates for public map demonstration.
+- Regeneration of PDF/Word presentation packs from the 1 June 2026 source documentation before external circulation.

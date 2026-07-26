@@ -1,0 +1,54 @@
+{% if regulatory_ml_forecast %}
+{% with forecast=regulatory_ml_forecast.nursing retirement=regulatory_ml_forecast.nursing.retirement_projection shortage=regulatory_ml_forecast.nursing.approved_target_shortage_risk %}
+<section class="row mb-4" id="regulatory-ml-forecast" aria-labelledby="regulatory-ml-forecast-heading">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h3 id="regulatory-ml-forecast-heading" class="card-title mb-1"><i class="fas fa-chart-line mr-2"></i>Local Workforce Forecasting</h3>
+                <div class="small">Read-only, aggregate-only planning support. It does not predict an individual professional or make a staffing, registration, licence, or employment decision.</div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="metric-label">Retirement planning range</div>
+                            {% if retirement.available %}
+                                <div class="metric-value">{{ retirement.projection_lower_bound }}–{{ retirement.projection_upper_bound }}</div>
+                                <small class="text-muted">Eligibility cohort over {{ retirement.horizon_years }} years; not a guaranteed retirement count.</small>
+                            {% else %}
+                                <div class="font-weight-bold text-muted">Not issued</div>
+                                <small class="text-muted">Governed aggregate age coverage is not sufficient for a reliable range.</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="metric-label">Age evidence coverage</div>
+                            <div class="metric-value">{% if retirement.age_coverage_percent %}{{ retirement.age_coverage_percent }}%{% else %}—{% endif %}</div>
+                            <small class="text-muted">{{ retirement.known_age_count }} governed observations against {{ retirement.active_practitioner_count }} active profiles.</small>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="metric-label">Approved-target staffing signal</div>
+                            {% if shortage.available %}
+                                <div class="metric-value text-uppercase">{{ shortage.risk_level }}</div>
+                                <small class="text-muted">{{ shortage.displayed_gap }} reported gap across {{ shortage.approved_target_row_count }} displayed approved-target row{{ shortage.approved_target_row_count|pluralize }}; not a national total.</small>
+                            {% else %}
+                                <div class="font-weight-bold text-muted">Not issued</div>
+                                <small class="text-muted">Approved staffing targets are required before a gap signal can be calculated.</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-light border small mb-0">
+                    <strong>Governance:</strong> {{ regulatory_ml_forecast.model_metadata.training }} {{ regulatory_ml_forecast.governance.approved_data_requirement }} A responsible officer must review the cited governed sources before any action.
+                </div>
+                {% for notice in regulatory_ml_forecast.notices %}<div class="small text-muted mt-2">{{ notice }}</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endwith %}
+{% endif %}

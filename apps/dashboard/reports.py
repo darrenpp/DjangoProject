@@ -1,11 +1,12 @@
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from io import BytesIO
 import json
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count
 from django.utils import timezone
 from docx import Document as WordDocument
@@ -19,6 +20,7 @@ except ImportError:  # pragma: no cover - optional image support depends on Pill
     OpenPyxlImage = None
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.table import Table as ExcelTable, TableStyleInfo
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import landscape, letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -136,7 +138,7 @@ def _build_guide_rows():
         ],
         [
             "Imported Record Rows",
-            "These are row-level operational records from PracticingLicenseRecord, including full registration, practising licence, provisional, temporary, workforce listing, and payment rows.",
+            "These are row-level operational records from PracticingLicenseRecord, including full-licence applicants, approved full licences, practising licence, provisional, temporary, workforce listing, and payment rows.",
             "This is not the same as current people because one person may contribute more than one imported row over time.",
         ],
         [
@@ -663,6 +665,415 @@ def _add_pie_chart(ws, title, min_row, max_row, data_col, anchor):
     chart.height = 8
     chart.width = 12
     ws.add_chart(chart, anchor)
+
+
+def _clean_report_text(value, default="Not captured"):
+    text = str(value or "").strip()
+    return text if text else default
+
+
+def _title_report_label(value, default="Not captured"):
+    text = _clean_report_text(value, default="")
+    if not text:
+        return default
+    return text.replace("_", " ").title()
+
+
+def _excel_datetime(value):
+    if not value:
+        return None
+    if timezone.is_aware(value):
+        value = timezone.localtime(value)
+    return value.replace(tzinfo=None)
+
+
+def _counter_rows(counter, *, limit=None):
+    items = sorted(counter.items(), key=lambda item: (-item[1], str(item[0])))
+    if limit:
+        items = items[:limit]
+    return [[label, count] for label, count in items]
+
+
+def _nurse_full_name(nurse):
+    return " ".join(
+        part
+        for part in [
+            _clean_report_text(getattr(nurse, "first_name", ""), ""),
+            _clean_report_text(getattr(nurse, "middle_name", ""), ""),
+            _clean_report_text(getattr(nurse, "last_name", ""), ""),
+        ]
+        if part
+    )
+
+
+def _nurse_license_status(nurse, today):
+    expiry = getattr(nurse, "license_expiry_date", None)
+    if not expiry:
+        return "No expiry captured"
+    if expiry < today:
+        return "Expired"
+    if expiry <= today + timedelta(days=90):
+        return "Expires within 90 days"
+    return "Current"
+
+
+def _append_large_excel_table(ws, title, headers, rows, table_name):
+    ws.append([title])
+    title_row = ws.max_row
+    ws.merge_cells(start_row=title_row, start_column=1, end_row=title_row, end_column=len(headers))
+    ws.cell(title_row, 1).font = Font(bold=True, size=14, color=GOV_NAVY)
+    ws.cell(title_row, 1).fill = PatternFill("solid", fgColor=GOV_LIGHT)
+    ws.cell(title_row, 1).alignment = Alignment(vertical="center")
+    ws.append(headers)
+    header_row = ws.max_row
+    for cell in ws[header_row]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor=GOV_GREEN)
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    for row in rows:
+        ws.append(row)
+    ws.freeze_panes = ws.cell(header_row + 1, 1).coordinate
+    ws.auto_filter.ref = f"A{header_row}:{get_column_letter(len(headers))}{max(header_row, ws.max_row)}"
+    if ws.max_row > header_row:
+        table = ExcelTable(
+            displayName=table_name,
+            ref=f"A{header_row}:{get_column_letter(len(headers))}{ws.max_row}",
+        )
+        table.tableStyleInfo = TableStyleInfo(
+            name="TableStyleMedium2",
+            showFirstColumn=False,
+            showLastColumn=False,
+            showRowStripes=True,
+            showColumnStripes=False,
+        )
+        ws.add_table(table)
+    widths = {
+        1: 26,
+        2: 16,
+        3: 18,
+        4: 14,
+        5: 16,
+        6: 16,
+        7: 18,
+        8: 18,
+        9: 20,
+        10: 16,
+        11: 18,
+        12: 18,
+        13: 16,
+        14: 18,
+        15: 24,
+        16: 24,
+    }
+    for column, width in widths.items():
+        ws.column_dimensions[get_column_letter(column)].width = width
+    return header_row, ws.max_row
+
+
+def build_registered_nurses_excel(generated_by=None):
+    today = timezone.localdate()
+    generated_at = timezone.localtime(timezone.now())
+    generated_by_label = getattr(generated_by, "get_username", lambda: "")() or "System"
+    nurse_queryset = (
+        NursingProfessional.objects
+        .select_related("cadre")
+        .order_by("last_name", "first_name", "registration_no")
+    )
+
+    data_rows = []
+    province_counts = defaultdict(int)
+    applicant_type_counts = defaultdict(int)
+    gender_counts = defaultdict(int)
+    cadre_counts = defaultdict(int)
+    licence_status_counts = defaultdict(int)
+    status_counts = defaultdict(int)
+    quality_counts = defaultdict(int)
+    latest_update = None
+
+    for nurse in nurse_queryset.iterator(chunk_size=1000):
+        full_name = _nurse_full_name(nurse) or "Name not captured"
+        registration_no = _clean_report_text(getattr(nurse, "registration_no", ""), "")
+        registration_number = _clean_report_text(getattr(nurse, "registration_number", ""), "")
+        gender = _title_report_label(getattr(nurse, "gender", ""))
+        applicant_type = _title_report_label(getattr(nurse, "applicant_type", ""))
+        province = _clean_report_text(getattr(nurse, "province", ""))
+        if province == "Not captured":
+            quality_counts["Missing province"] += 1
+        cadre = _clean_report_text(getattr(getattr(nurse, "cadre", None), "name", ""))
+        qualification = _clean_report_text(getattr(nurse, "qualification_level", ""))
+        email = _clean_report_text(getattr(nurse, "email", ""), "")
+        phone = _clean_report_text(getattr(nurse, "primary_phone", ""), "")
+        licence_status = _nurse_license_status(nurse, today)
+        registry_status = "Active" if getattr(nurse, "is_active", False) else "Inactive"
+        issued_date = getattr(nurse, "date_issued", None)
+        expiry_date = getattr(nurse, "license_expiry_date", None)
+        updated_at = getattr(nurse, "updated_at", None)
+        if updated_at and (latest_update is None or updated_at > latest_update):
+            latest_update = updated_at
+
+        if not registration_no and not registration_number:
+            quality_counts["Missing registration identifier"] += 1
+        if not email:
+            quality_counts["Missing email"] += 1
+        if not phone:
+            quality_counts["Missing phone"] += 1
+        if not expiry_date:
+            quality_counts["Missing licence expiry"] += 1
+        if licence_status == "Expired":
+            quality_counts["Expired licence"] += 1
+
+        province_counts[province] += 1
+        applicant_type_counts[applicant_type] += 1
+        gender_counts[gender] += 1
+        cadre_counts[cadre] += 1
+        licence_status_counts[licence_status] += 1
+        status_counts[registry_status] += 1
+
+        data_rows.append([
+            full_name,
+            registration_no,
+            registration_number,
+            gender,
+            applicant_type,
+            province,
+            cadre,
+            qualification,
+            registry_status,
+            licence_status,
+            issued_date,
+            expiry_date,
+            email,
+            phone,
+            _excel_datetime(getattr(nurse, "created_at", None)),
+            _excel_datetime(updated_at),
+        ])
+
+    total_records = len(data_rows)
+    active_count = status_counts.get("Active", 0)
+    inactive_count = status_counts.get("Inactive", 0)
+    duplicate_content_type = ContentType.objects.get_for_model(NursingProfessional)
+    pending_duplicate_reviews = DuplicateReviewQueue.objects.filter(
+        content_type=duplicate_content_type,
+        status="pending",
+    ).count()
+    open_missing_reviews = MissingDataReview.objects.filter(
+        content_type=duplicate_content_type,
+    ).exclude(status="resolved").count()
+
+    wb = Workbook()
+    wb.properties.title = "Nursing Council Registered Nurses Analytics Report"
+    wb.properties.subject = "Registered nurses export with analytics, guide, charts, and data tables"
+    wb.properties.creator = "NDOH Workforce Online Registration System"
+
+    guide = wb.active
+    guide.title = "Read Me First"
+    _style_sheet(guide, GOV_GREEN)
+    _add_workbook_banner(guide, "How To Read The Registered Nurses Analytics Workbook")
+    _append_table(
+        guide,
+        "Workbook Navigation",
+        ["Sheet", "What It Contains", "How To Use It"],
+        [
+            ["Executive Summary", "Key totals, data-quality warnings, and source notes.", "Start here for registrar and management briefing."],
+            ["Charts", "Visual summaries by province, licence status, applicant type, gender, and data completeness.", "Use for quick explanation in meetings."],
+            ["Registered Nurses", "The full exported NursingProfessional register rows.", "Filter, sort, and review individual records in Excel."],
+            ["Data Quality", "Missing identifiers, contact gaps, expired licences, and remaining review queues.", "Use before sharing or making official decisions."],
+            ["Source Notes", "Definitions, limitations, and audit explanation.", "Use this wording when explaining the workbook to non-technical users."],
+        ],
+        freeze=False,
+        auto_filter=False,
+    )
+    _append_table(
+        guide,
+        "Reading Guidance",
+        ["Question", "Answer"],
+        [
+            ["Is this a raw CSV export?", "No. This is an Excel analytics workbook with formatted tables, filters, charts, and explanation notes."],
+            ["What does the total count mean?", "It is a live NursingProfessional table count at the time of export, not a historical imported-row count."],
+            ["Can these figures be used as final official workforce figures?", "Use them with the data-quality notes. Remaining missing-data and duplicate-review queues should be closed before final publication."],
+            ["Why are some fields marked Not captured?", "Those fields are blank in the current database record and require follow-up or cleansing."],
+        ],
+        freeze=False,
+        auto_filter=False,
+    )
+
+    summary = wb.create_sheet("Executive Summary")
+    _style_sheet(summary, GOV_NAVY)
+    _add_workbook_banner(summary, "Registered Nurses Export - Executive Summary")
+    latest_update_label = ""
+    if latest_update:
+        latest_update_label = timezone.localtime(latest_update).strftime("%Y-%m-%d %H:%M")
+    _append_table(
+        summary,
+        "Report Control",
+        ["Control", "Value", "Explanation"],
+        [
+            ["Generated at", generated_at.strftime("%Y-%m-%d %H:%M %Z"), "Timestamp from the backend server."],
+            ["Generated by", generated_by_label, "Authenticated user who requested the export."],
+            ["Office scope", "Nursing Council", "This report is limited to Nursing Council registered nurse records."],
+            ["Source table", "apps.workforce.NursingProfessional", "Live registry table used for the exported rows."],
+            ["Latest record update", latest_update_label or "Not available", "Latest updated_at value found in the exported rows."],
+            ["Count type", "Live people records", "This is not a source spreadsheet row count."],
+        ],
+        freeze=False,
+        auto_filter=False,
+    )
+    _append_table(
+        summary,
+        "Key Metrics",
+        ["Metric", "Value", "How To Explain It"],
+        [
+            ["Total registered nurse rows", total_records, "All NursingProfessional records included in this export."],
+            ["Active records", active_count, "Records currently marked active in the registry."],
+            ["Inactive records", inactive_count, "Records currently marked inactive in the registry."],
+            ["Current licences", licence_status_counts.get("Current", 0), "Records with a captured expiry date more than 90 days ahead."],
+            ["Expiring within 90 days", licence_status_counts.get("Expires within 90 days", 0), "Records needing renewal follow-up soon."],
+            ["Expired licences", licence_status_counts.get("Expired", 0), "Records with captured expiry dates before the export date."],
+            ["No expiry captured", licence_status_counts.get("No expiry captured", 0), "Records missing licence-expiry evidence."],
+            ["Pending duplicate reviews", pending_duplicate_reviews, "Open duplicate-review queue items tied to nurse records."],
+            ["Open missing-data reviews", open_missing_reviews, "Missing-data review items tied to nurse records."],
+        ],
+        freeze=False,
+        auto_filter=False,
+    )
+
+    charts = wb.create_sheet("Charts")
+    _style_sheet(charts, GOV_GREEN)
+    _add_workbook_banner(charts, "Registered Nurses Charts")
+    province_header, province_end = _append_table(
+        charts,
+        "Top Provinces",
+        ["Province", "Nurse Records"],
+        _counter_rows(province_counts, limit=15),
+        freeze=False,
+        auto_filter=False,
+    )
+    applicant_header, applicant_end = _append_table(
+        charts,
+        "Applicant Type",
+        ["Applicant Type", "Nurse Records"],
+        _counter_rows(applicant_type_counts),
+        freeze=False,
+        auto_filter=False,
+    )
+    gender_header, gender_end = _append_table(
+        charts,
+        "Gender",
+        ["Gender", "Nurse Records"],
+        _counter_rows(gender_counts),
+        freeze=False,
+        auto_filter=False,
+    )
+    licence_header, licence_end = _append_table(
+        charts,
+        "Licence Status",
+        ["Licence Status", "Nurse Records"],
+        _counter_rows(licence_status_counts),
+        freeze=False,
+        auto_filter=False,
+    )
+    _add_bar_chart(charts, "Top Provinces by Nurse Records", province_header, province_end, 2, "E6")
+    _add_pie_chart(charts, "Licence Status Mix", licence_header, licence_end, 2, "E23")
+    _add_pie_chart(charts, "Applicant Type Mix", applicant_header, applicant_end, 2, "N6")
+    _add_bar_chart(charts, "Gender Distribution", gender_header, gender_end, 2, "N23")
+
+    data = wb.create_sheet("Registered Nurses")
+    _style_sheet(data, GOV_GREEN)
+    data_headers = [
+        "Full Name",
+        "Registration No.",
+        "Registration Number",
+        "Gender",
+        "Applicant Type",
+        "Province",
+        "Cadre",
+        "Qualification Level",
+        "Registry Status",
+        "Licence Status",
+        "Date Issued",
+        "Licence Expiry Date",
+        "Email",
+        "Primary Phone",
+        "Created At",
+        "Updated At",
+    ]
+    _append_large_excel_table(
+        data,
+        "Registered Nurses - Full Export",
+        data_headers,
+        data_rows,
+        "RegisteredNursesTable",
+    )
+
+    quality = wb.create_sheet("Data Quality")
+    _style_sheet(quality, GOV_GOLD)
+    _add_workbook_banner(quality, "Registered Nurses Data Quality Guide")
+    completeness_rows = [
+        ["Registration identifier", total_records - quality_counts.get("Missing registration identifier", 0), quality_counts.get("Missing registration identifier", 0), "Registration No. or Registration Number"],
+        ["Email", total_records - quality_counts.get("Missing email", 0), quality_counts.get("Missing email", 0), "Email field"],
+        ["Phone", total_records - quality_counts.get("Missing phone", 0), quality_counts.get("Missing phone", 0), "Primary phone field"],
+        ["Province", total_records - quality_counts.get("Missing province", 0), quality_counts.get("Missing province", 0), "Province field"],
+        ["Licence expiry", total_records - quality_counts.get("Missing licence expiry", 0), quality_counts.get("Missing licence expiry", 0), "Licence expiry date field"],
+    ]
+    completeness_rows = [
+        row + [round((row[1] / total_records) * 100, 1) if total_records else 0]
+        for row in completeness_rows
+    ]
+    completeness_header, completeness_end = _append_table(
+        quality,
+        "Data Completeness",
+        ["Field", "Captured", "Missing", "Source Field", "Coverage %"],
+        completeness_rows,
+        freeze=False,
+        auto_filter=False,
+    )
+    _append_table(
+        quality,
+        "Quality Flags",
+        ["Issue", "Records Affected", "Recommended Action"],
+        [
+            ["Missing registration identifier", quality_counts.get("Missing registration identifier", 0), "Review before using as a definitive professional identity list."],
+            ["Missing email", quality_counts.get("Missing email", 0), "Collect contact details before electronic notices are issued."],
+            ["Missing phone", quality_counts.get("Missing phone", 0), "Collect contact details before SMS or phone follow-up."],
+            ["Missing province", quality_counts.get("Missing province", 0), "Cleanse location data for workforce planning by province."],
+            ["Expired licence", quality_counts.get("Expired licence", 0), "Route for renewal or status review before publishing as current workforce."],
+            ["Pending duplicate reviews", pending_duplicate_reviews, "Close duplicate review queue before final official reporting."],
+            ["Open missing-data reviews", open_missing_reviews, "Close missing-data review queue before final official reporting."],
+        ],
+        freeze=False,
+        auto_filter=False,
+    )
+    _add_bar_chart(quality, "Captured Fields by Data Element", completeness_header, completeness_end, 2, "G6")
+
+    notes = wb.create_sheet("Source Notes")
+    _style_sheet(notes, GOV_NAVY)
+    _add_workbook_banner(notes, "Registered Nurses Source Notes")
+    _append_table(
+        notes,
+        "Definitions And Limitations",
+        ["Topic", "Explanation"],
+        [
+            ["Live people records", "The exported rows come from the NursingProfessional model and represent current database records."],
+            ["Imported rows", "This workbook does not count source workbook rows as people. Historical imported-row reporting remains in monthly analytics exports."],
+            ["Duplicate reviews", "Pending duplicate review counts show records that may need manual verification before final publication."],
+            ["Missing fields", "Blank fields are reported as Not captured or counted in the Data Quality sheet."],
+            ["Confidentiality", "The workbook is for authorised Nursing Council staff. Do not publish contact details to the public register."],
+        ],
+        freeze=False,
+        auto_filter=False,
+    )
+
+    for worksheet in wb.worksheets:
+        _style_sheet(
+            worksheet,
+            worksheet.sheet_properties.tabColor.rgb
+            if worksheet.sheet_properties.tabColor and worksheet.sheet_properties.tabColor.type == "rgb"
+            else GOV_GREEN,
+        )
+    wb.active = 0
+    output = BytesIO()
+    wb.save(output)
+    return output.getvalue()
 
 
 def build_monthly_analytics_excel(office=None):
@@ -1511,7 +1922,7 @@ def _manual_receipt_category(receipt, office):
 def _imported_receipt_category(record):
     if record.record_type in {"payment", "practicing_license"}:
         return "renewal"
-    if record.record_type == "full":
+    if record.record_type in {"full", "full_approved"}:
         return "full_registration"
     if record.record_type == "provisional":
         return "new_application"

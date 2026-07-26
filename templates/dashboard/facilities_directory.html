@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{{ facility_scope_label }} Facilities and Institutions{% endblock %}
+{% block title_label %}Facilities and Institutions{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+    <div>
+        <h2 class="mb-1">{{ facility_scope_label }} Facilities and Institutions</h2>
+        <p class="text-muted mb-0">National facility groups, workforce cadres, competency placements, full-licence pathways, and recognised PNG training institutions.</p>
+    </div>
+    <div class="mt-2 mt-md-0">
+        {% if can_switch_facility_scope %}
+        <a class="btn btn-sm {% if facility_scope == 'nursing' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'facilities_directory' %}?scope=nursing">Nursing Council</a>
+        <a class="btn btn-sm {% if facility_scope == 'medical' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'facilities_directory' %}?scope=medical">Medical Board</a>
+        {% endif %}
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'workforce_map' %}?office={{ facility_scope }}"><i class="fas fa-map-location-dot mr-1"></i>Map</a>
+    </div>
+</div>
+
+<div class="alert alert-light border mb-4">
+    <strong>Reporting rule:</strong> workforce totals use only individual registration, provisional, full-licence, approved full-licence, practising-certificate, temporary-certificate, and workforce-listing records from the {{ facility_scope_label }} import source. Payment and workbook summary rows are excluded.
+</div>
+
+<div class="card card-outline card-primary mb-4" id="national-facility-groups">
+    <div class="card-header">
+        <h3 class="card-title mb-0">National Facility Group Breakdown</h3>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-sm table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>National group</th>
+                    <th>Facilities and institutions</th>
+                    <th>Linked individuals</th>
+                    <th>Cadres and specialists</th>
+                    <th>Competency and full-licence tracking</th>
+                    <th>Licence status</th>
+                    <th>Examples</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in facility_sector_rows %}
+                <tr>
+                    <td><strong>{{ row.label }}{% if row.key == "church" %} (CHS){% elif row.key == "catholic" %} (CCHS){% endif %}</strong></td>
+                    <td>
+                        <div>{{ row.facility_count }} master / {{ row.imported_facility_count }} imported workplace</div>
+                        <div class="small text-muted">{{ row.institution_count }} training institutions</div>
+                    </td>
+                    <td><strong>{{ row.practitioner_count }}</strong></td>
+                    <td>
+                        {% for cadre in row.cadre_summary %}
+                        <span class="badge badge-light border mr-1 mb-1">{{ cadre.label }}: {{ cadre.count }}</span>
+                        {% empty %}<span class="text-muted small">No workforce cadre mapped yet.</span>{% endfor %}
+                    </td>
+                    <td>
+                        <div><strong>{{ row.provisional_competency_count }}</strong> provisional / competency</div>
+                        <div><strong>{{ row.full_licence_applicant_count }}</strong> full-licence applicants</div>
+                        <div><strong>{{ row.full_licence_approved_count }}</strong> full licences approved</div>
+                    </td>
+                    <td>
+                        <div>Current: {{ row.current_count }}</div>
+                        <div>Expired: {{ row.expired_count }}</div>
+                        <div>Review: {{ row.under_review_count }}</div>
+                    </td>
+                    <td>
+                        {% for facility in row.facility_examples %}
+                        {% if facility.detail_url %}<a class="d-block small" href="{{ facility.detail_url }}">{{ facility.name }}</a>{% else %}<span class="d-block small">{{ facility.name }}</span>{% endif %}
+                        {% endfor %}
+                        {% for institution in row.institution_examples %}
+                        {% if institution.detail_url %}<a class="d-block small" href="{{ institution.detail_url }}">{{ institution.name }}</a>{% else %}<span class="d-block small">{{ institution.name }}</span>{% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted">No facility or institution references are available in this scope.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header"><h3 class="card-title mb-0">Verified Facility Master</h3></div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead><tr><th>Facility</th><th>Group</th><th>Individuals</th><th>Pathway</th><th></th></tr></thead>
+                    <tbody>
+                    {% for row in facility_reference_rows %}
+                    <tr>
+                        <td><strong>{{ row.name }}</strong><div class="small text-muted">{{ row.type }} / {{ row.province }}</div></td>
+                        <td>{{ row.sector_label|default:row.ownership }}</td>
+                        <td>{{ row.worker_count }}</td>
+                        <td class="small">P: {{ row.provisional_competency_count }} / F: {{ row.full_licence_applicant_count }} / Approved: {{ row.full_licence_approved_count }}</td>
+                        <td><a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                    </tr>
+                    {% empty %}<tr><td colspan="5" class="text-center text-muted">No verified facilities.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header"><h3 class="card-title mb-0">Imported Workplace References</h3></div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead><tr><th>Facility / workplace</th><th>Group</th><th>People</th><th>Pathway</th><th></th></tr></thead>
+                    <tbody>
+                    {% for row in imported_facility_reference_rows %}
+                    <tr>
+                        <td><strong>{{ row.facility_name }}</strong><div class="small text-muted">{{ row.province_summary }}</div></td>
+                        <td>{{ row.sector_label|default:"Ownership review" }}</td>
+                        <td>{{ row.individual_count|default:row.total }}</td>
+                        <td class="small">P: {{ row.provisional_competency_count }} / F: {{ row.full_licence_applicant_count }} / Approved: {{ row.full_licence_approved_count }}</td>
+                        <td><a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                    </tr>
+                    {% empty %}<tr><td colspan="5" class="text-center text-muted">No imported workplace references.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-outline card-success mb-4" id="national-institution-workforce">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Recognised PNG Institutions with the Most Individuals</h3>
+    </div>
+    <div class="card-body">
+        <p class="small text-muted">Ranked by distinct people linked to recognised Papua New Guinea institution master records in the {{ facility_scope_label }} scope. Provisional placement counts identify graduands undergoing competency who have a workplace/facility reference.</p>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead><tr><th>PNG institution</th><th>Individuals</th><th>Provisional / competency</th><th>Placed at facilities</th><th>Full applicants</th><th>Approved full</th><th>Cadres</th><th>Facility examples</th></tr></thead>
+                <tbody>
+                {% for row in national_institution_workforce_rows %}
+                <tr>
+                    <td><a href="{{ row.detail_url }}"><strong>{{ row.name }}</strong></a></td>
+                    <td><strong>{{ row.individual_count }}</strong></td>
+                    <td>{{ row.provisional_competency_count }}</td>
+                    <td>{{ row.provisional_placement_count }} people / {{ row.facility_count }} facilities</td>
+                    <td>{{ row.full_licence_applicant_count }}</td>
+                    <td>{{ row.full_licence_approved_count }}</td>
+                    <td>{% for cadre in row.cadre_summary %}<span class="badge badge-light border mr-1 mb-1">{{ cadre.label }}: {{ cadre.count }}</span>{% empty %}-{% endfor %}</td>
+                    <td>{{ row.facility_examples|join:", "|default:"-" }}</td>
+                </tr>
+                {% empty %}<tr><td colspan="8" class="text-center text-muted">No recognised PNG institution has linked workforce records yet.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
